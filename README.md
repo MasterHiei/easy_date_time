@@ -6,7 +6,7 @@ A straightforward solution for timezone handling in Dart, built on the establish
 
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
 
-**[中文文档](README_zh.md)** | **[日本語ドキュメント](README_ja.md)**
+**[中文](https://github.com/MasterHiei/easy_date_time/blob/main/README_zh.md)** | **[日本語](https://github.com/MasterHiei/easy_date_time/blob/main/README_ja.md)**
 
 ---
 

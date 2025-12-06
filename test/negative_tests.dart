@@ -126,7 +126,7 @@ void main() {
       // Dart automatically rolls forward to March 1 instead of throwing
       final dt = EasyDateTime(2023, 2, 29); // 2023 is not a leap year
       expect(dt.month, equals(3)); // Rolls to March
-      expect(dt.day, equals(1));   // Day 1
+      expect(dt.day, equals(1)); // Day 1
     });
   });
 
@@ -209,8 +209,8 @@ void main() {
     });
 
     test('isAtSameMoment works across timezones', () {
-      final tokyo = EasyDateTime(2025, 6, 15, 20, 0, 0, 0, 0,
-        getLocation('Asia/Tokyo'));
+      final tokyo =
+          EasyDateTime(2025, 6, 15, 20, 0, 0, 0, 0, getLocation('Asia/Tokyo'));
       final london = tokyo.inLocation(getLocation('Europe/London'));
 
       expect(tokyo.isAtSameMoment(london), isTrue);

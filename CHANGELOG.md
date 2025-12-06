@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2025-12-06
+## [0.1.0+1] - 2025-12-07
 
 Initial release of `easy_date_time` package.
 
@@ -14,6 +14,12 @@ Initial release of `easy_date_time` package.
 - **EasyDateTime class** - Timezone-aware DateTime implementation
 - **Local timezone as default** - Works immediately without configuration
 - **TimeZones convenience API** - 30+ common timezones with easy accessors
+
+### Project Configuration
+
+- **CI/CD Pipeline** - Automated testing and Gitflow-based release workflow (`release.yml`)
+- **Community Standards** - Added `CONTRIBUTING.md`, Code of Conduct, and GitHub Templates
+- **Development Experience** - Configured `lints` and strict analysis options
 
 ### Constructors
 
@@ -56,4 +62,4 @@ Initial release of `easy_date_time` package.
 - `toJson()` / `fromJson()` - ISO 8601 format
 - Compatible with json_serializable, freezed
 
-[0.1.0]: https://github.com/MasterHiei/easy_date_time/releases/tag/v0.1.0
+[0.1.0+1]: https://github.com/MasterHiei/easy_date_time/releases/tag/v0.1.0+1

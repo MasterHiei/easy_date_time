@@ -30,16 +30,17 @@ jobs:
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Detected version: $VERSION"
 
       - name: Check if Tag Exists
         id: check_tag
         run: |
-          if git ls-remote --exit-code --tags origin "v${{ env.VERSION }}" >/dev/null 2>&1; then
-            echo "Tag v${{ env.VERSION }} already exists."
+          if git ls-remote --exit-code --tags origin "v$VERSION" >/dev/null 2>&1; then
+            echo "Tag v$VERSION already exists."
             echo "exists=true" >> $GITHUB_OUTPUT
           else
-            echo "Tag v${{ env.VERSION }} does not exist. Proceeding with release."
+            echo "Tag v$VERSION does not exist. Proceeding with release."
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
@@ -52,8 +53,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
-          git push origin "v${{ env.VERSION }}"
+          git tag -a "v$VERSION" -m "Release v$VERSION"
+          git push origin "v$VERSION"
 
       - name: Extract Changelog
         if: steps.check_tag.outputs.exists == 'false'
@@ -61,11 +62,11 @@ jobs:
         run: |
           # Simple extraction: Find section for version, read until next header or end
           # Note: This requires CHANGELOG.md to be perfectly formatted
-          CHANGELOG=$(sed -n "/## \[${{ env.VERSION }}\]/,/## \[/p" CHANGELOG.md | sed '$d' | tail -n +2 || echo "Release v${{ env.VERSION }}")
+          CHANGELOG=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d' | tail -n +2 || echo "Release v$VERSION")
 
           # Handle case where extraction fails or is empty
           if [ -z "$CHANGELOG" ]; then
-             CHANGELOG="Release v${{ env.VERSION }}"
+             CHANGELOG="Release v$VERSION"
           fi
 
           # Multiline output for GitHub Actions
@@ -77,8 +78,8 @@ jobs:
         if: steps.check_tag.outputs.exists == 'false'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ env.VERSION }}
-          name: v${{ env.VERSION }}
+          tag_name: "v${{ steps.version.outputs.version }}"
+          name: "v${{ steps.version.outputs.version }}"
           body: ${{ steps.changelog.outputs.CHANGELOG }}
           draft: false
           prerelease: false

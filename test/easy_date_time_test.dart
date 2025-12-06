@@ -490,9 +490,9 @@ void main() {
   group('DateTimeExtension', () {
     test('toEasyDateTime() uses default timezone', () {
       final dt = DateTime.utc(2025, 12, 1, 10, 30);
-        final easyDt = dt.toEasyDateTime();
+      final easyDt = dt.toEasyDateTime();
 
-        expect(easyDt.location, localTimeZone);
+      expect(easyDt.location, localTimeZone);
       expect(easyDt.millisecondsSinceEpoch, dt.millisecondsSinceEpoch);
     });
 
