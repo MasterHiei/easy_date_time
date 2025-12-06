@@ -1,0 +1,27 @@
+name: easy_date_time
+description: >
+  Timezone-aware DateTime for Dart. Supports local time by default,
+  optional IANA timezones, intuitive operators, and standard JSON serialization.
+  Perfect for Flutter and server-side applications.
+version: 0.1.0
+homepage: https://github.com/user/easy_date_time
+repository: https://github.com/user/easy_date_time
+issue_tracker: https://github.com/user/easy_date_time/issues
+documentation: https://pub.dev/documentation/easy_date_time/latest/
+
+topics:
+  - datetime
+  - timezone
+  - time
+  - date
+  - json
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  timezone: ^0.10.0
+
+dev_dependencies:
+  lints: ^5.1.1
+  test: ^1.26.3
