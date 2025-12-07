@@ -14,12 +14,12 @@ A drop-in DateTime alternative with full IANA timezone support. Parse times with
 
 Dart's built-in `DateTime` and other solutions have limitations in real-world use:
 
-| Package | Strengths | Limitations | Why easy_date_time |
-|---------|-----------|-------------|--------------------|
-| DateTime (built-in) | Simple, zero deps | Only local/UTC; offsets auto-convert to UTC | Keeps your times intact |
-| timezone | Precise IANA support | Verbose API | Cleaner syntax, shortcuts for common zones |
-| intl | Great i18n/formatting | Minimal timezone support | Time and timezone handled separately |
-| flutter_native_timezone | Gets device timezone | No parsing/arithmetic | Parse, compute, and convert in one place |
+| Package                 | Strengths             | Limitations                                 | Why easy_date_time                         |
+|-------------------------|-----------------------|---------------------------------------------|--------------------------------------------|
+| DateTime (built-in)     | Simple, zero deps     | Only local/UTC; offsets auto-convert to UTC | Keeps your times intact                    |
+| timezone                | Precise IANA support  | Verbose API                                 | Cleaner syntax, shortcuts for common zones |
+| intl                    | Great i18n/formatting | Minimal timezone support                    | Time and timezone handled separately       |
+| flutter_native_timezone | Gets device timezone  | No parsing/arithmetic                       | Parse, compute, and convert in one place   |
 
 > **In short**: Less boilerplate, fewer surprises, timezone-aware by default.
 
@@ -27,7 +27,7 @@ Dart's built-in `DateTime` and other solutions have limitations in real-world us
 
 ```dart
 // DateTime: offset is parsed, but time gets converted to UTC
-DateTime.parse('2025-12-07T10:30:00+08:00').hour   // → 2 😕
+DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2 😕
 
 // EasyDateTime: what you parse is what you get
 EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 ✓
@@ -81,7 +81,7 @@ void main() {
 ## Quick Start
 
 ```dart
-final now = EasyDateTime.now();                     // Default or local timezone
+final now = EasyDateTime.now();  // Default or local timezone
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
 final parsed = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
 
