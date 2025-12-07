@@ -1,156 +1,169 @@
 # easy_date_time
 
-**タイムゾーン対応の Dart DateTime ライブラリ**
+**Dart でタイムゾーン付きの時間管理をもっと簡単に**
 
-`timezone` パッケージを基盤とした、シンプルなタイムゾーン処理ライブラリです。
+Dart 標準の `DateTime` では UTC とローカルしか扱えず、タイムゾーン付きの文字列を扱うと勝手に UTC に変換されてしまうことがあります。
+`EasyDateTime` を使えば、入力した時間をそのまま保持しつつ、任意のタイムゾーンでの表示や計算が簡単に行えます。
 
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
 
-**[English](README.md)** | **[中文](README_zh.md)**
+---
+
+## 使う理由
+
+Dart 標準の DateTime や他のライブラリは、実務で少し不便な点があります。
+
+| ライブラリ              | メリット             | 制約                                       | easy_date_time の強み           |
+| ----------------------- | ---------------- | ---------------------------------------- | ---------------------------- |
+| DateTime（標準）            | シンプル、依存なし        | UTC とローカルのみ、タイムゾーン付き文字列を解析すると UTC に変換される | 入力した時間を保持、任意のタイムゾーンで扱える      |
+| timezone                | 正確な IANA タイムゾーン  | 初期化が必要で API が複雑                          | よく使うタイムゾーンは簡単に利用可能、API がシンプル |
+| intl                    | フォーマットや国際化機能が充実  | タイムゾーン管理は限定的                             | 時間とタイムゾーンを分けて管理でき、操作が分かりやすい  |
+| flutter_native_timezone | デバイスのタイムゾーン取得が簡単 | 時間計算や解析は不可                               | 解析・加減算・タイムゾーン変換がすべて対応        |
+
+> 簡単に言うと：**EasyDateTime を使えば Dart の時間処理がシンプルになり、タイムゾーンを跨いだアプリでも安心して使えます。**
+
+**違いを見てみましょう：**
+
+```dart
+// DateTime：オフセットは解析されるが、時間は UTC に変換される
+DateTime.parse('2025-12-07T10:30:00+08:00').hour   // → 2 😕
+
+// EasyDateTime：入力した時間がそのまま
+EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 ✓
+```
 
 ---
 
 ## 特徴
 
-- 🌍 **任意の IANA タイムゾーンに対応**: `Asia/Tokyo` や `America/New_York` など、UTC 以外の時差も正確に扱えます。
-- 🕒 **見たままの時刻を維持**: `"10:00+09:00"` を解析すると、（UTC 変換せず）そのまま **10:00** として扱います。
-- 🛠️ **使いやすい設計**: 直感的な演算子（`now + 1.days`）と標準的な JSON シリアライズを提供。
+* 🌍 **任意のタイムゾーンに対応**
+  IANA タイムゾーン全般をサポート（例: Asia/Shanghai, America/New_York）
 
-## クイックスタート
+* 🕒 **入力した時間をそのまま保持**
+  勝手に UTC に変換されることはありません
+
+* ➕ **直感的な時間加減算**
+  `now + 1.days`、`2.hours` など自然な書き方で操作可能
+
+* 🔄 **明示的なタイムゾーン変換**
+  `.inLocation()` または `.inUtc()` を呼ぶ時だけ変換されます
+
+* 🧱 **安全に日付を変更**
+  `copyWithClamped()` で月や日を超えないよう調整可能
+
+---
+
+## インストールと初期化
+
+`pubspec.yaml` に追加：
 
 ```yaml
 dependencies:
   easy_date_time: ^0.1.0
 ```
 
+アプリ起動時に一度だけ初期化：
+
 ```dart
-import 'package:easy_date_time/easy_date_time.dart';
-
 void main() {
-  // 1. 初期化 (基盤)
-  initializeTimeZone();
+  initializeTimeZone();  // 必ず呼ぶ
 
-  // 2. デフォルト設定 (任意)
-  // 設定しない場合は、システムのローカル設定が使用されます
-  setDefaultLocation(TimeZones.tokyo);
+  // 任意：デフォルトタイムゾーンを設定
+  setDefaultLocation(TimeZones.shanghai);
 
-  final now = EasyDateTime.now();  // デフォルト設定を使用 (東京時間)
-  print(now);
+  runApp(MyApp());
 }
 ```
 
 ---
 
-## タイムゾーンの指定
-
-### 方法 1: `TimeZones` ショートカットを使用（推奨）
+## クイックスタート
 
 ```dart
-// よく使うタイムゾーンはプロパティとして利用可能
+final now = EasyDateTime.now();                     // デフォルトまたはローカルタイムゾーン
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
-final shanghai = EasyDateTime.now(location: TimeZones.shanghai);
-final newYork = EasyDateTime.now(location: TimeZones.newYork);
+final parsed = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
 
-// 利用可能: tokyo, shanghai, beijing, hongKong, singapore,
-// newYork, losAngeles, chicago, london, paris, berlin,
-// sydney, auckland, moscow, dubai, mumbai など...
+print(parsed.hour);  // 10
 ```
 
-### 方法 2: `getLocation()` で任意の IANA タイムゾーンを取得
+---
+
+## タイムゾーンの使い方
+
+### よく使うタイムゾーン（推奨）
 
 ```dart
-// TimeZones にないタイムゾーン
+final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
+final shanghai = EasyDateTime.now(location: TimeZones.shanghai);
+```
+
+### 任意の IANA タイムゾーン
+
+```dart
 final nairobi = EasyDateTime.now(location: getLocation('Africa/Nairobi'));
-final denver = EasyDateTime.now(location: getLocation('America/Denver'));
-
-// 完全なリスト: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 ```
 
-### 方法 3: グローバルデフォルトを設定
+### グローバルデフォルト
 
 ```dart
-// 一度設定すれば、以降の操作に自動適用
-setDefaultLocation(TimeZones.tokyo);
-
-final now = EasyDateTime.now();  // 東京時間
-final dt = EasyDateTime(2025, 12, 25, 10, 30);  // これも東京時間
+setDefaultLocation(TimeZones.shanghai);
+final now = EasyDateTime.now(); // 上海時間をデフォルトで使用
 ```
 
 ---
 
-## 日時文字列の解析
-
-**元の時刻値を保持** — 自動変換しません:
+## 入力時間を保持
 
 ```dart
-// タイムゾーンオフセット付きの API レスポンスを解析
 final dt = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
-print(dt.hour);  // 10（2 ではない！）
+
+print(dt.hour);          // 10
 print(dt.locationName);  // Asia/Shanghai
+```
 
-// UTC 時刻を解析
-final utc = EasyDateTime.parse('2025-12-07T10:30:00Z');
-print(utc.hour);  // 10
-print(utc.locationName);  // UTC
+変換する場合：
 
-// 明示的な変換（リクエストした場合のみ）
-final inNY = EasyDateTime.parse(
-  '2025-12-07T10:30:00Z',
-  location: TimeZones.newYork,
-);
-print(inNY.hour);  // 5（10 UTC → 5 ニューヨーク）
+```dart
+final ny = dt.inLocation(TimeZones.newYork);
+final utc = dt.inUtc();
 ```
 
 ---
 
-## タイムゾーン変換
+## タイムゾーン変換例
 
 ```dart
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
-
-// 別のタイムゾーンに変換
 final newYork = tokyo.inLocation(TimeZones.newYork);
 
-// UTC に変換
-final utc = tokyo.inUtc();
-
-// 同じ瞬間、異なる表示
-print(tokyo.isAtSameMoment(newYork));  // true
+print(tokyo.isAtSameMoment(newYork)); // true：同じ瞬間
 ```
 
 ---
 
-## 日付演算
+## 日付計算
 
 ```dart
 final now = EasyDateTime.now();
-
-// 演算子で加減算
 final tomorrow = now + 1.days;
-final lastWeek = now - 1.weeks;
 final later = now + 2.hours + 30.minutes;
+```
 
-// 比較
-if (tomorrow > now) {
-  print('未来');
-}
+### 月をまたぐ場合の安全処理
 
-// 差分を計算
-final duration = tomorrow.difference(now);
+```dart
+final jan31 = EasyDateTime.utc(2025, 1, 31);
+
+jan31.copyWith(month: 2);        // 3月3日（オーバーフロー）
+jan31.copyWithClamped(month: 2); // 2月28日
 ```
 
 ---
 
-## JSON シリアライゼーション
-
-json_serializable と freezed に対応しています:
+## JSON / シリアライズ対応
 
 ```dart
-// 手動変換
-final json = dt.toJson();  // "2025-12-25T10:30:00.000+0900"
-final restored = EasyDateTime.fromJson(json);
-
-// freezed/json_serializable と組み合わせ - カスタムコンバーターを定義:
 class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
   const EasyDateTimeConverter();
 
@@ -160,56 +173,34 @@ class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
   @override
   String toJson(EasyDateTime object) => object.toJson();
 }
-
-// モデルで使用:
-@freezed
-class Event with _$Event {
-  const factory Event({
-    @EasyDateTimeConverter() required EasyDateTime startTime,
-  }) = _Event;
-
-  factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);
-}
 ```
-
-完全な例は [example/lib/integrations/](example/lib/integrations/) をご覧ください。
-
-
-
-## API リファレンス
-
-### コンストラクタ
-
-| コンストラクタ | 説明 |
-|--------------|------|
-| `EasyDateTime(year, month, day, ...)` | 各要素から作成 |
-| `EasyDateTime.now()` | 現在時刻 |
-| `EasyDateTime.utc(...)` | UTC で作成 |
-| `EasyDateTime.parse(string)` | ISO 8601 を解析 |
-| `EasyDateTime.fromJson(string)` | JSON から解析 |
-
-### タイムゾーンメソッド
-
-| メソッド | 説明 |
-|---------|------|
-| `inLocation(location)` | 指定タイムゾーンに変換 |
-| `inUtc()` | UTC に変換 |
-| `inLocalTime()` | システムローカルに変換 |
-
-### 日付ユーティリティ
-
-| プロパティ/メソッド | 説明 |
-|-------------------|------|
-| `isToday` | 今日かどうか |
-| `isTomorrow` | 明日かどうか |
-| `isYesterday` | 昨日かどうか |
-| `startOfDay` | 当日 00:00:00 |
-| `endOfDay` | 当日 23:59:59 |
-| `startOfMonth` | 月初日 |
-| `endOfMonth` | 月末日 |
 
 ---
 
-## ライセンス
+## 注意点
 
-BSD 2-Clause License
+* `==` は「同じ瞬間」を比較
+* IANA に登録されていないタイムゾーンはエラー
+* `initializeTimeZone()` は必ず最初に呼ぶ
+
+### 安全なユーザー入力解析
+
+```dart
+final dt = EasyDateTime.tryParse(userInput);
+if (dt == null) {
+  print('日付の形式が正しくありません');
+}
+```
+
+---
+
+## 貢献
+
+Issue や PR を歓迎
+`CONTRIBUTING.md` を参照してください
+
+---
+
+## License
+
+BSD 2-Clause

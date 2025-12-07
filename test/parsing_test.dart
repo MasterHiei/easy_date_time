@@ -60,5 +60,34 @@ void main() {
       expect(EasyDateTime.tryParse('  2025-12-01T10:00:00Z  '), isNotNull);
       expect(EasyDateTime.tryParse('  2025/12/01  '), isNotNull);
     });
+
+    test('parse correctly handles uncommon timezone offsets', () {
+      // Nepal time +5:45 - should find matching timezone
+      final nepal = EasyDateTime.parse('2025-12-01T10:00:00+05:45');
+      expect(nepal.hour, 10); // Original hour preserved
+      expect(nepal.locationName, 'Asia/Kathmandu');
+    });
+
+    test('parse throws InvalidTimeZoneException for non-standard offset', () {
+      // +05:17 is not a valid IANA timezone offset
+      expect(
+        () => EasyDateTime.parse('2025-12-01T10:00:00+05:17'),
+        throwsA(isA<InvalidTimeZoneException>()),
+      );
+    });
+
+    test('tryParse returns null for non-standard offset', () {
+      // tryParse should gracefully return null instead of throwing
+      final result = EasyDateTime.tryParse('2025-12-01T10:00:00+05:17');
+      expect(result, isNull);
+    });
+
+    test('parse handles DST offsets correctly', () {
+      // EDT (Eastern Daylight Time) is -04:00
+      final edt = EasyDateTime.parse('2025-07-01T10:00:00-04:00');
+      expect(edt.hour, 10); // Original hour preserved
+      // Should match America/New_York which uses EDT in summer
+      expect(edt.locationName, 'America/New_York');
+    });
   });
 }

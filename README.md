@@ -2,7 +2,7 @@
 
 **Timezone-aware DateTime for Dart**
 
-A straightforward solution for timezone handling in Dart, built on the established `timezone` package.
+A drop-in DateTime alternative with full IANA timezone support. Parse times without surprise UTC conversions.
 
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
 
@@ -12,92 +12,122 @@ A straightforward solution for timezone handling in Dart, built on the establish
 
 ## Why easy_date_time?
 
-- 🌍 **True Timezone Support**: Handle any IANA timezone (e.g., `Asia/Shanghai`, `America/New_York`), not just UTC/Local.
-- 🕒 **Preserves Time**: Parsing `"10:00+08:00"` gives you `10:00`, not `02:00` UTC.
-- 🛠️ **Developer Friendly**: Intuitive operators (`now + 1.days`) and standard JSON serialization.
+Dart's built-in `DateTime` and other solutions have limitations in real-world use:
 
-## Quick Start
+| Package | Strengths | Limitations | Why easy_date_time |
+|---------|-----------|-------------|--------------------|
+| DateTime (built-in) | Simple, zero deps | Only local/UTC; offsets auto-convert to UTC | Keeps your times intact |
+| timezone | Precise IANA support | Verbose API | Cleaner syntax, shortcuts for common zones |
+| intl | Great i18n/formatting | Minimal timezone support | Time and timezone handled separately |
+| flutter_native_timezone | Gets device timezone | No parsing/arithmetic | Parse, compute, and convert in one place |
+
+> **In short**: Less boilerplate, fewer surprises, timezone-aware by default.
+
+**See the difference:**
+
+```dart
+// DateTime: offset is parsed, but time gets converted to UTC
+DateTime.parse('2025-12-07T10:30:00+08:00').hour   // → 2 😕
+
+// EasyDateTime: what you parse is what you get
+EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 ✓
+```
+
+---
+
+## Key Features
+
+* 🌍 **Full Timezone Support**
+  All IANA timezones available (e.g., Asia/Shanghai, America/New_York)
+
+* 🕒 **What You Parse Is What You Get**
+  No automatic UTC conversion behind your back
+
+* ➕ **Readable Arithmetic**
+  `now + 1.days`, `2.hours + 30.minutes`—clean and obvious
+
+* 🔄 **Opt-in Conversion**
+  Timezone changes only when you ask (`.inLocation()`, `.inUtc()`)
+
+* 🧱 **Safe Month/Year Changes**
+  `copyWithClamped()` handles edge cases like Jan 31 → Feb
+
+---
+
+## Installation
+
+Add to `pubspec.yaml`:
 
 ```yaml
 dependencies:
   easy_date_time: ^0.1.0
 ```
 
+Initialize once at app startup:
+
 ```dart
-import 'package:easy_date_time/easy_date_time.dart';
-
 void main() {
-  // 1. Initialize logic (Drivers)
-  initializeTimeZone();
+  initializeTimeZone();  // Required
 
-  // 2. Configure defaults (Policy, optional)
+  // Optional: set default timezone
   setDefaultLocation(TimeZones.shanghai);
 
-  final now = EasyDateTime.now();  // Uses default (Shanghai)
-  print(now);
+  runApp(MyApp());
 }
 ```
 
 ---
 
-## Specifying Timezone
-
-### Method 1: Use `TimeZones` shortcuts (recommended)
+## Quick Start
 
 ```dart
-// Common timezones available as properties
+final now = EasyDateTime.now();                     // Default or local timezone
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
-final shanghai = EasyDateTime.now(location: TimeZones.shanghai);
-final newYork = EasyDateTime.now(location: TimeZones.newYork);
+final parsed = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
 
-// Available: tokyo, shanghai, beijing, hongKong, singapore,
-// newYork, losAngeles, chicago, london, paris, berlin,
-// sydney, auckland, moscow, dubai, mumbai, and more...
-```
-
-### Method 2: Use `getLocation()` for any IANA timezone
-
-```dart
-// For timezones not in TimeZones
-final nairobi = EasyDateTime.now(location: getLocation('Africa/Nairobi'));
-final denver = EasyDateTime.now(location: getLocation('America/Denver'));
-
-// Full list: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-```
-
-### Method 3: Set global default
-
-```dart
-// Set once, applies to all subsequent operations
-setDefaultLocation(TimeZones.shanghai);
-
-final now = EasyDateTime.now();  // Shanghai time
-final dt = EasyDateTime(2025, 12, 25, 10, 30);  // Also Shanghai time
+print(parsed.hour);  // 10
 ```
 
 ---
 
-## Parsing Timestamps
+## Using Timezones
 
-**Time values are preserved** - no automatic conversion:
+### Common Timezones (recommended)
 
 ```dart
-// Parse API response with timezone offset
+final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
+final shanghai = EasyDateTime.now(location: TimeZones.shanghai);
+```
+
+### Any IANA Timezone
+
+```dart
+final nairobi = EasyDateTime.now(location: getLocation('Africa/Nairobi'));
+```
+
+### Global Default
+
+```dart
+setDefaultLocation(TimeZones.shanghai);
+final now = EasyDateTime.now();  // Uses Shanghai time
+```
+
+---
+
+## Preserving Original Time
+
+```dart
 final dt = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
-print(dt.hour);  // 10 (not 2!)
+
+print(dt.hour);          // 10
 print(dt.locationName);  // Asia/Shanghai
+```
 
-// Parse UTC time
-final utc = EasyDateTime.parse('2025-12-07T10:30:00Z');
-print(utc.hour);  // 10
-print(utc.locationName);  // UTC
+Explicit conversion:
 
-// Explicit conversion (only when you ask for it)
-final inNY = EasyDateTime.parse(
-  '2025-12-07T10:30:00Z',
-  location: TimeZones.newYork,
-);
-print(inNY.hour);  // 5 (10 UTC → 5 NY)
+```dart
+final ny = dt.inLocation(TimeZones.newYork);
+final utc = dt.inUtc();
 ```
 
 ---
@@ -106,15 +136,9 @@ print(inNY.hour);  // 5 (10 UTC → 5 NY)
 
 ```dart
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
-
-// Convert to another timezone
 final newYork = tokyo.inLocation(TimeZones.newYork);
 
-// Convert to UTC
-final utc = tokyo.inUtc();
-
-// Same moment, different display
-print(tokyo.isAtSameMoment(newYork));  // true
+print(tokyo.isAtSameMoment(newYork));  // true: same instant
 ```
 
 ---
@@ -123,33 +147,26 @@ print(tokyo.isAtSameMoment(newYork));  // true
 
 ```dart
 final now = EasyDateTime.now();
-
-// Add/subtract with operators
 final tomorrow = now + 1.days;
-final lastWeek = now - 1.weeks;
 final later = now + 2.hours + 30.minutes;
+```
 
-// Compare
-if (tomorrow > now) {
-  print('Future');
-}
+### Preventing Month Overflow
 
-// Calculate difference
-final duration = tomorrow.difference(now);
+```dart
+final jan31 = EasyDateTime.utc(2025, 1, 31);
+
+jan31.copyWith(month: 2);        // March 3rd (overflow)
+jan31.copyWithClamped(month: 2); // Feb 28
 ```
 
 ---
 
-## JSON Serialization
+## JSON & Serialization
 
-Compatible with json_serializable and freezed:
+Works with `json_serializable` / `freezed` via custom converter:
 
 ```dart
-// Manual serialization
-final json = dt.toJson();  // "2025-12-25T10:30:00.000+0900"
-final restored = EasyDateTime.fromJson(json);
-
-// With freezed/json_serializable - define a custom converter:
 class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
   const EasyDateTimeConverter();
 
@@ -159,56 +176,34 @@ class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
   @override
   String toJson(EasyDateTime object) => object.toJson();
 }
+```
 
-// Use in your models:
-@freezed
-class Event with _$Event {
-  const factory Event({
-    @EasyDateTimeConverter() required EasyDateTime startTime,
-  }) = _Event;
+---
 
-  factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);
+## Important Notes
+
+* `==` compares whether two times represent the **same instant**
+* Non-IANA timezone offsets will throw an error
+* Must call `initializeTimeZone()` first
+
+### Safe User Input Parsing
+
+```dart
+final dt = EasyDateTime.tryParse(userInput);
+if (dt == null) {
+  print('Invalid date format');
 }
 ```
 
-See [example/lib/integrations/](example/lib/integrations/) for complete examples.
+---
 
+## Contributing
 
-
-## API Reference
-
-### Constructors
-
-| Constructor | Description |
-|-------------|-------------|
-| `EasyDateTime(year, month, day, ...)` | Create from components |
-| `EasyDateTime.now()` | Current time |
-| `EasyDateTime.utc(...)` | Create in UTC |
-| `EasyDateTime.parse(string)` | Parse ISO 8601 |
-| `EasyDateTime.fromJson(string)` | From JSON |
-
-### Timezone Methods
-
-| Method | Description |
-|--------|-------------|
-| `inLocation(location)` | Convert to timezone |
-| `inUtc()` | Convert to UTC |
-| `inLocalTime()` | Convert to system local |
-
-### Date Utilities
-
-| Property/Method | Description |
-|-----------------|-------------|
-| `isToday` | Is today? |
-| `isTomorrow` | Is tomorrow? |
-| `isYesterday` | Is yesterday? |
-| `startOfDay` | 00:00:00 |
-| `endOfDay` | 23:59:59 |
-| `startOfMonth` | First day of month |
-| `endOfMonth` | Last day of month |
+Issues and PRs welcome.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
 ## License
 
-BSD 2-Clause License
+BSD 2-Clause

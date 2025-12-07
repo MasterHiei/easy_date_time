@@ -306,12 +306,16 @@ void main() {
       expect(today.isYesterday, isFalse);
     });
 
-    test('timezone does not affect isToday check', () {
+    test('isToday is based on local timezone date', () {
+      // isToday compares against "today" in the instance's timezone
+      // So if we get now() in Tokyo, isToday should be true
       final tokyo = EasyDateTime.now(location: getLocation('Asia/Tokyo'));
-      final london = tokyo.inLocation(getLocation('Europe/London'));
+      expect(tokyo.isToday, isTrue);
 
-      // Both represent the same moment
-      expect(tokyo.isToday, equals(london.isToday));
+      // Converting to another timezone doesn't change isToday result
+      // because isToday uses the instance's own timezone for comparison
+      final utc = tokyo.inUtc();
+      expect(utc.isToday, isTrue); // Same moment, also today in UTC
     });
   });
 }

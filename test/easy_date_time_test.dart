@@ -297,14 +297,14 @@ void main() {
         expect(dt1 == dt2, true);
       });
 
-      test('== returns false for different timezones', () {
+      test('== returns true for same moment in different timezones', () {
         final dt1 = EasyDateTime.utc(2025, 12, 1, 9, 0);
         final tokyo = getLocation('Asia/Tokyo');
         final dt2 = EasyDateTime(2025, 12, 1, 18, 0, 0, 0, 0, tokyo);
 
-        // Same moment but different timezone name
+        // Same moment in time, different timezone - should be equal
         expect(dt1.isAtSameMoment(dt2), true);
-        expect(dt1 == dt2, false);
+        expect(dt1 == dt2, true);
       });
     });
 

@@ -67,10 +67,10 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// Creates an [EasyDateTime] from the given components.
   ///
   /// If [location] is not provided, uses the global default timezone
-  /// (set via [setDefaultLocation]) or UTC if no default is set.
+  /// (set via [setDefaultLocation]) or the system's local timezone.
   ///
   /// ```dart
-  /// // Uses global default or UTC
+  /// // Uses global default or local timezone
   /// final dt = EasyDateTime(2025, 12, 25, 10, 30);
   ///
   /// // Explicitly specify timezone
@@ -154,7 +154,7 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// The [dateTime] is interpreted as a moment in time, and the resulting
   /// [EasyDateTime] represents that same moment in the specified [location].
   ///
-  /// If [location] is not provided, uses the global default or UTC.
+  /// If [location] is not provided, uses the global default or local timezone.
   ///
   /// ```dart
   /// final dt = DateTime.utc(2025, 12, 25, 10, 0);
@@ -171,7 +171,7 @@ class EasyDateTime implements Comparable<EasyDateTime> {
 
   /// Creates an [EasyDateTime] from milliseconds since Unix epoch.
   ///
-  /// If [location] is not provided, uses the global default or UTC.
+  /// If [location] is not provided, uses the global default or local timezone.
   factory EasyDateTime.fromMillisecondsSinceEpoch(
     int milliseconds, {
     Location? location,
@@ -186,7 +186,7 @@ class EasyDateTime implements Comparable<EasyDateTime> {
 
   /// Creates an [EasyDateTime] from microseconds since Unix epoch.
   ///
-  /// If [location] is not provided, uses the global default or UTC.
+  /// If [location] is not provided, uses the global default or local timezone.
   factory EasyDateTime.fromMicrosecondsSinceEpoch(
     int microseconds, {
     Location? location,
@@ -268,17 +268,14 @@ class EasyDateTime implements Comparable<EasyDateTime> {
             ));
           }
 
-          // No matching timezone found - use UTC but preserve time values
-          return EasyDateTime._(TZDateTime.utc(
-            originalTime.year,
-            originalTime.month,
-            originalTime.day,
-            originalTime.hour,
-            originalTime.minute,
-            originalTime.second,
-            originalTime.millisecond,
-            originalTime.microsecond,
-          ));
+          // No matching timezone found - throw exception
+          // This indicates invalid or corrupted data with a non-standard offset
+          final offsetStr = _formatOffset(offsetInfo);
+          throw InvalidTimeZoneException(
+            timeZoneId: offsetStr,
+            message: 'No IANA timezone found for offset $offsetStr. '
+                'Valid timezone offsets are defined in the IANA database.',
+          );
         }
       }
 
@@ -329,6 +326,17 @@ class EasyDateTime implements Comparable<EasyDateTime> {
     final minutes = int.parse(match.group(3)!);
 
     return Duration(hours: sign * hours, minutes: sign * minutes);
+  }
+
+  /// Formats a Duration offset as a timezone offset string (e.g., +05:17).
+  static String _formatOffset(Duration offset) {
+    final totalMinutes = offset.inMinutes;
+    final sign = totalMinutes >= 0 ? '+' : '-';
+    final absMinutes = totalMinutes.abs();
+    final hours = absMinutes ~/ 60;
+    final minutes = absMinutes % 60;
+
+    return '$sign${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
   }
 
   /// Extracts original time components from an ISO 8601 string,
@@ -400,22 +408,44 @@ class EasyDateTime implements Comparable<EasyDateTime> {
     }
 
     // Common timezone mappings for efficiency (most used offsets)
+    // When multiple regions share an offset, we pick a representative one.
+    // The fallback search will find others if this one doesn't match.
     final offsetMinutes = offset.inMinutes;
     final commonMappings = <int, String>{
+      // UTC
       0: 'UTC',
-      60: 'Europe/Paris', // CET
-      120: 'Europe/Helsinki', // EET
-      180: 'Europe/Moscow',
-      240: 'Asia/Dubai',
-      330: 'Asia/Kolkata', // +5:30
-      480: 'Asia/Shanghai', // +8
-      540: 'Asia/Tokyo', // +9
-      600: 'Australia/Sydney', // +10
-      720: 'Pacific/Auckland', // +12
-      -300: 'America/New_York', // EST
-      -360: 'America/Chicago', // CST
-      -420: 'America/Denver', // MST
-      -480: 'America/Los_Angeles', // PST
+      // Europe (Standard + DST)
+      60: 'Europe/Paris', // CET (Central European winter)
+      120: 'Europe/Paris', // CEST (Central European summer)
+      180: 'Europe/Moscow', // MSK
+      // Middle East / South Asia
+      240: 'Asia/Dubai', // GST (+4)
+      270: 'Asia/Kabul', // +4:30
+      300: 'Asia/Karachi', // PKT (+5)
+      330: 'Asia/Kolkata', // IST (+5:30)
+      345: 'Asia/Kathmandu', // +5:45
+      360: 'Asia/Dhaka', // BST (+6)
+      390: 'Asia/Yangon', // +6:30
+      420: 'Asia/Bangkok', // ICT (+7)
+      // East Asia
+      480: 'Asia/Shanghai', // CST (+8)
+      540: 'Asia/Tokyo', // JST (+9)
+      570: 'Australia/Adelaide', // ACST (+9:30)
+      // Oceania (Standard + DST)
+      600: 'Australia/Sydney', // AEST (+10)
+      630: 'Australia/Lord_Howe', // +10:30
+      660: 'Pacific/Noumea', // +11
+      720: 'Pacific/Auckland', // NZST (+12)
+      780: 'Pacific/Apia', // +13
+      // Americas (Standard + DST)
+      -180: 'America/Sao_Paulo', // BRT (-3)
+      -240: 'America/New_York', // EDT (summer, -4)
+      -300: 'America/New_York', // EST (winter, -5)
+      -360: 'America/Chicago', // CST (winter, -6)
+      -420: 'America/Denver', // MST (winter, -7)
+      -480: 'America/Los_Angeles', // PST (winter, -8)
+      -540: 'America/Anchorage', // AKST (-9)
+      -600: 'Pacific/Honolulu', // HST (-10)
     };
 
     final mappedName = commonMappings[offsetMinutes];
@@ -662,19 +692,19 @@ class EasyDateTime implements Comparable<EasyDateTime> {
 
   /// Returns `true` if this is before [other].
   bool operator <(EasyDateTime other) =>
-      millisecondsSinceEpoch < other.millisecondsSinceEpoch;
+      microsecondsSinceEpoch < other.microsecondsSinceEpoch;
 
   /// Returns `true` if this is after [other].
   bool operator >(EasyDateTime other) =>
-      millisecondsSinceEpoch > other.millisecondsSinceEpoch;
+      microsecondsSinceEpoch > other.microsecondsSinceEpoch;
 
   /// Returns `true` if this is before or at the same moment as [other].
   bool operator <=(EasyDateTime other) =>
-      millisecondsSinceEpoch <= other.millisecondsSinceEpoch;
+      microsecondsSinceEpoch <= other.microsecondsSinceEpoch;
 
   /// Returns `true` if this is after or at the same moment as [other].
   bool operator >=(EasyDateTime other) =>
-      millisecondsSinceEpoch >= other.millisecondsSinceEpoch;
+      microsecondsSinceEpoch >= other.microsecondsSinceEpoch;
 
   // ============================================================
   // Comparison
@@ -682,22 +712,22 @@ class EasyDateTime implements Comparable<EasyDateTime> {
 
   /// Returns `true` if this is before [other].
   bool isBefore(EasyDateTime other) =>
-      millisecondsSinceEpoch < other.millisecondsSinceEpoch;
+      microsecondsSinceEpoch < other.microsecondsSinceEpoch;
 
   /// Returns `true` if this is after [other].
   bool isAfter(EasyDateTime other) =>
-      millisecondsSinceEpoch > other.millisecondsSinceEpoch;
+      microsecondsSinceEpoch > other.microsecondsSinceEpoch;
 
   /// Returns `true` if this and [other] represent the same moment in time.
   ///
   /// Two [EasyDateTime]s can be at the same moment even if they are in
   /// different timezones.
   bool isAtSameMoment(EasyDateTime other) =>
-      millisecondsSinceEpoch == other.millisecondsSinceEpoch;
+      microsecondsSinceEpoch == other.microsecondsSinceEpoch;
 
   @override
   int compareTo(EasyDateTime other) {
-    return millisecondsSinceEpoch.compareTo(other.millisecondsSinceEpoch);
+    return microsecondsSinceEpoch.compareTo(other.microsecondsSinceEpoch);
   }
 
   // ============================================================
@@ -750,12 +780,11 @@ class EasyDateTime implements Comparable<EasyDateTime> {
     if (identical(this, other)) return true;
 
     return other is EasyDateTime &&
-        millisecondsSinceEpoch == other.millisecondsSinceEpoch &&
-        locationName == other.locationName;
+        microsecondsSinceEpoch == other.microsecondsSinceEpoch;
   }
 
   @override
-  int get hashCode => Object.hash(millisecondsSinceEpoch, locationName);
+  int get hashCode => microsecondsSinceEpoch.hashCode;
 
   // ============================================================
   // Utility Methods
@@ -763,10 +792,18 @@ class EasyDateTime implements Comparable<EasyDateTime> {
 
   /// Creates a copy of this [EasyDateTime] with the specified fields replaced.
   ///
+  /// **Note:** This method follows Dart's [DateTime] overflow behavior.
+  /// If the resulting date is invalid (e.g., February 31), it will overflow
+  /// to the next valid date.
+  ///
   /// ```dart
-  /// final dt = EasyDateTime.now();
-  /// final nextMonth = dt.copyWith(month: dt.month + 1);
+  /// final jan31 = EasyDateTime.utc(2025, 1, 31);
+  /// final feb = jan31.copyWith(month: 2);
+  /// print(feb);  // 2025-03-03 (Feb 31 overflows to Mar 3)
   /// ```
+  ///
+  /// For month/year changes that should clamp to valid dates, use
+  /// [copyWithClamped] instead.
   EasyDateTime copyWith({
     Location? location,
     int? year,
@@ -782,6 +819,64 @@ class EasyDateTime implements Comparable<EasyDateTime> {
       year ?? this.year,
       month ?? this.month,
       day ?? this.day,
+      hour ?? this.hour,
+      minute ?? this.minute,
+      second ?? this.second,
+      millisecond ?? this.millisecond,
+      microsecond ?? this.microsecond,
+      location ?? this.location,
+    );
+  }
+
+  /// Creates a copy with the day clamped to the valid range for the target month.
+  ///
+  /// Unlike [copyWith], this method ensures the resulting date is always valid
+  /// by clamping the day to the last day of the target month if necessary.
+  ///
+  /// ```dart
+  /// final jan31 = EasyDateTime.utc(2025, 1, 31);
+  ///
+  /// // copyWith overflows
+  /// print(jan31.copyWith(month: 2));        // 2025-03-03
+  ///
+  /// // copyWithClamped clamps to month end
+  /// print(jan31.copyWithClamped(month: 2)); // 2025-02-28
+  /// print(jan31.copyWithClamped(month: 4)); // 2025-04-30
+  /// ```
+  ///
+  /// This is useful for month/year arithmetic where you want to stay within
+  /// the target month:
+  ///
+  /// ```dart
+  /// final date = EasyDateTime.utc(2025, 1, 31);
+  /// final nextMonth = date.copyWithClamped(month: date.month + 1);
+  /// print(nextMonth);  // 2025-02-28 (not March!)
+  /// ```
+  EasyDateTime copyWithClamped({
+    Location? location,
+    int? year,
+    int? month,
+    int? day,
+    int? hour,
+    int? minute,
+    int? second,
+    int? millisecond,
+    int? microsecond,
+  }) {
+    final targetYear = year ?? this.year;
+    final targetMonth = month ?? this.month;
+    final targetDay = day ?? this.day;
+
+    // Calculate the last day of the target month
+    final lastDayOfMonth = DateTime(targetYear, targetMonth + 1, 0).day;
+
+    // Clamp the day to valid range
+    final clampedDay = targetDay > lastDayOfMonth ? lastDayOfMonth : targetDay;
+
+    return EasyDateTime(
+      targetYear,
+      targetMonth,
+      clampedDay,
       hour ?? this.hour,
       minute ?? this.minute,
       second ?? this.second,
