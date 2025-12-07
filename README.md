@@ -60,7 +60,7 @@ Add to `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.1.0
+  easy_date_time: ^0.1.1
 ```
 
 Initialize once at app startup:
