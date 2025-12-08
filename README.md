@@ -2,7 +2,7 @@
 
 **Timezone-aware DateTime for Dart**
 
-A drop-in DateTime alternative with full IANA timezone support. Parse times without surprise UTC conversions.
+A drop-in DateTime alternative with full IANA timezone support. Designed to parse and maintain timezone information accurately without implicit UTC conversions.
 
 [![Build Status](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml)
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
@@ -14,64 +14,62 @@ A drop-in DateTime alternative with full IANA timezone support. Parse times with
 
 ## Why easy_date_time?
 
-Dart's built-in `DateTime` and other solutions have limitations in real-world use:
+Dart's built-in `DateTime` and existing libraries often face limitations when handling complex timezone scenarios:
 
-| Package                 | Strengths             | Limitations                                 | Why easy_date_time                         |
-|-------------------------|-----------------------|---------------------------------------------|--------------------------------------------|
-| DateTime (built-in)     | Simple, zero deps     | Only local/UTC; offsets auto-convert to UTC | Keeps your times intact                    |
-| timezone                | Precise IANA support  | Verbose API                                 | Cleaner syntax, shortcuts for common zones |
-| intl                    | Great i18n/formatting | Minimal timezone support                    | Time and timezone handled separately       |
-| flutter_native_timezone | Gets device timezone  | No parsing/arithmetic                       | Parse, compute, and convert in one place   |
+| Existing Solution | Strengths | Limitations | EasyDateTime Approach |
+|-------------------|-----------|-------------|-----------------------|
+| **DateTime** (Built-in) | Standard, zero dependencies | Auto-converts offsets to UTC/Local, **loses timezone context** | **Preserves Semantics**: Retains the exact parsed time and offset. |
+| **timezone** | Full IANA support | Complex API, requires looking up zone strings | **Usability**: providing constants for common timezones. |
+| **intl** | Excellent for formatting | Primarily for display, lacks calculation features | **Separation of Concerns**: specialized in calculation, works with intl. |
+| **flutter_native_timezone** | Access system timezone | Fetch only, no calculation capabilities | **Comprehensive**: A complete solution for parsing, calculating, and converting. |
 
-> **In short**: Less boilerplate, fewer surprises, timezone-aware by default.
-
-**See the difference:**
+**Comparison:**
 
 ```dart
-// DateTime: offset is parsed, but time gets converted to UTC
-DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2 😕
+// DateTime: Parses offset but converts to UTC, changing the hour value
+DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2 (Context lost)
 
-// EasyDateTime: what you parse is what you get
-EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 ✓
+// EasyDateTime: Retains the parsed time value
+EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 (As expected)
 ```
 
 ---
 
 ## Key Features
 
-* 🌍 **Full Timezone Support**
-  All IANA timezones available (e.g., Asia/Shanghai, America/New_York)
+* 🌍 **Full IANA Timezone Support**
+  Support for all IANA timezones (e.g., `Asia/Shanghai`, `America/New_York`) with a simple API.
 
-* 🕒 **What You Parse Is What You Get**
-  No automatic UTC conversion behind your back
+* 🕒 **Preserves Parsed Values**
+  No implicit conversion to UTC. The time you parse is the time stored.
 
-* ➕ **Readable Arithmetic**
-  `now + 1.days`, `2.hours + 30.minutes`—clean and obvious
+* ➕ **Intuitive Arithmetic**
+  Supports natural arithmetic extensions like `now + 1.days` or `2.hours`.
 
-* 🔄 **Opt-in Conversion**
-  Timezone changes only when you ask (`.inLocation()`, `.toUtc()`)
+* 🔄 **Explicit Conversion**
+  Timezone conversion only happens when explicitly requested via `.inLocation()` or `.toUtc()`.
 
-* 🧱 **Safe Month/Year Changes**
-  `copyWithClamped()` handles edge cases like Jan 31 → Feb
+* 🧱 **Safe Date Calculation**
+  Handles month/year overflows gracefully (e.g., Jan 31 + 1 month -> Feb 28) with `copyWithClamped`.
 
 ---
 
 ## Installation
 
-Add to `pubspec.yaml`:
+Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
   easy_date_time: ^0.2.0
 ```
 
-Initialize once at app startup:
+**Note**: You **must** initialize the timezone database before using the library to ensure accuracy:
 
 ```dart
 void main() {
   initializeTimeZone();  // Required
 
-  // Optional: set default timezone
+  // Optional: Set a global default location
   setDefaultLocation(TimeZones.shanghai);
 
   runApp(MyApp());
@@ -83,7 +81,7 @@ void main() {
 ## Quick Start
 
 ```dart
-final now = EasyDateTime.now();  // Default or local timezone
+final now = EasyDateTime.now();  // Uses default or local timezone
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
 final parsed = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
 
@@ -92,31 +90,39 @@ print(parsed.hour);  // 10
 
 ---
 
-## Using Timezones
+## Working with Timezones
 
-### Common Timezones (recommended)
+### 1. Common Timezones (Recommended)
+
+Pre-defined constants are available for common timezones:
 
 ```dart
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
 final shanghai = EasyDateTime.now(location: TimeZones.shanghai);
 ```
 
-### Any IANA Timezone
+### 2. Custom IANA Timezones
+
+You can also use standard IANA strings:
 
 ```dart
 final nairobi = EasyDateTime.now(location: getLocation('Africa/Nairobi'));
 ```
 
-### Global Default
+### 3. Global Default Timezone
+
+Setting a default location allows `EasyDateTime.now()` to use that timezone globally:
 
 ```dart
 setDefaultLocation(TimeZones.shanghai);
-final now = EasyDateTime.now();  // Uses Shanghai time
+final now = EasyDateTime.now();  // Returns time in Asia/Shanghai
 ```
 
 ---
 
-## Preserving Original Time
+## Preserving Time Semantics
+
+Even when parsing strings with offsets, `EasyDateTime` preserves both the literal time and the timezone location:
 
 ```dart
 final dt = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
@@ -125,7 +131,7 @@ print(dt.hour);          // 10
 print(dt.locationName);  // Asia/Shanghai
 ```
 
-Explicit conversion:
+To convert timezones, use explicit methods:
 
 ```dart
 final ny = dt.inLocation(TimeZones.newYork);
@@ -136,11 +142,13 @@ final utc = dt.toUtc();
 
 ## Timezone Conversion
 
+Comparing the same instant across different timezones:
+
 ```dart
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
 final newYork = tokyo.inLocation(TimeZones.newYork);
 
-print(tokyo.isAtSameMomentAs(newYork));  // true: same instant
+print(tokyo.isAtSameMomentAs(newYork));  // true: Represents the same absolute instant
 ```
 
 ---
@@ -153,22 +161,22 @@ final tomorrow = now + 1.days;
 final later = now + 2.hours + 30.minutes;
 ```
 
-### Preventing Month Overflow
+### Handling Month Overflow
+
+`EasyDateTime` provides safe handling for month overflows:
 
 ```dart
 final jan31 = EasyDateTime.utc(2025, 1, 31);
 
-jan31.copyWith(month: 2);        // March 3rd (overflow)
-jan31.copyWithClamped(month: 2); // Feb 28
-```
-
+jan31.copyWith(month: 2);        // March 3rd (Standard overflow behavior)
+jan31.copyWithClamped(month: 2); // Feb 28 (Clamped to the last day of the month)
 ```
 
 ---
 
 ## Extension Handling
 
-This package includes handy extensions on `int` (e.g., `1.days`). If this conflicts with other packages, you can hide it:
+This package includes extensions on `int` (e.g., `1.days`). If this conflicts with other packages, specialized imports can hide the extension:
 
 ```dart
 import 'package:easy_date_time/easy_date_time.dart' hide DurationExtension;
@@ -178,7 +186,7 @@ import 'package:easy_date_time/easy_date_time.dart' hide DurationExtension;
 
 ## JSON & Serialization
 
-Works with `json_serializable` / `freezed` via custom converter:
+Compatible with `json_serializable` and `freezed` via a custom converter:
 
 ```dart
 class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
@@ -196,11 +204,13 @@ class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
 
 ## Important Notes
 
-* `==` compares whether two times represent the **same instant**
-* Non-IANA timezone offsets will throw an error
-* Must call `initializeTimeZone()` first
+* `==` calculates equality based on the **absolute instant**, ignoring timezone differences.
+* Only valid IANA timezone offsets are supported; non-standard offsets will throw an error.
+* `initializeTimeZone()` must be called before use.
 
-### Safe User Input Parsing
+### Parsing User Input
+
+Use `tryParse` for handling potentially invalid user input safely:
 
 ```dart
 final dt = EasyDateTime.tryParse(userInput);
@@ -213,8 +223,8 @@ if (dt == null) {
 
 ## Contributing
 
-Issues and PRs welcome.
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Issues and Pull Requests are welcome.
+Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
