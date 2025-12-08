@@ -53,7 +53,8 @@ void main() {
       '  shanghai.isAtSameMomentAs(tokyo):   ${shanghai.isAtSameMomentAs(tokyo)}');
   print(
       '  shanghai.isAtSameMomentAs(newYork): ${shanghai.isAtSameMomentAs(newYork)}');
-  print('  shanghai.isAtSameMomentAs(utc):     ${shanghai.isAtSameMomentAs(utc)}');
+  print(
+      '  shanghai.isAtSameMomentAs(utc):     ${shanghai.isAtSameMomentAs(utc)}');
   print('');
 
   // --------------------------------------------------------
