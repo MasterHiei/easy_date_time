@@ -5,17 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - 2025-12-09
+
+### Fixed
+- Fixed formatting in `CHANGELOG.md`.
+- Updated documentation installation instructions to latest version.
+
 ## [0.2.1] - 2025-12-09
 
-- Documentation improvements
+### Fixed
+- Updated example code to use `fromIso8601String` instead of removed APIs.
 
-## [0.2.1] - 2025-12-09
-
-- Documentation improvements
-- Example updates:
-    - Fixed usage of removed `fromJson` API in examples.
-- CI/CD:
-    - Added validation step for example code.
+### Changed
+- Standardized documentation tone and navigation across all languages.
+- Added CI validation for example code.
 
 ## [0.2.0] - 2025-12-08
 
