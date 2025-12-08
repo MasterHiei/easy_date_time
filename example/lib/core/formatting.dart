@@ -25,7 +25,7 @@ void main() {
   print('  toIso8601String(): ${dt.toIso8601String()}');
   print('  toDateString():    ${dt.toDateString()}');
   print('  toTimeString():    ${dt.toTimeString()}');
-  print('  toJson():          ${dt.toJson()}');
+  print('  toJson():          ${dt.toIso8601String()}');
   print('');
 
   // --------------------------------------------------------

@@ -1,9 +1,13 @@
-/// 用户场景模拟测试
-/// 模拟真实用户的使用流程，确保核心场景被测试覆盖
+/// User Scenario Tests
+///
+/// Simulates real user workflows to ensure core scenarios are properly tested.
+/// Each scenario represents a common use case that developers encounter
+/// when working with date/time in production applications.
 library;
 
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 void main() {
   setUpAll(() {
@@ -14,17 +18,17 @@ void main() {
     clearDefaultLocation();
   });
 
-  group('场景1: Flutter 应用启动', () {
-    test('初始化后获取当前时间', () {
-      // 用户: 在 main() 中调用 initializeTimeZone() 后获取当前时间
+  group('Scenario 1: Flutter App Startup', () {
+    test('gets current time after initialization', () {
+      // User: calls initializeTimeZone() in main(), then gets current time
       final now = EasyDateTime.now();
 
       expect(now, isNotNull);
       expect(now.year, greaterThanOrEqualTo(2024));
     });
 
-    test('设置全局默认时区', () {
-      // 用户: 设置应用默认时区为上海
+    test('sets global default timezone', () {
+      // User: sets app default timezone to Shanghai for a China-focused app
       setDefaultLocation(TimeZones.shanghai);
       final now = EasyDateTime.now();
 
@@ -32,10 +36,10 @@ void main() {
     });
   });
 
-  group('场景2: API 响应处理', () {
-    test('解析后端返回的 ISO 8601 时间 (带时区)', () {
-      // 后端返回: "2025-12-07T10:30:00+08:00"
-      // 用户期望: hour=10, 不被转换
+  group('Scenario 2: API Response Handling', () {
+    test('parses backend ISO 8601 datetime with timezone offset', () {
+      // Backend returns: "2025-12-07T10:30:00+08:00"
+      // User expects: hour=10, not converted to local time
       const apiResponse = '2025-12-07T10:30:00+08:00';
       final dt = EasyDateTime.parse(apiResponse);
 
@@ -43,8 +47,8 @@ void main() {
       expect(dt.minute, 30);
     });
 
-    test('解析后端返回的 UTC 时间', () {
-      // 后端返回: "2025-12-07T02:30:00Z"
+    test('parses backend UTC datetime', () {
+      // Backend returns: "2025-12-07T02:30:00Z"
       const apiResponse = '2025-12-07T02:30:00Z';
       final dt = EasyDateTime.parse(apiResponse);
 
@@ -52,44 +56,44 @@ void main() {
       expect(dt.locationName, 'UTC');
     });
 
-    test('解析失败时返回 null (tryParse)', () {
-      // 用户: 处理可能无效的输入
+    test('returns null for invalid input (tryParse)', () {
+      // User: safely handles potentially invalid input from API
       const invalidInput = 'not-a-date';
       final dt = EasyDateTime.tryParse(invalidInput);
 
       expect(dt, isNull);
     });
 
-    test('JSON 序列化往返', () {
-      // 用户: 与 json_serializable 配合使用
+    test('JSON serialization roundtrip', () {
+      // User: uses with json_serializable or manual JSON encoding
       final original = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
-      final json = original.toJson();
-      final restored = EasyDateTime.fromJson(json);
+      final json = original.toIso8601String();
+      final restored = EasyDateTime.fromIso8601String(json);
 
-      expect(restored.isAtSameMoment(original), isTrue);
+      expect(restored.isAtSameMomentAs(original), isTrue);
     });
   });
 
-  group('场景3: 电商应用-活动时间处理', () {
-    test('判断活动是否开始', () {
-      // 用户: 判断当前时间是否在活动开始之后
-      final activityStart = EasyDateTime(2020, 1, 1, 0, 0);
+  group('Scenario 3: E-Commerce App - Promotion Time Handling', () {
+    test('checks if promotion has started', () {
+      // User: determines if current time is after promotion start
+      final promotionStart = EasyDateTime(2020, 1, 1, 0, 0);
       final now = EasyDateTime.now();
 
-      expect(now.isAfter(activityStart), isTrue);
+      expect(now.isAfter(promotionStart), isTrue);
     });
 
-    test('计算活动剩余时间', () {
-      // 用户: 计算距离活动结束还有多久
-      final activityEnd = EasyDateTime(2099, 12, 31, 23, 59, 59);
+    test('calculates remaining time until promotion ends', () {
+      // User: shows countdown timer for promotion end
+      final promotionEnd = EasyDateTime(2099, 12, 31, 23, 59, 59);
       final now = EasyDateTime.now();
-      final remaining = activityEnd.difference(now);
+      final remaining = promotionEnd.difference(now);
 
       expect(remaining.inDays, greaterThan(0));
     });
 
-    test('判断今日是否是活动日', () {
-      // 用户: 判断某个日期是否是今天
+    test('checks if today is a promotion day', () {
+      // User: shows special UI for today's promotions
       final now = EasyDateTime.now();
 
       expect(now.isToday, isTrue);
@@ -98,8 +102,9 @@ void main() {
     });
   });
 
-  group('场景4: 日历应用-日期操作', () {
-    test('获取某日的开始和结束时间', () {
+  group('Scenario 4: Calendar App - Date Operations', () {
+    test('gets start and end of a day', () {
+      // User: queries events within a specific day
       final dt = EasyDateTime(2025, 12, 7, 15, 30);
 
       final startOfDay = dt.startOfDay;
@@ -112,17 +117,19 @@ void main() {
       expect(endOfDay.second, 59);
     });
 
-    test('获取月初和月末', () {
+    test('gets first and last day of month', () {
+      // User: shows monthly calendar view
       final dt = EasyDateTime(2025, 2, 15);
 
       final startOfMonth = dt.startOfMonth;
       final endOfMonth = dt.endOfMonth;
 
       expect(startOfMonth.day, 1);
-      expect(endOfMonth.day, 28); // 2025年2月非闰年
+      expect(endOfMonth.day, 28); // 2025 February is not a leap year
     });
 
-    test('跳转到明天/昨天', () {
+    test('navigates to tomorrow and yesterday', () {
+      // User: implements day navigation in calendar
       final today = EasyDateTime(2025, 12, 7, 10, 30);
 
       final tomorrow = today.tomorrow;
@@ -132,7 +139,8 @@ void main() {
       expect(yesterday.day, 6);
     });
 
-    test('使用 Duration 添加时间', () {
+    test('adds duration for scheduling', () {
+      // User: schedules a meeting 2.5 hours from now
       final dt = EasyDateTime(2025, 12, 7, 10, 0);
       final later = dt + const Duration(hours: 2, minutes: 30);
 
@@ -141,9 +149,9 @@ void main() {
     });
   });
 
-  group('场景5: 国际化应用-时区转换', () {
-    test('将本地时间转换为其他时区', () {
-      // 用户: 在上海，想知道纽约的对应时间
+  group('Scenario 5: International App - Timezone Conversion', () {
+    test('converts local time to another timezone', () {
+      // User: in Shanghai, wants to know corresponding time in New York
       final shanghai = EasyDateTime(
         2025,
         12,
@@ -157,12 +165,13 @@ void main() {
       );
       final newYork = shanghai.inLocation(TimeZones.newYork);
 
-      // 上海 20:00 = UTC 12:00 = 纽约 07:00 (冬令时 EST)
+      // Shanghai 20:00 = UTC 12:00 = New York 07:00 (EST winter time)
       expect(newYork.hour, 7);
-      expect(shanghai.isAtSameMoment(newYork), isTrue);
+      expect(shanghai.isAtSameMomentAs(newYork), isTrue);
     });
 
-    test('转换为 UTC', () {
+    test('converts to UTC for API requests', () {
+      // User: sends UTC time to backend regardless of local timezone
       final tokyo = EasyDateTime(
         2025,
         12,
@@ -174,27 +183,29 @@ void main() {
         0,
         TimeZones.tokyo,
       );
-      final utc = tokyo.inUtc();
+      final utc = tokyo.toUtc();
 
       expect(utc.hour, 12); // Tokyo 21:00 = UTC 12:00
       expect(utc.locationName, 'UTC');
     });
   });
 
-  group('场景6: 数据存储和比较', () {
-    test('获取时间戳用于数据库存储', () {
+  group('Scenario 6: Data Storage and Comparison', () {
+    test('gets timestamp for database storage', () {
+      // User: stores datetime as integer in SQLite/shared_preferences
       final dt = EasyDateTime.utc(2025, 1, 1, 0, 0);
       final timestamp = dt.millisecondsSinceEpoch;
 
-      // 可以存储到数据库
+      // Can store to database
       expect(timestamp, isPositive);
 
-      // 可以还原
+      // Can restore from database
       final restored = EasyDateTime.fromMillisecondsSinceEpoch(timestamp);
-      expect(restored.isAtSameMoment(dt), isTrue);
+      expect(restored.isAtSameMomentAs(dt), isTrue);
     });
 
-    test('比较两个时间', () {
+    test('compares two datetimes', () {
+      // User: sorts events by time or checks order
       final earlier = EasyDateTime(2025, 12, 7, 10, 0);
       final later = EasyDateTime(2025, 12, 7, 11, 0);
 
@@ -204,7 +215,8 @@ void main() {
       expect(later >= earlier, isTrue);
     });
 
-    test('判断两个时间是否相等', () {
+    test('checks datetime equality', () {
+      // User: checks if two events are at the same time
       final dt1 = EasyDateTime.utc(2025, 12, 7, 10, 30);
       final dt2 = EasyDateTime.utc(2025, 12, 7, 10, 30);
 
@@ -212,8 +224,9 @@ void main() {
     });
   });
 
-  group('场景7: 与标准 DateTime 互操作', () {
-    test('从 DateTime 转换', () {
+  group('Scenario 7: Standard DateTime Interoperability', () {
+    test('converts from DateTime', () {
+      // User: has existing DateTime from third-party library
       final stdDt = DateTime(2025, 12, 7, 10, 30);
       final easyDt = stdDt.toEasyDateTime();
 
@@ -222,7 +235,8 @@ void main() {
       expect(easyDt.day, 7);
     });
 
-    test('转换回 DateTime', () {
+    test('converts back to DateTime', () {
+      // User: needs DateTime for third-party library that doesn't support EasyDateTime
       final easyDt = EasyDateTime(2025, 12, 7, 10, 30);
       final stdDt = easyDt.toDateTime();
 
@@ -231,42 +245,47 @@ void main() {
     });
   });
 
-  group('场景8: copyWith 修改部分字段', () {
-    test('修改时间保持日期', () {
+  group('Scenario 8: Partial Field Modification with copyWith', () {
+    test('modifies time while preserving date', () {
+      // User: reschedules meeting to different time on same day
       final dt = EasyDateTime(2025, 12, 7, 10, 30);
       final newDt = dt.copyWith(hour: 15, minute: 45);
 
-      expect(newDt.day, 7); // 日期不变
-      expect(newDt.hour, 15); // 时间变了
+      expect(newDt.day, 7); // Date unchanged
+      expect(newDt.hour, 15); // Time changed
       expect(newDt.minute, 45);
     });
 
-    test('修改日期保持时间', () {
+    test('modifies date while preserving time', () {
+      // User: moves recurring meeting to different date
       final dt = EasyDateTime(2025, 12, 7, 10, 30);
       final newDt = dt.copyWith(month: 6, day: 15);
 
       expect(newDt.month, 6);
       expect(newDt.day, 15);
-      expect(newDt.hour, 10); // 时间不变
+      expect(newDt.hour, 10); // Time unchanged
     });
   });
 
-  group('场景9: 格式化输出', () {
-    test('获取日期字符串', () {
+  group('Scenario 9: Formatting for Display', () {
+    test('gets date string for UI', () {
+      // User: displays date in list item or header
       final dt = EasyDateTime(2025, 12, 7, 10, 30);
       final dateStr = dt.toDateString();
 
       expect(dateStr, '2025-12-07');
     });
 
-    test('获取时间字符串', () {
+    test('gets time string for UI', () {
+      // User: displays time in schedule view
       final dt = EasyDateTime(2025, 12, 7, 10, 30, 45);
       final timeStr = dt.toTimeString();
 
       expect(timeStr, '10:30:45');
     });
 
-    test('获取 ISO 8601 字符串', () {
+    test('gets ISO 8601 string for API', () {
+      // User: sends datetime to backend in standard format
       final dt = EasyDateTime.utc(2025, 12, 7, 10, 30);
       final isoStr = dt.toIso8601String();
 
@@ -275,19 +294,51 @@ void main() {
     });
   });
 
-  group('场景10: 错误处理', () {
-    test('无效日期格式抛出异常', () {
+  group('Scenario 10: Error Handling', () {
+    test('throws exception for invalid date format', () {
+      // User: handles parsing errors from user input
       expect(
         () => EasyDateTime.parse('invalid-date'),
         throwsA(isA<InvalidDateFormatException>()),
       );
     });
 
-    test('无效时区抛出异常', () {
+    test('throws exception for invalid timezone', () {
+      // User: handles invalid timezone from configuration
       expect(
         () => getLocation('Invalid/Zone'),
-        throwsA(anything), // getLocation throws LocationNotFoundException
+        throwsA(isA<tz.LocationNotFoundException>()),
       );
+    });
+  });
+
+  group('Scenario 11: Leap Year and Month Boundary Handling', () {
+    test('handles leap year February correctly', () {
+      // User: schedules recurring event on Feb 29
+      final leapYear = EasyDateTime(2024, 2, 29);
+      expect(leapYear.day, 29);
+
+      // Moving to non-leap year with copyWithClamped
+      final nextYear = leapYear.copyWithClamped(year: 2025);
+      expect(nextYear.day, 28); // Clamped to Feb 28
+    });
+
+    test('handles month-end overflow with copyWith', () {
+      // User: moves event from Jan 31 to February
+      final jan31 = EasyDateTime(2025, 1, 31);
+      final feb = jan31.copyWith(month: 2);
+
+      // Standard copyWith allows overflow (like DateTime)
+      expect(feb.month, 3); // Overflows to March 3
+    });
+
+    test('handles month-end with copyWithClamped', () {
+      // User: wants safe month navigation without overflow
+      final jan31 = EasyDateTime(2025, 1, 31);
+      final feb = jan31.copyWithClamped(month: 2);
+
+      expect(feb.month, 2);
+      expect(feb.day, 28); // Clamped to last day of February
     });
   });
 }

@@ -1,6 +1,6 @@
 name: easy_date_time
 description: A drop-in DateTime alternative with full IANA timezone support.
-version: 0.1.2
+version: 0.2.0
 homepage: https://github.com/MasterHiei/easy_date_time
 repository: https://github.com/MasterHiei/easy_date_time
 issue_tracker: https://github.com/MasterHiei/easy_date_time/issues

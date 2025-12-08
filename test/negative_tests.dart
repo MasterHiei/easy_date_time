@@ -213,7 +213,7 @@ void main() {
           EasyDateTime(2025, 6, 15, 20, 0, 0, 0, 0, getLocation('Asia/Tokyo'));
       final london = tokyo.inLocation(getLocation('Europe/London'));
 
-      expect(tokyo.isAtSameMoment(london), isTrue);
+      expect(tokyo.isAtSameMomentAs(london), isTrue);
     });
   });
 
@@ -314,7 +314,7 @@ void main() {
 
       // Converting to another timezone doesn't change isToday result
       // because isToday uses the instance's own timezone for comparison
-      final utc = tokyo.inUtc();
+      final utc = tokyo.toUtc();
       expect(utc.isToday, isTrue); // Same moment, also today in UTC
     });
   });

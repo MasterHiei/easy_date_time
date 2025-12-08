@@ -5,7 +5,9 @@
 Dart 標準の `DateTime` では UTC とローカルしか扱えず、タイムゾーン付きの文字列を扱うと勝手に UTC に変換されてしまうことがあります。
 `EasyDateTime` を使えば、入力した時間をそのまま保持しつつ、任意のタイムゾーンでの表示や計算が簡単に行えます。
 
+[![Build Status](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml)
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
+[![codecov](https://codecov.io/gh/MasterHiei/easy_date_time/branch/main/graph/badge.svg)](https://codecov.io/gh/MasterHiei/easy_date_time)
 
 ---
 
@@ -16,7 +18,7 @@ Dart 標準の DateTime や他のライブラリは、実務で少し不便な�
 | ライブラリ                | メリット             | 制約                                       | easy_date_time の強み          |
 | ----------------------- | ---------------- | ---------------------------------------- | ------------------------------ |
 | DateTime（標準）          | シンプル、依存なし     | UTC とローカルのみ、タイムゾーン付き文字列を解析すると UTC に変換される | 入力した時間を保持、任意のタイムゾーンで扱える |
-| timezone                | 正確な IANA タイムゾーン | 初期化が必要で API が複雑                          | よく使うタイムゾーンは簡単に利用可能、API がシンプル |
+| timezone                | 正確な IANA タイムゾーン | API が複雑                                    | よく使うタイムゾーンは簡単に利用可能、API がシンプル |
 | intl                    | フォーマットや国際化機能が充実 | タイムゾーン管理は限定的                             | 時間とタイムゾーンを分けて管理でき、操作が分かりやすい |
 | flutter_native_timezone | デバイスのタイムゾーン取得が簡単 | 時間計算や解析は不可                               | 解析・加減算・タイムゾーン変換がすべて対応      |
 
@@ -46,7 +48,7 @@ EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 ✓
   `now + 1.days`、`2.hours` など自然な書き方で操作可能
 
 * 🔄 **明示的なタイムゾーン変換**
-  `.inLocation()` または `.inUtc()` を呼ぶ時だけ変換されます
+  `.inLocation()` または `.toUtc()` を呼ぶ時だけ変換されます
 
 * 🧱 **安全に日付を変更**
   `copyWithClamped()` で月や日を超えないよう調整可能
@@ -59,7 +61,7 @@ EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 ✓
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.1.2
+  easy_date_time: ^0.2.0
 ```
 
 アプリ起動時に一度だけ初期化：
@@ -126,7 +128,7 @@ print(dt.locationName);  // Asia/Shanghai
 
 ```dart
 final ny = dt.inLocation(TimeZones.newYork);
-final utc = dt.inUtc();
+final utc = dt.toUtc();
 ```
 
 ---
@@ -137,7 +139,7 @@ final utc = dt.inUtc();
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
 final newYork = tokyo.inLocation(TimeZones.newYork);
 
-print(tokyo.isAtSameMoment(newYork)); // true：同じ瞬間
+print(tokyo.isAtSameMomentAs(newYork)); // true：同じ瞬間
 ```
 
 ---
@@ -159,6 +161,18 @@ jan31.copyWith(month: 2);        // 3月3日（オーバーフロー）
 jan31.copyWithClamped(month: 2); // 2月28日
 ```
 
+```
+
+---
+
+## 拡張機能の競合について
+
+このパッケージには、開発体験向上のために便利な `int` の拡張機能（`1.days` など）が含まれています。他のパッケージと競合する場合は、以下のように隠すことができます：
+
+```dart
+import 'package:easy_date_time/easy_date_time.dart' hide DurationExtension;
+```
+
 ---
 
 ## JSON / シリアライズ対応
@@ -168,10 +182,10 @@ class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
   const EasyDateTimeConverter();
 
   @override
-  EasyDateTime fromJson(String json) => EasyDateTime.fromJson(json);
+  EasyDateTime fromJson(String json) => EasyDateTime.fromIso8601String(json);
 
   @override
-  String toJson(EasyDateTime object) => object.toJson();
+  String toJson(EasyDateTime object) => object.toIso8601String();
 }
 ```
 

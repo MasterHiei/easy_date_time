@@ -208,7 +208,7 @@ void main() {
         expect(ny.locationName, 'America/New_York');
       });
 
-      test('inUtc preserves moment', () {
+      test('toUtc preserves moment', () {
         final tokyo = EasyDateTime(
           2025,
           12,
@@ -220,7 +220,7 @@ void main() {
           0,
           TimeZones.tokyo,
         );
-        final utc = tokyo.inUtc();
+        final utc = tokyo.toUtc();
 
         expect(tokyo.microsecondsSinceEpoch, utc.microsecondsSinceEpoch);
         expect(utc.locationName, 'UTC');
@@ -318,6 +318,28 @@ void main() {
         expect(dt.year, 2025);
         expect(dt.month, 1);
         expect(dt.day, 1);
+      });
+
+      test('fromSecondsSinceEpoch creates correct datetime', () {
+        // Unix timestamp for 2025-01-01 00:00:00 UTC
+        const unixSeconds = 1735689600;
+        final dt = EasyDateTime.fromSecondsSinceEpoch(unixSeconds);
+
+        expect(dt.year, 2025);
+        expect(dt.month, 1);
+        expect(dt.day, 1);
+      });
+
+      test('fromSecondsSinceEpoch with location converts correctly', () {
+        const unixSeconds = 1735689600; // 2025-01-01 00:00:00 UTC
+        final tokyo = getLocation('Asia/Tokyo');
+        final dt = EasyDateTime.fromSecondsSinceEpoch(
+          unixSeconds,
+          location: tokyo,
+        );
+
+        expect(dt.hour, 9); // UTC 0:00 = Tokyo 9:00
+        expect(dt.locationName, 'Asia/Tokyo');
       });
 
       test('fromDateTime with location converts correctly', () {

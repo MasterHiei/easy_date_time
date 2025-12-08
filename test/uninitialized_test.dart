@@ -45,6 +45,20 @@ void main() {
       );
     });
 
+    test('TimeZones.isValid throws TimeZoneNotInitializedException', () {
+      expect(
+        () => TimeZones.isValid('UTC'),
+        throwsA(isA<TimeZoneNotInitializedException>()),
+      );
+    });
+
+    test('TimeZones.tryGet throws TimeZoneNotInitializedException', () {
+      expect(
+        () => TimeZones.tryGet('UTC'),
+        throwsA(isA<TimeZoneNotInitializedException>()),
+      );
+    });
+
     test('Exception has helpful message', () {
       try {
         effectiveDefaultLocation;

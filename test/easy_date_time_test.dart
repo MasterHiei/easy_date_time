@@ -194,10 +194,10 @@ void main() {
         expect(nyDt.day, 30);
       });
 
-      test('inUtc() converts to UTC', () {
+      test('toUtc() converts to UTC', () {
         final tokyo = getLocation('Asia/Tokyo');
         final dt = EasyDateTime(2025, 12, 1, 9, 0, 0, 0, 0, tokyo);
-        final utc = dt.inUtc();
+        final utc = dt.toUtc();
 
         expect(utc.locationName, 'UTC');
         expect(utc.hour, 0);
@@ -303,7 +303,7 @@ void main() {
         final dt2 = EasyDateTime(2025, 12, 1, 18, 0, 0, 0, 0, tokyo);
 
         // Same moment in time, different timezone - should be equal
-        expect(dt1.isAtSameMoment(dt2), true);
+        expect(dt1.isAtSameMomentAs(dt2), true);
         expect(dt1 == dt2, true);
       });
     });
@@ -325,12 +325,12 @@ void main() {
         expect(dt2.isAfter(dt1), false);
       });
 
-      test('isAtSameMoment() ignores timezone difference', () {
+      test('isAtSameMomentAs() ignores timezone difference', () {
         final dt1 = EasyDateTime.utc(2025, 12, 1, 0, 0);
         final tokyo = getLocation('Asia/Tokyo');
         final dt2 = EasyDateTime(2025, 12, 1, 9, 0, 0, 0, 0, tokyo);
 
-        expect(dt1.isAtSameMoment(dt2), true);
+        expect(dt1.isAtSameMomentAs(dt2), true);
       });
 
       test('compareTo() returns correct ordering', () {
@@ -366,7 +366,7 @@ void main() {
       test('toJson() returns ISO 8601 string', () {
         final tokyo = getLocation('Asia/Tokyo');
         final dt = EasyDateTime(2025, 12, 1, 10, 30, 0, 0, 0, tokyo);
-        final json = dt.toJson();
+        final json = dt.toIso8601String();
 
         expect(json, isA<String>());
         expect(json, contains('2025-12-01'));
@@ -375,7 +375,7 @@ void main() {
 
       test('fromJson() parses ISO 8601 string', () {
         final json = '2025-12-01T10:30:00.000+09:00';
-        final dt = EasyDateTime.fromJson(json);
+        final dt = EasyDateTime.fromIso8601String(json);
 
         expect(dt.year, 2025);
         expect(dt.month, 12);
@@ -385,8 +385,8 @@ void main() {
       test('JSON round-trip preserves moment', () {
         final tokyo = getLocation('Asia/Tokyo');
         final original = EasyDateTime(2025, 12, 15, 14, 30, 45, 123, 0, tokyo);
-        final json = original.toJson();
-        final restored = EasyDateTime.fromJson(json);
+        final json = original.toIso8601String();
+        final restored = EasyDateTime.fromIso8601String(json);
 
         expect(
           restored.millisecondsSinceEpoch,

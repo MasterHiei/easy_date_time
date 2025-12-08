@@ -4,7 +4,9 @@
 
 A drop-in DateTime alternative with full IANA timezone support. Parse times without surprise UTC conversions.
 
+[![Build Status](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml)
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
+[![codecov](https://codecov.io/gh/MasterHiei/easy_date_time/branch/main/graph/badge.svg)](https://codecov.io/gh/MasterHiei/easy_date_time)
 
 **[中文](https://github.com/MasterHiei/easy_date_time/blob/main/README_zh.md)** | **[日本語](https://github.com/MasterHiei/easy_date_time/blob/main/README_ja.md)**
 
@@ -47,7 +49,7 @@ EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 ✓
   `now + 1.days`, `2.hours + 30.minutes`—clean and obvious
 
 * 🔄 **Opt-in Conversion**
-  Timezone changes only when you ask (`.inLocation()`, `.inUtc()`)
+  Timezone changes only when you ask (`.inLocation()`, `.toUtc()`)
 
 * 🧱 **Safe Month/Year Changes**
   `copyWithClamped()` handles edge cases like Jan 31 → Feb
@@ -60,7 +62,7 @@ Add to `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.1.2
+  easy_date_time: ^0.2.0
 ```
 
 Initialize once at app startup:
@@ -127,7 +129,7 @@ Explicit conversion:
 
 ```dart
 final ny = dt.inLocation(TimeZones.newYork);
-final utc = dt.inUtc();
+final utc = dt.toUtc();
 ```
 
 ---
@@ -138,7 +140,7 @@ final utc = dt.inUtc();
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
 final newYork = tokyo.inLocation(TimeZones.newYork);
 
-print(tokyo.isAtSameMoment(newYork));  // true: same instant
+print(tokyo.isAtSameMomentAs(newYork));  // true: same instant
 ```
 
 ---
@@ -160,6 +162,18 @@ jan31.copyWith(month: 2);        // March 3rd (overflow)
 jan31.copyWithClamped(month: 2); // Feb 28
 ```
 
+```
+
+---
+
+## Extension Handling
+
+This package includes handy extensions on `int` (e.g., `1.days`). If this conflicts with other packages, you can hide it:
+
+```dart
+import 'package:easy_date_time/easy_date_time.dart' hide DurationExtension;
+```
+
 ---
 
 ## JSON & Serialization
@@ -171,10 +185,10 @@ class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
   const EasyDateTimeConverter();
 
   @override
-  EasyDateTime fromJson(String json) => EasyDateTime.fromJson(json);
+  EasyDateTime fromJson(String json) => EasyDateTime.fromIso8601String(json);
 
   @override
-  String toJson(EasyDateTime object) => object.toJson();
+  String toJson(EasyDateTime object) => object.toIso8601String();
 }
 ```
 

@@ -19,13 +19,13 @@ void main() {
   // --------------------------------------------------------
   print('Basic toJson/fromJson:');
   final dt = EasyDateTime(2025, 12, 25, 10, 30, 0, 0, 0, TimeZones.tokyo);
-  final json = dt.toJson();
-  final restored = EasyDateTime.fromJson(json);
+  final json = dt.toIso8601String();
+  final restored = EasyDateTime.fromIso8601String(json);
 
   print('  Original:  $dt');
   print('  JSON:      $json');
   print('  Restored:  $restored');
-  print('  Same:      ${dt.isAtSameMoment(restored)}');
+  print('  Same:      ${dt.isAtSameMomentAs(restored)}');
   print('');
 
   // --------------------------------------------------------
@@ -114,8 +114,8 @@ class Event {
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,
-        'startTime': startTime.toJson(),
-        'endTime': endTime?.toJson(),
+        'startTime': startTime.toIso8601String(),
+        'endTime': endTime?.toIso8601String(),
       };
 }
 
@@ -135,7 +135,7 @@ class User {
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
-        'createdAt': createdAt.toJson(),
-        'deletedAt': deletedAt?.toJson(),
+        'createdAt': createdAt.toIso8601String(),
+        'deletedAt': deletedAt?.toIso8601String(),
       };
 }

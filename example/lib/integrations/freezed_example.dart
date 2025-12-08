@@ -29,10 +29,10 @@ class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
   const EasyDateTimeConverter();
 
   @override
-  EasyDateTime fromJson(String json) => EasyDateTime.fromJson(json);
+  EasyDateTime fromJson(String json) => EasyDateTime.fromIso8601String(json);
 
   @override
-  String toJson(EasyDateTime object) => object.toJson();
+  String toJson(EasyDateTime object) => object.toIso8601String();
 }
 
 /// JsonConverter for nullable EasyDateTime fields.
@@ -44,10 +44,10 @@ class EasyDateTimeNullableConverter
 
   @override
   EasyDateTime? fromJson(String? json) =>
-      json == null ? null : EasyDateTime.fromJson(json);
+      json == null ? null : EasyDateTime.fromIso8601String(json);
 
   @override
-  String? toJson(EasyDateTime? object) => object?.toJson();
+  String? toJson(EasyDateTime? object) => object?.toIso8601String();
 }
 
 // ============================================================

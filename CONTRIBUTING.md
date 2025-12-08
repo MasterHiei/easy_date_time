@@ -107,6 +107,14 @@ Examples:
 - `fix: handle leap year edge cases correctly`
 - `docs: improve timezone handling guide`
 
+### CI Checks
+When you open a Pull Request, the following automated checks will run:
+1.  **Analyze**: Static analysis with `dart analyze --fatal-infos`.
+2.  **Test (Stable & Coverage)**: Runs all tests on the stable SDK and reports code coverage (uploading to Codecov).
+3.  **Test Compatibility**: Runs tests on the oldest supported SDK (`3.0.0`) and the latest `beta` to ensure backward and forward compatibility.
+
+All checks must pass before merging.
+
 ## Testing
 
 - Write unit tests for all new features

@@ -135,7 +135,7 @@ void main() {
         final dt1 = EasyDateTime(2025, 6, 15, 10, 0, 0, 0, 0, tokyo);
         final dt2 = dt1.inLocation(ny);
 
-        expect(dt1.isAtSameMoment(dt2), isTrue);
+        expect(dt1.isAtSameMomentAs(dt2), isTrue);
         expect(dt1.millisecondsSinceEpoch, dt2.millisecondsSinceEpoch);
         // But different locations
         expect(dt1.locationName, isNot(dt2.locationName));
@@ -147,7 +147,7 @@ void main() {
         final dt = EasyDateTime.utc(2025, 6, 15, 10, 0);
         final same = dt + Duration.zero;
 
-        expect(same.isAtSameMoment(dt), isTrue);
+        expect(same.isAtSameMomentAs(dt), isTrue);
       });
 
       test('subtracting large duration (10 years)', () {
@@ -209,8 +209,8 @@ void main() {
     group('JSON serialization edge cases', () {
       test('microsecond precision preserved in serialization', () {
         final dt = EasyDateTime.utc(2025, 6, 15, 10, 30, 45, 123, 456);
-        final json = dt.toJson();
-        final restored = EasyDateTime.fromJson(json);
+        final json = dt.toIso8601String();
+        final restored = EasyDateTime.fromIso8601String(json);
 
         expect(restored.millisecond, 123);
         // Note: microseconds may not be preserved in ISO 8601 parsing
@@ -219,7 +219,7 @@ void main() {
       test('timezone offset preserved in JSON', () {
         final tokyo = getLocation('Asia/Tokyo');
         final dt = EasyDateTime(2025, 6, 15, 10, 0, 0, 0, 0, tokyo);
-        final json = dt.toJson();
+        final json = dt.toIso8601String();
 
         // Timezone offset format may vary: +0900 or +09:00
         expect(json, anyOf(contains('+09:00'), contains('+0900')));
@@ -227,10 +227,10 @@ void main() {
 
       test('JSON round-trip preserves moment', () {
         final original = EasyDateTime.utc(2025, 6, 15, 10, 30, 45, 123);
-        final json = original.toJson();
-        final restored = EasyDateTime.fromJson(json);
+        final json = original.toIso8601String();
+        final restored = EasyDateTime.fromIso8601String(json);
 
-        expect(restored.isAtSameMoment(original), isTrue);
+        expect(restored.isAtSameMomentAs(original), isTrue);
       });
     });
 
@@ -358,7 +358,7 @@ void main() {
         final dt = EasyDateTime.utc(2025, 6, 15, 10, 30);
         final same = dt.copyWith();
 
-        expect(same.isAtSameMoment(dt), isTrue);
+        expect(same.isAtSameMomentAs(dt), isTrue);
         expect(same.location, dt.location);
       });
 

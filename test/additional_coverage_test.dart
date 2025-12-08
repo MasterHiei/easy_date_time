@@ -40,10 +40,10 @@ void main() {
       });
     });
 
-    group('inLocalTime', () {
+    group('toLocal', () {
       test('converts to system local timezone', () {
         final utc = EasyDateTime.utc(2025, 12, 1, 12, 0);
-        final local = utc.inLocalTime();
+        final local = utc.toLocal();
 
         // Same moment, but in local timezone
         expect(local.millisecondsSinceEpoch, utc.millisecondsSinceEpoch);
@@ -88,7 +88,7 @@ void main() {
         final tokyo = EasyDateTime.parse('2025-12-01T11:30:00+09:00');
 
         expect(shanghai == tokyo, isTrue);
-        expect(shanghai.isAtSameMoment(tokyo), isTrue);
+        expect(shanghai.isAtSameMomentAs(tokyo), isTrue);
       });
 
       test('different moments are not equal', () {
@@ -194,7 +194,7 @@ void main() {
         final shanghai = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
         final tokyo = EasyDateTime.parse('2025-12-07T11:30:00+09:00');
 
-        expect(shanghai.isAtSameMoment(tokyo), isTrue);
+        expect(shanghai.isAtSameMomentAs(tokyo), isTrue);
       });
     });
 

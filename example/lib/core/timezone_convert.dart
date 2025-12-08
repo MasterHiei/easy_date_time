@@ -30,18 +30,18 @@ void main() {
   print('');
 
   // --------------------------------------------------------
-  // inUtc() - Convert to UTC
+  // toUtc() - Convert to UTC
   // --------------------------------------------------------
-  print('inUtc():');
-  final utc = shanghai.inUtc();
+  print('toUtc():');
+  final utc = shanghai.toUtc();
   print('  Shanghai ${shanghai.hour}:00 → UTC ${utc.hour}:00');
   print('');
 
   // --------------------------------------------------------
-  // inLocalTime() - Convert to system local
+  // toLocal() - Convert to system local
   // --------------------------------------------------------
-  print('inLocalTime():');
-  final local = shanghai.inLocalTime();
+  print('toLocal():');
+  final local = shanghai.toLocal();
   print('  Shanghai ${shanghai.hour}:00 → Local ${local.hour}:00');
   print('');
 
@@ -50,10 +50,11 @@ void main() {
   // --------------------------------------------------------
   print('Same moment verification:');
   print(
-      '  shanghai.isAtSameMoment(tokyo):   ${shanghai.isAtSameMoment(tokyo)}');
+      '  shanghai.isAtSameMomentAs(tokyo):   ${shanghai.isAtSameMomentAs(tokyo)}');
   print(
-      '  shanghai.isAtSameMoment(newYork): ${shanghai.isAtSameMoment(newYork)}');
-  print('  shanghai.isAtSameMoment(utc):     ${shanghai.isAtSameMoment(utc)}');
+      '  shanghai.isAtSameMomentAs(newYork): ${shanghai.isAtSameMomentAs(newYork)}');
+  print(
+      '  shanghai.isAtSameMomentAs(utc):     ${shanghai.isAtSameMomentAs(utc)}');
   print('');
 
   // --------------------------------------------------------

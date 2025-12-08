@@ -9,6 +9,11 @@ import 'exceptions/exceptions.dart';
 /// needing to remember IANA timezone names. All properties are lazy-loaded,
 /// meaning the timezone database must be initialized before use.
 ///
+/// **Maintenance Note:** This class contains a curated list of the most common
+/// timezones. It is NOT exhaustive. If a timezone is missing, users should use
+/// `getLocation('Area/Location')`. Adding new static getters here should be
+/// reserved for widely used zones to avoid bloating the API.
+///
 /// ## Usage
 ///
 /// ```dart
@@ -289,11 +294,18 @@ abstract final class TimeZones {
   /// TimeZones.isValid('Invalid/Zone'); // false
   /// ```
   static bool isValid(String timezoneName) {
+    if (!isTimeZoneInitialized) {
+      throw TimeZoneNotInitializedException(
+        'Timezone database not initialized. '
+        'Call initializeTimeZone() before calling TimeZones.isValid().',
+      );
+    }
+
     try {
       getLocation(timezoneName);
 
       return true;
-    } catch (_) {
+    } on LocationNotFoundException {
       return false;
     }
   }
@@ -309,9 +321,16 @@ abstract final class TimeZones {
   /// }
   /// ```
   static Location? tryGet(String timezoneName) {
+    if (!isTimeZoneInitialized) {
+      throw TimeZoneNotInitializedException(
+        'Timezone database not initialized. '
+        'Call initializeTimeZone() before calling TimeZones.tryGet().',
+      );
+    }
+
     try {
       return getLocation(timezoneName);
-    } catch (_) {
+    } on LocationNotFoundException {
       return null;
     }
   }

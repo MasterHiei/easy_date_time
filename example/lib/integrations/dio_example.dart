@@ -46,8 +46,8 @@ class ApiEvent {
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,
-        'start_time': startTime.toJson(),
-        'end_time': endTime?.toJson(),
+        'start_time': startTime.toIso8601String(),
+        'end_time': endTime?.toIso8601String(),
       };
 }
 

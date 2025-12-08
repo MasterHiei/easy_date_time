@@ -4,6 +4,9 @@ import 'easy_date_time_config.dart';
 import 'easy_date_time_init.dart';
 import 'exceptions/exceptions.dart';
 
+part 'easy_date_time_parsing.dart';
+part 'easy_date_time_utilities.dart';
+
 /// A timezone-aware DateTime implementation.
 ///
 /// [EasyDateTime] wraps Dart's [DateTime] to provide timezone-aware operations.
@@ -44,7 +47,7 @@ import 'exceptions/exceptions.dart';
 ///
 /// ```dart
 /// final shanghai = EasyDateTime.now(location: TimeZones.shanghai);
-/// final utc = shanghai.inUtc();
+/// final utc = shanghai.toUtc();
 /// final newYork = shanghai.inLocation(TimeZones.newYork);
 /// // Shanghai 20:00 = UTC 12:00 = New York 07:00
 /// ```
@@ -184,6 +187,27 @@ class EasyDateTime implements Comparable<EasyDateTime> {
     );
   }
 
+  /// Creates an [EasyDateTime] from seconds since Unix epoch.
+  ///
+  /// This is useful for parsing Unix timestamps from backend APIs that return
+  /// seconds (common in Python, Go, Rust, and Unix-based systems).
+  ///
+  /// If [location] is not provided, uses the global default or local timezone.
+  ///
+  /// ```dart
+  /// // Backend returns: {"created_at": 1733644200}
+  /// final dt = EasyDateTime.fromSecondsSinceEpoch(1733644200);
+  /// ```
+  factory EasyDateTime.fromSecondsSinceEpoch(
+    int seconds, {
+    Location? location,
+  }) {
+    return EasyDateTime.fromMillisecondsSinceEpoch(
+      seconds * 1000,
+      location: location,
+    );
+  }
+
   /// Creates an [EasyDateTime] from microseconds since Unix epoch.
   ///
   /// If [location] is not provided, uses the global default or local timezone.
@@ -314,164 +338,6 @@ class EasyDateTime implements Comparable<EasyDateTime> {
     }
   }
 
-  /// Extracts timezone offset from an ISO 8601 string.
-  /// Returns the offset as Duration, or null if no offset found.
-  static Duration? _extractTimezoneOffset(String input) {
-    // Pattern: +HH:MM, -HH:MM, +HHMM, -HHMM at end of string
-    final match = RegExp(r'([+-])(\d{2}):?(\d{2})$').firstMatch(input);
-    if (match == null) return null;
-
-    final sign = match.group(1) == '+' ? 1 : -1;
-    final hours = int.parse(match.group(2)!);
-    final minutes = int.parse(match.group(3)!);
-
-    return Duration(hours: sign * hours, minutes: sign * minutes);
-  }
-
-  /// Formats a Duration offset as a timezone offset string (e.g., +05:17).
-  static String _formatOffset(Duration offset) {
-    final totalMinutes = offset.inMinutes;
-    final sign = totalMinutes >= 0 ? '+' : '-';
-    final absMinutes = totalMinutes.abs();
-    final hours = absMinutes ~/ 60;
-    final minutes = absMinutes % 60;
-
-    return '$sign${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
-  }
-
-  /// Extracts original time components from an ISO 8601 string,
-  /// before any timezone conversion.
-  static ({
-    int year,
-    int month,
-    int day,
-    int hour,
-    int minute,
-    int second,
-    int millisecond,
-    int microsecond
-  })? _extractOriginalTimeComponents(String input) {
-    // Remove timezone suffix for parsing
-    final withoutTz = input.replaceAll(RegExp(r'[+-]\d{2}:?\d{2}$'), '');
-
-    // Pattern: YYYY-MM-DDTHH:MM:SS.sss or YYYY-MM-DD HH:MM:SS.sss
-    final match = RegExp(
-      r'^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?',
-    ).firstMatch(withoutTz);
-
-    if (match == null) {
-      // Try date-only pattern
-      final dateMatch = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$').firstMatch(
-        withoutTz,
-      );
-      if (dateMatch != null) {
-        return (
-          year: int.parse(dateMatch.group(1)!),
-          month: int.parse(dateMatch.group(2)!),
-          day: int.parse(dateMatch.group(3)!),
-          hour: 0,
-          minute: 0,
-          second: 0,
-          millisecond: 0,
-          microsecond: 0,
-        );
-      }
-
-      return null;
-    }
-
-    // Parse fractional seconds
-    final fractionStr = match.group(7) ?? '0';
-    final fraction = fractionStr.padRight(6, '0');
-    final millisecond = int.parse(fraction.substring(0, 3));
-    final microsecond = int.parse(fraction.substring(3, 6));
-
-    return (
-      year: int.parse(match.group(1)!),
-      month: int.parse(match.group(2)!),
-      day: int.parse(match.group(3)!),
-      hour: int.parse(match.group(4)!),
-      minute: int.parse(match.group(5)!),
-      second: int.parse(match.group(6)!),
-      millisecond: millisecond,
-      microsecond: microsecond,
-    );
-  }
-
-  /// Finds an IANA timezone that matches the given UTC offset.
-  ///
-  /// Returns null if no matching timezone is found or if timezone
-  /// database is not initialized.
-  static Location? _findLocationForOffset(Duration offset) {
-    if (!isTimeZoneInitialized) {
-      return null;
-    }
-
-    // Common timezone mappings for efficiency (most used offsets)
-    // When multiple regions share an offset, we pick a representative one.
-    // The fallback search will find others if this one doesn't match.
-    final offsetMinutes = offset.inMinutes;
-    final commonMappings = <int, String>{
-      // UTC
-      0: 'UTC',
-      // Europe (Standard + DST)
-      60: 'Europe/Paris', // CET (Central European winter)
-      120: 'Europe/Paris', // CEST (Central European summer)
-      180: 'Europe/Moscow', // MSK
-      // Middle East / South Asia
-      240: 'Asia/Dubai', // GST (+4)
-      270: 'Asia/Kabul', // +4:30
-      300: 'Asia/Karachi', // PKT (+5)
-      330: 'Asia/Kolkata', // IST (+5:30)
-      345: 'Asia/Kathmandu', // +5:45
-      360: 'Asia/Dhaka', // BST (+6)
-      390: 'Asia/Yangon', // +6:30
-      420: 'Asia/Bangkok', // ICT (+7)
-      // East Asia
-      480: 'Asia/Shanghai', // CST (+8)
-      540: 'Asia/Tokyo', // JST (+9)
-      570: 'Australia/Adelaide', // ACST (+9:30)
-      // Oceania (Standard + DST)
-      600: 'Australia/Sydney', // AEST (+10)
-      630: 'Australia/Lord_Howe', // +10:30
-      660: 'Pacific/Noumea', // +11
-      720: 'Pacific/Auckland', // NZST (+12)
-      780: 'Pacific/Apia', // +13
-      // Americas (Standard + DST)
-      -180: 'America/Sao_Paulo', // BRT (-3)
-      -240: 'America/New_York', // EDT (summer, -4)
-      -300: 'America/New_York', // EST (winter, -5)
-      -360: 'America/Chicago', // CST (winter, -6)
-      -420: 'America/Denver', // MST (winter, -7)
-      -480: 'America/Los_Angeles', // PST (winter, -8)
-      -540: 'America/Anchorage', // AKST (-9)
-      -600: 'Pacific/Honolulu', // HST (-10)
-    };
-
-    final mappedName = commonMappings[offsetMinutes];
-    if (mappedName != null) {
-      try {
-        return getLocation(mappedName);
-      } catch (_) {
-        // Continue to fallback
-      }
-    }
-
-    // Fallback: search all locations (more expensive)
-    try {
-      for (final name in timeZoneDatabase.locations.keys) {
-        final loc = getLocation(name);
-        if (loc.currentTimeZone.offset == offset.inMilliseconds) {
-          return loc;
-        }
-      }
-    } catch (_) {
-      // Database not available
-    }
-
-    return null;
-  }
-
   /// Tries to parse a date/time string, returning `null` if parsing fails.
   ///
   /// This method first attempts ISO 8601 parsing. If that fails, it tries
@@ -488,8 +354,6 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// **Common alternatives (fallback):**
   /// - `2025/12/01 10:30:00` (slash separator)
   /// - `2025/12/01` (slash separator, date only)
-  /// - `12/01/2025` (US format: MM/DD/YYYY)
-  /// - `01/12/2025` (European format: DD/MM/YYYY) - ambiguous, not recommended
   ///
   /// ## Examples
   ///
@@ -525,48 +389,6 @@ class EasyDateTime implements Comparable<EasyDateTime> {
       } catch (_) {
         return null;
       }
-    }
-
-    return null;
-  }
-
-  /// Regex pattern for YYYY/MM/DD format.
-  /// Allows loose matching for separator options but enforces strict year/month/day structure.
-  static final _slashYMDPattern =
-      RegExp(r'^(\d{4})[./-](\d{1,2})[./-](\d{1,2})(.*)$');
-
-  /// Attempts to normalize common date formats to ISO 8601.
-  ///
-  /// Returns null if normalization is not possible or input is too complex.
-  static String? _tryNormalizeFormat(String input) {
-    // Limit input length to prevent ReDoS attacks and processing of unreasonably large strings
-    if (input.length > 50) {
-      return null;
-    }
-
-    // Pattern: YYYY/MM/DD or YYYY/MM/DD HH:MM:SS
-    // Adjusts to allow dot and dash separators in this fallback logic too for consistency
-    final slashMatch = _slashYMDPattern.firstMatch(input);
-    if (slashMatch != null) {
-      final year = slashMatch.group(1)!;
-      final month = slashMatch.group(2)!.padLeft(2, '0');
-      final day = slashMatch.group(3)!.padLeft(2, '0');
-      final time = slashMatch.group(4)?.trim() ?? '';
-
-      // Validate logical ranges to fail early on obvious nonsense
-      if (int.parse(month) > 12 || int.parse(day) > 31) {
-        return null;
-      }
-
-      if (time.isEmpty) {
-        return '$year-$month-$day';
-      }
-
-      // Handle time part: " 10:30:00" -> "T10:30:00"
-      // If it already has T, leave it. If it has space, replace with T.
-      final timeNormalized = time.startsWith('T') ? time : 'T${time.trim()}';
-
-      return '$year-$month-$day$timeNormalized';
     }
 
     return null;
@@ -639,14 +461,18 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   }
 
   /// Returns this datetime converted to UTC.
-  EasyDateTime inUtc() {
+  ///
+  /// This is consistent with [DateTime.toUtc].
+  EasyDateTime toUtc() {
     return EasyDateTime._(
       TZDateTime.from(_tzDateTime.toUtc(), getLocation('UTC')),
     );
   }
 
   /// Returns this datetime converted to the system's local timezone.
-  EasyDateTime inLocalTime() {
+  ///
+  /// This is consistent with [DateTime.toLocal].
+  EasyDateTime toLocal() {
     return EasyDateTime._(TZDateTime.from(_tzDateTime.toLocal(), local));
   }
 
@@ -722,7 +548,9 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   ///
   /// Two [EasyDateTime]s can be at the same moment even if they are in
   /// different timezones.
-  bool isAtSameMoment(EasyDateTime other) =>
+  ///
+  /// This is consistent with [DateTime.isAtSameMomentAs].
+  bool isAtSameMomentAs(EasyDateTime other) =>
       microsecondsSinceEpoch == other.microsecondsSinceEpoch;
 
   @override
@@ -745,31 +573,19 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   String toString() => _tzDateTime.toString();
 
   // ============================================================
-  // JSON Serialization
+  // Parsing from ISO 8601
   // ============================================================
 
-  /// Creates an [EasyDateTime] from a JSON value (ISO 8601 string).
+  /// Creates an [EasyDateTime] from an ISO 8601 formatted string.
   ///
-  /// Compatible with standard serialization - uses ISO 8601 format just
-  /// like [DateTime]. Works seamlessly with json_serializable, freezed, etc.
+  /// This is equivalent to [parse] but with a more explicit name.
   ///
   /// ```dart
-  /// final dt = EasyDateTime.fromJson('2025-12-01T10:30:00+0900');
+  /// final dt = EasyDateTime.fromIso8601String('2025-12-01T10:30:00+0900');
   /// ```
-  factory EasyDateTime.fromJson(String json) {
-    return EasyDateTime.parse(json);
+  factory EasyDateTime.fromIso8601String(String dateTimeString) {
+    return EasyDateTime.parse(dateTimeString);
   }
-
-  /// Converts this [EasyDateTime] to a JSON value (ISO 8601 string).
-  ///
-  /// Compatible with standard serialization - produces ISO 8601 format
-  /// just like [DateTime]. Works seamlessly with json_serializable, freezed, etc.
-  ///
-  /// ```dart
-  /// final json = dt.toJson();
-  /// // '2025-12-01T10:30:00.000+0900'
-  /// ```
-  String toJson() => toIso8601String();
 
   // ============================================================
   // Equality
@@ -884,139 +700,5 @@ class EasyDateTime implements Comparable<EasyDateTime> {
       microsecond ?? this.microsecond,
       location ?? this.location,
     );
-  }
-
-  // ============================================================
-  // Date Utilities
-  // ============================================================
-
-  /// Returns a new [EasyDateTime] with time set to 00:00:00.000.
-  ///
-  /// Useful for date-only comparisons or getting the start of a day.
-  ///
-  /// ```dart
-  /// final now = EasyDateTime.now();  // 2025-12-01 14:30:00
-  /// final date = now.dateOnly;       // 2025-12-01 00:00:00
-  /// ```
-  EasyDateTime get dateOnly => copyWith(
-        hour: 0,
-        minute: 0,
-        second: 0,
-        millisecond: 0,
-        microsecond: 0,
-      );
-
-  /// Alias for [dateOnly]. Returns start of the day (00:00:00.000).
-  ///
-  /// ```dart
-  /// final dayStart = EasyDateTime.now().startOfDay;
-  /// ```
-  EasyDateTime get startOfDay => dateOnly;
-
-  /// Returns end of the day (23:59:59.999999).
-  ///
-  /// ```dart
-  /// final dayEnd = EasyDateTime.now().endOfDay;
-  /// ```
-  EasyDateTime get endOfDay => copyWith(
-        hour: 23,
-        minute: 59,
-        second: 59,
-        millisecond: 999,
-        microsecond: 999,
-      );
-
-  /// Returns the first day of the current month at 00:00:00.
-  ///
-  /// ```dart
-  /// final dt = EasyDateTime(2025, 12, 15);
-  /// final monthStart = dt.startOfMonth;  // 2025-12-01 00:00:00
-  /// ```
-  EasyDateTime get startOfMonth => copyWith(
-        day: 1,
-        hour: 0,
-        minute: 0,
-        second: 0,
-        millisecond: 0,
-        microsecond: 0,
-      );
-
-  /// Returns the last day of the current month at 23:59:59.999999.
-  ///
-  /// Correctly handles months with different lengths and leap years.
-  ///
-  /// ```dart
-  /// final dt = EasyDateTime(2025, 2, 15);
-  /// final monthEnd = dt.endOfMonth;  // 2025-02-28 23:59:59.999999
-  /// ```
-  EasyDateTime get endOfMonth {
-    // Get the first day of next month, then subtract 1 day
-    final nextMonth = month == 12 ? 1 : month + 1;
-    final nextYear = month == 12 ? year + 1 : year;
-    final firstOfNextMonth =
-        EasyDateTime(nextYear, nextMonth, 1, 0, 0, 0, 0, 0, location);
-
-    return firstOfNextMonth.subtract(const Duration(microseconds: 1));
-  }
-
-  /// Returns the next day at the same time.
-  ///
-  /// ```dart
-  /// final tomorrow = EasyDateTime.now().tomorrow;
-  /// ```
-  EasyDateTime get tomorrow => add(const Duration(days: 1));
-
-  /// Returns the previous day at the same time.
-  ///
-  /// ```dart
-  /// final yesterday = EasyDateTime.now().yesterday;
-  /// ```
-  EasyDateTime get yesterday => subtract(const Duration(days: 1));
-
-  /// Returns `true` if this date is today (ignoring time).
-  ///
-  /// ```dart
-  /// if (appointment.isToday) {
-  ///   print('You have an appointment today!');
-  /// }
-  /// ```
-  bool get isToday => _isSameDay(EasyDateTime.now(location: location));
-
-  /// Returns `true` if this date is tomorrow (ignoring time).
-  bool get isTomorrow =>
-      _isSameDay(EasyDateTime.now(location: location).tomorrow);
-
-  /// Returns `true` if this date is yesterday (ignoring time).
-  bool get isYesterday =>
-      _isSameDay(EasyDateTime.now(location: location).yesterday);
-
-  /// Checks if this date has the same year, month, and day as [other].
-  bool _isSameDay(EasyDateTime other) =>
-      year == other.year && month == other.month && day == other.day;
-
-  /// Returns a date-only string in YYYY-MM-DD format.
-  ///
-  /// ```dart
-  /// final dateStr = EasyDateTime.now().toDateString();  // '2025-12-01'
-  /// ```
-  String toDateString() {
-    final y = year.toString().padLeft(4, '0');
-    final m = month.toString().padLeft(2, '0');
-    final d = day.toString().padLeft(2, '0');
-
-    return '$y-$m-$d';
-  }
-
-  /// Returns a time-only string in HH:MM:SS format.
-  ///
-  /// ```dart
-  /// final timeStr = EasyDateTime.now().toTimeString();  // '14:30:00'
-  /// ```
-  String toTimeString() {
-    final h = hour.toString().padLeft(2, '0');
-    final min = minute.toString().padLeft(2, '0');
-    final s = second.toString().padLeft(2, '0');
-
-    return '$h:$min:$s';
   }
 }

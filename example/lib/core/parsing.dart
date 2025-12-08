@@ -60,7 +60,7 @@ void main() {
   final tokyo = EasyDateTime.parse('2025-12-07T11:30:00+09:00');
   print('  Shanghai 10:30+08:00');
   print('  Tokyo    11:30+09:00');
-  print('  Same moment: ${shanghai.isAtSameMoment(tokyo)}');
+  print('  Same moment: ${shanghai.isAtSameMomentAs(tokyo)}');
   print('');
 
   // --------------------------------------------------------
