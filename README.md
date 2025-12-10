@@ -111,11 +111,31 @@ final nairobi = EasyDateTime.now(location: getLocation('Africa/Nairobi'));
 
 ### 3. Global Default Timezone
 
-Setting a default location allows `EasyDateTime.now()` to use that timezone globally:
+Setting a default location allows `EasyDateTime.now()` to use that timezone globally.
+
+You can use either the global function or the static method on `EasyDateTime`:
 
 ```dart
+// Option 1: Global function
 setDefaultLocation(TimeZones.shanghai);
+
+// Option 2: Static method (more explicit about package context)
+EasyDateTime.setDefaultLocation(TimeZones.shanghai);
+
 final now = EasyDateTime.now();  // Returns time in Asia/Shanghai
+```
+
+**Managing the default timezone:**
+
+```dart
+// Get the current default timezone
+final current = EasyDateTime.getDefaultLocation();  // or getDefaultLocation()
+
+// Clear the default (reverts to system local timezone)
+EasyDateTime.clearDefaultLocation();  // or clearDefaultLocation()
+
+// Get the effective default location (user-set or system local)
+final effective = EasyDateTime.effectiveDefaultLocation;  // or effectiveDefaultLocation
 ```
 
 ---

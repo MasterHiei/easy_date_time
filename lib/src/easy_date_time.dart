@@ -1,6 +1,6 @@
 import 'package:timezone/timezone.dart';
 
-import 'easy_date_time_config.dart';
+import 'easy_date_time_config.dart' as config;
 import 'easy_date_time_init.dart';
 import 'exceptions/exceptions.dart';
 
@@ -92,7 +92,7 @@ class EasyDateTime implements Comparable<EasyDateTime> {
     int microsecond = 0,
     Location? location,
   ]) : _tzDateTime = TZDateTime(
-          location ?? effectiveDefaultLocation,
+          location ?? config.effectiveDefaultLocation,
           year,
           month,
           day,
@@ -122,7 +122,7 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// final nowInTokyo = EasyDateTime.now(location: getLocation('Asia/Tokyo'));
   /// ```
   factory EasyDateTime.now({Location? location}) {
-    return EasyDateTime._(TZDateTime.now(location ?? effectiveDefaultLocation));
+    return EasyDateTime._(TZDateTime.now(location ?? config.effectiveDefaultLocation));
   }
 
   /// Creates an [EasyDateTime] in UTC from the given components.
@@ -168,7 +168,7 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// ```
   factory EasyDateTime.fromDateTime(DateTime dateTime, {Location? location}) {
     return EasyDateTime._(
-      TZDateTime.from(dateTime, location ?? effectiveDefaultLocation),
+      TZDateTime.from(dateTime, location ?? config.effectiveDefaultLocation),
     );
   }
 
@@ -181,7 +181,7 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   }) {
     return EasyDateTime._(
       TZDateTime.fromMillisecondsSinceEpoch(
-        location ?? effectiveDefaultLocation,
+        location ?? config.effectiveDefaultLocation,
         milliseconds,
       ),
     );
@@ -217,7 +217,7 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   }) {
     return EasyDateTime._(
       TZDateTime.fromMicrosecondsSinceEpoch(
-        location ?? effectiveDefaultLocation,
+        location ?? config.effectiveDefaultLocation,
         microseconds,
       ),
     );
@@ -319,7 +319,7 @@ class EasyDateTime implements Comparable<EasyDateTime> {
 
       // No timezone indicator - use effective default location with original values
       return EasyDateTime._(TZDateTime(
-        effectiveDefaultLocation,
+        config.effectiveDefaultLocation,
         dt.year,
         dt.month,
         dt.day,
@@ -701,4 +701,70 @@ class EasyDateTime implements Comparable<EasyDateTime> {
       location ?? this.location,
     );
   }
+
+
+  // These constants are provided for 'drop in' compatibility with DateTime. (They are copied from DateTime to ensure consistency.)
+  // Weekday constants that are returned by [weekday] method:
+  static const int monday = DateTime.monday;
+  static const int tuesday = DateTime.tuesday;
+  static const int wednesday = DateTime.wednesday;
+  static const int thursday = DateTime.thursday;
+  static const int friday = DateTime.friday;
+  static const int saturday = DateTime.saturday;
+  static const int sunday = DateTime.sunday;
+  static const int daysPerWeek = DateTime.daysPerWeek;
+
+  // Month constants that are returned by the [month] getter.
+  static const int january = DateTime.january;
+  static const int february = DateTime.february;
+  static const int march = DateTime.march;
+  static const int april = DateTime.april;
+  static const int may = DateTime.may;
+  static const int june = DateTime.june;
+  static const int july = DateTime.july;
+  static const int august = DateTime.august;
+  static const int september = DateTime.september;
+  static const int october = DateTime.october;
+  static const int november = DateTime.november;
+  static const int december = DateTime.december;
+  static const int monthsPerYear = DateTime.monthsPerYear;
+
+  // These static methods are provides for the global timezone configuration files so that there is an
+  // option to call `EasyDateTime.setDefaultLocation()` instead of a global function `setDefaultLocation()`
+  //   `EasyDateTime.getDefaultLocation()` instead of `getDefaultLocation()`
+  //   `EasyDateTime.clearDefaultLocation()` instead of `clearDefaultLocation()`
+  // which provides no context of which package it references/belongs to.
+
+
+  /// Sets the global default timezone for all [EasyDateTime] operations.
+  ///
+  /// This is **optional**. If not set, [EasyDateTime] uses the system's
+  /// local timezone.
+  ///
+  /// ```dart
+  /// setDefaultLocation(TimeZones.shanghai);
+  /// final now = EasyDateTime.now(); // Shanghai time
+  /// ```
+  static void setDefaultLocation(Location? location) => config.setDefaultLocation(location);
+
+  /// Gets the current global default timezone.
+  ///
+  /// Returns `null` if no default has been set.
+  static Location? getDefaultLocation() => config.getDefaultLocation();
+
+  /// Clears the global default timezone.
+  ///
+  /// After calling this, [EasyDateTime] will use the system's local timezone.
+  static void clearDefaultLocation() => config.clearDefaultLocation();
+
+  /// Gets the effective default location for EasyDateTime operations.
+  ///
+  /// Priority:
+  /// 1. User-set global default (via [setDefaultLocation])
+  /// 2. System local timezone
+  ///
+  /// **Throws [TimeZoneNotInitializedException]** if [initializeTimeZone]
+  /// has not been called.
+  static Location get effectiveDefaultLocation => config.effectiveDefaultLocation;
+
 }
