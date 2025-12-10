@@ -69,7 +69,7 @@ EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 (期待通り)
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.3.1
+  easy_date_time: ^0.3.2
 ```
 
 **注意**: 正確な計算を行うため、アプリ起動時に**必ず**タイムゾーンデータベースの初期化を行ってください。
