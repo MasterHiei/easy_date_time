@@ -730,11 +730,10 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   static const int december = DateTime.december;
   static const int monthsPerYear = DateTime.monthsPerYear;
 
-  // These static methods are provides for the global timezone configuration files so that there is an
-  // option to call `EasyDateTime.setDefaultLocation()` instead of a global function `setDefaultLocation()`
-  //   `EasyDateTime.getDefaultLocation()` instead of `getDefaultLocation()`
-  //   `EasyDateTime.clearDefaultLocation()` instead of `clearDefaultLocation()`
-  // which provides no context of which package it references/belongs to.
+  // These static methods provide convenient class-level access to the global timezone 
+  // configuration functions. Using `EasyDateTime.setDefaultLocation()` instead of the 
+  // global `setDefaultLocation()` makes it clearer which package the functionality 
+  // belongs to, improving code readability and maintainability.
 
   /// Sets the global default timezone for all [EasyDateTime] operations.
   ///
