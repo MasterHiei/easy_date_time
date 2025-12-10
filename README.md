@@ -72,14 +72,29 @@ dependencies:
   easy_date_time: ^0.3.1
 ```
 
-**Note**: You **must** initialize the timezone database before using the library:
+**Note**: You **must** initialize the timezone database before using the library.
 
+You can use either the global functions or the static methods on `EasyDateTime`:
+
+**Option 1: Global functions**
 ```dart
 void main() {
   initializeTimeZone();  // Required
 
   // Optional: Set a global default location
   setDefaultLocation(TimeZones.shanghai);
+
+  runApp(MyApp());
+}
+```
+
+**Option 2: Static methods (more explicit about package context)**
+```dart
+void main() {
+  EasyDateTime.initializeTimeZone();  // Required
+
+  // Optional: Set a global default location
+  EasyDateTime.setDefaultLocation(TimeZones.shanghai);
 
   runApp(MyApp());
 }

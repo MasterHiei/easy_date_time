@@ -1,7 +1,7 @@
 import 'package:timezone/timezone.dart';
 
 import 'easy_date_time_config.dart' as config;
-import 'easy_date_time_init.dart';
+import 'easy_date_time_init.dart' as init;
 import 'exceptions/exceptions.dart';
 
 part 'easy_date_time_parsing.dart';
@@ -767,4 +767,25 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// has not been called.
   static Location get effectiveDefaultLocation =>
       config.effectiveDefaultLocation;
+
+  /// Initializes the IANA timezone database.
+  ///
+  /// **Must be called before using [EasyDateTime].**
+  ///
+  /// Call once at app startup:
+  /// ```dart
+  /// void main() {
+  ///   initializeTimeZone();
+  ///   runApp(MyApp());
+  /// }
+  /// ```
+  static void initializeTimeZone() => init.initializeTimeZone();
+
+  /// Checks if the IANA timezone database has been initialized.
+  ///
+  /// Returns `true` if [initializeTimeZone] has been called successfully.
+  /// 
+  /// 
+  static bool get isTimeZoneInitialized => init.isTimeZoneInitialized;
+
 }
