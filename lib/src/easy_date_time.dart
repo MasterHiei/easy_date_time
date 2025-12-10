@@ -73,6 +73,14 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// If [location] is not provided, uses the global default timezone
   /// (set via [setDefaultLocation]) or the system's local timezone.
   ///
+  /// ## DST Boundary Behavior
+  ///
+  /// - **Spring Forward (Gap):** If you create a time during the "skipped hour"
+  ///   (e.g., 2:30 AM when clocks jump from 2:00→3:00 AM), the time is
+  ///   automatically adjusted forward to the next valid time.
+  /// - **Fall Back (Overlap):** If you create a time during the "repeated hour"
+  ///   (e.g., 1:30 AM that occurs twice), the DST time (before fall back) is used.
+  ///
   /// ```dart
   /// // Uses global default or local timezone
   /// final dt = EasyDateTime(2025, 12, 25, 10, 30);

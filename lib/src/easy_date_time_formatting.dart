@@ -63,6 +63,14 @@ abstract final class DateTimeFormats {
   ///
   /// Example: `2025-12-01 02:30:45 PM`
   static const String fullDateTime12Hour = 'yyyy-MM-dd hh:mm:ss a';
+
+  /// HTTP/RFC 2822 compatible date format: `dd MM yyyy HH:mm:ss`
+  ///
+  /// Useful for HTTP headers and email Date fields.
+  /// Note: Does not include day-of-week or timezone abbreviation.
+  ///
+  /// Example: `01 12 2025 14:30:45`
+  static const String rfc2822 = 'dd MM yyyy HH:mm:ss';
 }
 
 /// Extension providing date/time formatting methods for [EasyDateTime].
@@ -128,19 +136,21 @@ extension EasyDateTimeFormatting on EasyDateTime {
       final char = pattern[i];
 
       // Handle escaped text in single quotes
+      // If quote is not closed, treat remaining content as literal (WYSIWYG)
       if (char == "'") {
         i++;
         while (i < length && pattern[i] != "'") {
           buffer.write(pattern[i]);
           i++;
         }
-        i++; // Skip closing quote
+        if (i < length) {
+          i++; // Skip closing quote only if found
+        }
         continue;
       }
 
-      // Try to match tokens (longest match first)
-      final remaining = pattern.substring(i);
-      final token = _matchToken(remaining);
+      // Try to match tokens (longest match first, zero-allocation)
+      final token = _matchToken(pattern, i);
 
       if (token != null) {
         buffer.write(_formatToken(token));
@@ -155,8 +165,10 @@ extension EasyDateTimeFormatting on EasyDateTime {
     return buffer.toString();
   }
 
-  /// Matches the longest token at the start of [text].
-  String? _matchToken(String text) {
+  /// Matches the longest token at position [index] in [pattern].
+  ///
+  /// Uses [String.startsWith] with index parameter for zero-allocation matching.
+  String? _matchToken(String pattern, int index) {
     // Order matters: check longer tokens first
     const tokens = [
       'yyyy',
@@ -179,10 +191,11 @@ extension EasyDateTimeFormatting on EasyDateTime {
     ];
 
     for (final token in tokens) {
-      if (text.startsWith(token)) {
+      if (pattern.startsWith(token, index)) {
         return token;
       }
     }
+
     return null;
   }
 
@@ -213,6 +226,7 @@ extension EasyDateTimeFormatting on EasyDateTime {
   /// Converts 24-hour to 12-hour format.
   int get _hour12 {
     final h = hour % 12;
+
     return h == 0 ? 12 : h;
   }
 }

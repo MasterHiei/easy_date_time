@@ -39,6 +39,35 @@ void main() {
         expect(first2026.minute, 0);
         expect(first2026.second, 0);
       });
+
+      test('pre-1970 epoch (negative timestamp)', () {
+        // 1969-12-31 23:59:59 UTC = -1 second from epoch
+        final preEpoch = EasyDateTime.utc(1969, 12, 31, 23, 59, 59);
+        expect(preEpoch.year, 1969);
+        expect(preEpoch.millisecondsSinceEpoch, lessThan(0));
+      });
+
+      test('pre-1970 arithmetic across epoch boundary', () {
+        final afterEpoch = EasyDateTime.utc(1970, 1, 1, 0, 0, 1);
+        final beforeEpoch = afterEpoch - const Duration(seconds: 2);
+
+        expect(beforeEpoch.year, 1969);
+        expect(beforeEpoch.month, 12);
+        expect(beforeEpoch.day, 31);
+        expect(beforeEpoch.hour, 23);
+        expect(beforeEpoch.minute, 59);
+        expect(beforeEpoch.second, 59);
+      });
+
+      test('pre-1970 comparison works correctly', () {
+        final y1960 = EasyDateTime.utc(1960, 6, 15);
+        final y1965 = EasyDateTime.utc(1965, 6, 15);
+        final y1970 = EasyDateTime.utc(1970, 6, 15);
+
+        expect(y1960 < y1965, isTrue);
+        expect(y1965 < y1970, isTrue);
+        expect(y1960 < y1970, isTrue);
+      });
     });
 
     group('Month boundaries', () {

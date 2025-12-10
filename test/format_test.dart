@@ -355,5 +355,36 @@ void main() {
       final dt = EasyDateTime(2025, 1, 1, 0, 0, 0);
       expect(dt.format('yyyy-MM-dd HH:mm:ss'), '2025-01-01 00:00:00');
     });
+
+    test('unclosed quote outputs remaining as literal (WYSIWYG)', () {
+      final dt = EasyDateTime(2025, 12, 1);
+      // Unclosed quote should output "Date: 2025-12-01" (unclosed quote treated as literal)
+      expect(dt.format("'Date: yyyy-MM-dd"), 'Date: yyyy-MM-dd');
+    });
+
+    test('single quote at end of pattern', () {
+      final dt = EasyDateTime(2025, 12, 1);
+      expect(dt.format("yyyy-MM-dd'"), '2025-12-01');
+    });
+
+    test('empty quoted section', () {
+      final dt = EasyDateTime(2025, 12, 1);
+      expect(dt.format("yyyy''MM"), '202512');
+    });
+
+    test('handles historical date (year 1)', () {
+      final dt = EasyDateTime.utc(1, 1, 1);
+      expect(dt.format('yyyy-MM-dd'), '0001-01-01');
+    });
+
+    test('handles far future date (year 9999)', () {
+      final dt = EasyDateTime.utc(9999, 12, 31);
+      expect(dt.format('yyyy-MM-dd'), '9999-12-31');
+    });
+
+    test('handles pre-epoch date (1950)', () {
+      final dt = EasyDateTime.utc(1950, 6, 15, 10, 30);
+      expect(dt.format('yyyy-MM-dd HH:mm'), '1950-06-15 10:30');
+    });
   });
 }
