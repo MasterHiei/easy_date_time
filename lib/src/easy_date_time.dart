@@ -6,6 +6,7 @@ import 'exceptions/exceptions.dart';
 
 part 'easy_date_time_parsing.dart';
 part 'easy_date_time_utilities.dart';
+part 'easy_date_time_formatting.dart';
 
 /// A timezone-aware DateTime implementation.
 ///

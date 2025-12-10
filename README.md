@@ -2,7 +2,7 @@
 
 **Timezone-aware DateTime for Dart**
 
-A drop-in DateTime alternative with full IANA timezone support. Designed to parse and maintain timezone information accurately without implicit UTC conversions.
+A drop-in replacement for DateTime with full IANA timezone support, intuitive arithmetic, and flexible formatting. Accurately parses and calculates time across timezones without implicit UTC conversions.
 
 [![Build Status](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml)
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
@@ -18,10 +18,10 @@ Dart's built-in `DateTime` and existing libraries often face limitations when ha
 
 | Existing Solution | Strengths | Limitations | EasyDateTime Approach |
 |-------------------|-----------|-------------|-----------------------|
-| **DateTime** (Built-in) | Standard, zero dependencies | Auto-converts offsets to UTC/Local, **loses timezone context** | **Preserves Semantics**: Retains the exact parsed time and offset. |
-| **timezone** | Full IANA support | Complex API, requires looking up zone strings | **Usability**: providing constants for common timezones. |
-| **intl** | Excellent for formatting | Primarily for display, lacks calculation features | **Separation of Concerns**: specialized in calculation, works with intl. |
-| **flutter_native_timezone** | Access system timezone | Fetch only, no calculation capabilities | **Comprehensive**: A complete solution for parsing, calculating, and converting. |
+| **DateTime** (Built-in) | Standard, zero dependencies | Auto-converts offsets to UTC/Local, **loses timezone context** | **Semantics Preserved**: Losslessly retains parsed time and offset. |
+| **timezone** | Full IANA support | Complex API, manual zone lookup required | **Developer Friendly**: Type-safe constants (e.g., `TimeZones.tokyo`). |
+| **intl** | Excellent for formatting | Display-focused, lacks calculation APIs | **Calculation Logic**: Works alongside `intl` for complex math sequences. |
+| **flutter_native_timezone** | Access system timezone | Fetch-only, no calculation capabilities | **Complete Solution**: Unified parsing, calculation, and conversion. |
 
 **Comparison:**
 
@@ -38,19 +38,28 @@ EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 (As expected)
 ## Key Features
 
 * 🌍 **Full IANA Timezone Support**
-  Support for all IANA timezones (e.g., `Asia/Shanghai`, `America/New_York`) with a simple API.
 
-* 🕒 **Preserves Parsed Values**
-  No implicit conversion to UTC. The time you parse is the time stored.
+  Use all standard IANA timezones (e.g., `Asia/Shanghai`, `America/New_York`) with a unified API.
+
+* 🕒 **Lossless Parsing**
+
+  Parses and stores the exact time value. No implicit UTC conversion.
 
 * ➕ **Intuitive Arithmetic**
-  Supports natural arithmetic extensions like `now + 1.days` or `2.hours`.
+
+  Calculate with natural syntax: `now + 1.days` or `2.hours`.
 
 * 🔄 **Explicit Conversion**
-  Timezone conversion only happens when explicitly requested via `.inLocation()` or `.toUtc()`.
+
+  Timezone conversion happens only when explicit: `.inLocation()` or `.toUtc()`.
 
 * 🧱 **Safe Date Calculation**
-  Handles month/year overflows gracefully (e.g., Jan 31 + 1 month -> Feb 28) with `copyWithClamped`.
+
+  Intelligent month overflow handling (e.g., Jan 31 + 1 month -> Feb 28) via `copyWithClamped`.
+
+* 📝 **Flexible Formatting**
+
+  Format with custom patterns (`format('yyyy-MM-dd')`) or standard constants (`DateTimeFormats.isoDate`).
 
 ---
 
@@ -60,10 +69,10 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.2.2
+  easy_date_time: ^0.3.1
 ```
 
-**Note**: You **must** initialize the timezone database before using the library to ensure accuracy:
+**Note**: You **must** initialize the timezone database before using the library:
 
 ```dart
 void main() {
@@ -94,7 +103,7 @@ print(parsed.hour);  // 10
 
 ### 1. Common Timezones (Recommended)
 
-Pre-defined constants are available for common timezones:
+Use pre-defined constants for common timezones:
 
 ```dart
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
@@ -142,7 +151,7 @@ final effective = EasyDateTime.effectiveDefaultLocation;  // or effectiveDefault
 
 ## Preserving Time Semantics
 
-Even when parsing strings with offsets, `EasyDateTime` preserves both the literal time and the timezone location:
+`EasyDateTime` preserves both the literal time and the timezone location, even when parsing strings with offsets:
 
 ```dart
 final dt = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
@@ -151,7 +160,7 @@ print(dt.hour);          // 10
 print(dt.locationName);  // Asia/Shanghai
 ```
 
-To convert timezones, use explicit methods:
+Use explicit methods to convert timezones:
 
 ```dart
 final ny = dt.inLocation(TimeZones.newYork);
@@ -194,9 +203,49 @@ jan31.copyWithClamped(month: 2); // Feb 28 (Clamped to the last day of the month
 
 ---
 
+## Date Formatting
+
+Use the `format()` method with pattern tokens for flexible date/time formatting:
+
+```dart
+final dt = EasyDateTime(2025, 12, 1, 14, 30, 45);
+
+dt.format('yyyy-MM-dd');           // '2025-12-01'
+dt.format('yyyy/MM/dd HH:mm:ss');  // '2025/12/01 14:30:45'
+dt.format('MM/dd/yyyy');           // '12/01/2025'
+dt.format('hh:mm a');              // '02:30 PM'
+```
+
+### Predefined Formats
+
+Use `DateTimeFormats` for common patterns:
+
+```dart
+dt.format(DateTimeFormats.isoDate);      // '2025-12-01'
+dt.format(DateTimeFormats.usDate);       // '12/01/2025'
+dt.format(DateTimeFormats.fullDateTime); // '2025-12-01 14:30:45'
+dt.format(DateTimeFormats.time12Hour);   // '02:30 PM'
+```
+
+### Pattern Tokens
+
+| Token | Description | Example |
+|-------|-------------|---------|
+| `yyyy` | 4-digit year | 2025 |
+| `MM`/`M` | Month (padded/unpadded) | 01, 1 |
+| `dd`/`d` | Day (padded/unpadded) | 01, 1 |
+| `HH`/`H` | 24-hour (padded/unpadded) | 09, 9 |
+| `hh`/`h` | 12-hour (padded/unpadded) | 02, 2 |
+| `mm`/`m` | Minutes (padded/unpadded) | 05, 5 |
+| `ss`/`s` | Seconds (padded/unpadded) | 05, 5 |
+| `SSS` | Milliseconds | 123 |
+| `a` | AM/PM marker | AM, PM |
+
+---
+
 ## Extension Handling
 
-This package includes extensions on `int` (e.g., `1.days`). If this conflicts with other packages, specialized imports can hide the extension:
+This package adds extensions on `int` (e.g., `1.days`). If this conflicts with other packages, hide the extension via specialized imports:
 
 ```dart
 import 'package:easy_date_time/easy_date_time.dart' hide DurationExtension;

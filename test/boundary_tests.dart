@@ -142,6 +142,59 @@ void main() {
       });
     });
 
+    group('DST transition edge cases', () {
+      test('DST Spring Forward - gap hour handling (2:00 AM -> 3:00 AM)', () {
+        // In New York, 2025-03-09 at 2:00 AM clocks spring forward to 3:00 AM
+        // Times like 2:30 AM don't exist - the timezone package adjusts them
+        final ny = getLocation('America/New_York');
+        final dt = EasyDateTime(2025, 3, 9, 2, 30, 0, 0, 0, ny);
+
+        // The timezone package typically adjusts invalid times forward
+        // Either stays at 2:30 (interpreted as standard time) or jumps to 3:30
+        expect(dt.hour, anyOf(2, 3));
+        expect(dt.locationName, 'America/New_York');
+      });
+
+      test('DST Fall Back - ambiguous hour (1:00-2:00 AM occurs twice)', () {
+        // In New York, 2025-11-02 at 2:00 AM clocks fall back to 1:00 AM
+        // Times like 1:30 AM occur twice - once in DST, once in standard time
+        final ny = getLocation('America/New_York');
+        final dt = EasyDateTime(2025, 11, 2, 1, 30, 0, 0, 0, ny);
+
+        // The time value should be preserved
+        expect(dt.hour, 1);
+        expect(dt.minute, 30);
+        expect(dt.locationName, 'America/New_York');
+      });
+
+      test('Cross-DST arithmetic preserves instant', () {
+        // Create a time before DST transition
+        final ny = getLocation('America/New_York');
+        final beforeDst = EasyDateTime(2025, 3, 9, 1, 30, 0, 0, 0, ny);
+
+        // Add 2 hours - this crosses the DST gap
+        final afterAdd = beforeDst + const Duration(hours: 2);
+
+        // 1:30 AM + 2 hours = 4:30 AM (because 2:00-3:00 doesn't exist)
+        expect(afterAdd.hour, 4);
+        expect(afterAdd.minute, 30);
+      });
+
+      test('UTC conversion around DST transition is consistent', () {
+        final ny = getLocation('America/New_York');
+
+        // Before DST: EST (UTC-5)
+        final beforeDst = EasyDateTime(2025, 3, 9, 1, 0, 0, 0, 0, ny);
+        final beforeUtc = beforeDst.toUtc();
+        expect(beforeUtc.hour, 6); // 1:00 EST = 6:00 UTC
+
+        // After DST: EDT (UTC-4)
+        final afterDst = EasyDateTime(2025, 3, 9, 3, 0, 0, 0, 0, ny);
+        final afterUtc = afterDst.toUtc();
+        expect(afterUtc.hour, 7); // 3:00 EDT = 7:00 UTC
+      });
+    });
+
     group('Arithmetic edge cases', () {
       test('adding Duration.zero returns same moment', () {
         final dt = EasyDateTime.utc(2025, 6, 15, 10, 0);
@@ -369,6 +422,46 @@ void main() {
 
         expect(modified.locationName, 'Asia/Tokyo');
         expect(modified.hour, 10); // Hour stays same, it's not a conversion
+      });
+    });
+
+    group('format() during DST transitions', () {
+      test('format preserves local hour during Spring Forward gap', () {
+        // In New York, 2025-03-09 at 2:00 AM clocks spring forward to 3:00 AM
+        final ny = getLocation('America/New_York');
+        final dt = EasyDateTime(2025, 3, 9, 3, 30, 0, 0, 0, ny);
+
+        // Format should show the actual local time
+        expect(dt.format('HH:mm'), '03:30');
+        expect(dt.format('hh:mm a'), '03:30 AM');
+      });
+
+      test('format preserves local hour during Fall Back ambiguous hour', () {
+        // In New York, 2025-11-02 at 2:00 AM clocks fall back to 1:00 AM
+        final ny = getLocation('America/New_York');
+        final dt = EasyDateTime(2025, 11, 2, 1, 30, 0, 0, 0, ny);
+
+        // Format should show the stored local time
+        expect(dt.format('HH:mm'), '01:30');
+        expect(dt.format('hh:mm a'), '01:30 AM');
+      });
+
+      test('format works consistently across DST boundary', () {
+        final ny = getLocation('America/New_York');
+
+        // Before DST transition (EST)
+        final beforeDst = EasyDateTime(2025, 3, 9, 1, 0, 0, 0, 0, ny);
+        // After DST transition (EDT)
+        final afterDst = EasyDateTime(2025, 3, 9, 3, 0, 0, 0, 0, ny);
+
+        expect(beforeDst.format('yyyy-MM-dd HH:mm'), '2025-03-09 01:00');
+        expect(afterDst.format('yyyy-MM-dd HH:mm'), '2025-03-09 03:00');
+      });
+
+      test('format with 12-hour clock during midnight DST', () {
+        // Some rare timezones have DST at midnight
+        final dt = EasyDateTime(2025, 3, 30, 0, 30, 0, 0, 0, TimeZones.london);
+        expect(dt.format('hh:mm a'), '12:30 AM');
       });
     });
   });

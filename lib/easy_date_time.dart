@@ -40,3 +40,5 @@ export 'src/extensions/date_time_extension.dart';
 export 'src/extensions/duration_extension.dart';
 
 export 'src/timezones.dart';
+
+// DateTimeFormats is exported automatically as part of src/easy_date_time.dart

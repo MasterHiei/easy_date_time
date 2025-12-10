@@ -2,7 +2,7 @@
 
 /// Formatting Example
 ///
-/// Demonstrates: various output formats.
+/// Demonstrates: various output formats using format() method.
 /// Run: dart run example/08_formatting.dart
 library;
 
@@ -18,20 +18,60 @@ void main() {
   print('DateTime: $dt\n');
 
   // --------------------------------------------------------
-  // Built-in formats
+  // Built-in formats (existing methods)
   // --------------------------------------------------------
   print('Built-in formats:');
   print('  toString():        $dt');
   print('  toIso8601String(): ${dt.toIso8601String()}');
   print('  toDateString():    ${dt.toDateString()}');
   print('  toTimeString():    ${dt.toTimeString()}');
-  print('  toJson():          ${dt.toIso8601String()}');
   print('');
 
   // --------------------------------------------------------
-  // Properties for custom formatting
+  // Custom format patterns with format() method
   // --------------------------------------------------------
-  print('Properties for custom formatting:');
+  print('Custom format patterns:');
+  print("  format('yyyy-MM-dd'):           ${dt.format('yyyy-MM-dd')}");
+  print("  format('dd/MM/yyyy'):           ${dt.format('dd/MM/yyyy')}");
+  print("  format('MM/dd/yyyy'):           ${dt.format('MM/dd/yyyy')}");
+  print("  format('yyyy/MM/dd'):           ${dt.format('yyyy/MM/dd')}");
+  print("  format('HH:mm:ss'):             ${dt.format('HH:mm:ss')}");
+  print("  format('hh:mm a'):              ${dt.format('hh:mm a')}");
+  print("  format('HH:mm:ss.SSS'):         ${dt.format('HH:mm:ss.SSS')}");
+  print("  format('yyyy-MM-dd HH:mm:ss'): ${dt.format('yyyy-MM-dd HH:mm:ss')}");
+  print('');
+
+  // --------------------------------------------------------
+  // Predefined format constants
+  // --------------------------------------------------------
+  print('Predefined DateTimeFormats:');
+  print('  isoDate:          ${dt.format(DateTimeFormats.isoDate)}');
+  print('  isoTime:          ${dt.format(DateTimeFormats.isoTime)}');
+  print('  isoDateTime:      ${dt.format(DateTimeFormats.isoDateTime)}');
+  print('  usDate:           ${dt.format(DateTimeFormats.usDate)}');
+  print('  euDate:           ${dt.format(DateTimeFormats.euDate)}');
+  print('  asianDate:        ${dt.format(DateTimeFormats.asianDate)}');
+  print('  time12Hour:       ${dt.format(DateTimeFormats.time12Hour)}');
+  print('  time24Hour:       ${dt.format(DateTimeFormats.time24Hour)}');
+  print('  fullDateTime:     ${dt.format(DateTimeFormats.fullDateTime)}');
+  print('  fullDateTime12Hr: ${dt.format(DateTimeFormats.fullDateTime12Hour)}');
+  print('');
+
+  // --------------------------------------------------------
+  // Escaped literal text in patterns
+  // --------------------------------------------------------
+  print('Escaped literal text:');
+  print(
+      "  format(\"yyyy-MM-dd'T'HH:mm:ss\"): ${dt.format("yyyy-MM-dd'T'HH:mm:ss")}");
+  print(
+      "  format(\"'Date:' yyyy-MM-dd\"):    ${dt.format("'Date:' yyyy-MM-dd")}");
+  print("  format('yyyy年MM月dd日'):         ${dt.format('yyyy年MM月dd日')}");
+  print('');
+
+  // --------------------------------------------------------
+  // DateTime properties (for reference)
+  // --------------------------------------------------------
+  print('Properties:');
   print('  year:        ${dt.year}');
   print('  month:       ${dt.month}');
   print('  day:         ${dt.day}');
@@ -39,29 +79,6 @@ void main() {
   print('  minute:      ${dt.minute}');
   print('  second:      ${dt.second}');
   print('  millisecond: ${dt.millisecond}');
-  print('  microsecond: ${dt.microsecond}');
   print('  weekday:     ${dt.weekday}');
   print('  locationName: ${dt.locationName}');
-  print('  timeZoneOffset: ${dt.timeZoneOffset}');
-  print('');
-
-  // --------------------------------------------------------
-  // Custom formatting examples
-  // --------------------------------------------------------
-  print('Custom formatting:');
-  print('  YYYY/MM/DD: ${dt.year}/${_pad(dt.month)}/${_pad(dt.day)}');
-  print('  DD-MM-YYYY: ${_pad(dt.day)}-${_pad(dt.month)}-${dt.year}');
-  print('  HH:MM:      ${_pad(dt.hour)}:${_pad(dt.minute)}');
-  print(
-      '  12-hour:    ${_to12Hour(dt.hour)}:${_pad(dt.minute)} ${_amPm(dt.hour)}');
 }
-
-String _pad(int n) => n.toString().padLeft(2, '0');
-
-int _to12Hour(int hour) {
-  final h = hour % 12;
-
-  return h == 0 ? 12 : h;
-}
-
-String _amPm(int hour) => hour < 12 ? 'AM' : 'PM';
