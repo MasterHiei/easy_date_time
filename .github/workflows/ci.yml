@@ -91,11 +91,12 @@ jobs:
           files: test-results.xml
 
   test_compatibility:
-    name: Test Compatibility (${{ matrix.sdk }})
-    runs-on: ubuntu-latest
+    name: Test Compatibility (${{ matrix.os }} / ${{ matrix.sdk }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
       matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
         sdk: ["3.0.0", "beta"]
     steps:
       - uses: actions/checkout@v6
