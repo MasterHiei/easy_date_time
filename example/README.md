@@ -35,7 +35,7 @@ No code generation needed. Run directly:
 | [arithmetic.dart](lib/core/arithmetic.dart) | Date arithmetic |
 | [date_utils.dart](lib/core/date_utils.dart) | isToday, startOfDay, etc. |
 | [json_serialization.dart](lib/core/json_serialization.dart) | JSON serialization |
-| [formatting.dart](lib/core/formatting.dart) | Output formats |
+| [formatting.dart](lib/core/formatting.dart) | Output formats using format() and DateTimeFormats |
 | [copywith.dart](lib/core/copywith.dart) | Creating modified copies |
 | [error_handling.dart](lib/core/error_handling.dart) | Safe parsing, validation |
 
@@ -67,9 +67,9 @@ class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
   const EasyDateTimeConverter();
 
   @override
-  EasyDateTime fromJson(String json) => EasyDateTime.fromJson(json);
+  EasyDateTime fromJson(String json) => EasyDateTime.fromIso8601String(json);
 
   @override
-  String toJson(EasyDateTime object) => object.toJson();
+  String toJson(EasyDateTime object) => object.toIso8601String();
 }
 ```

@@ -2,7 +2,7 @@
 
 **Timezone-aware DateTime for Dart**
 
-A drop-in DateTime replacement with full IANA timezone support. Accurately parses and calculates time across timezones without implicit UTC conversions.
+A drop-in replacement for DateTime with full IANA timezone support, intuitive arithmetic, and flexible formatting. Accurately parses and calculates time across timezones without implicit UTC conversions.
 
 [![Build Status](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml)
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
@@ -69,7 +69,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.2.2
+  easy_date_time: ^0.3.1
 ```
 
 **Note**: You **must** initialize the timezone database before using the library:
