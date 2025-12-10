@@ -741,7 +741,7 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// local timezone.
   ///
   /// ```dart
-  /// setDefaultLocation(TimeZones.shanghai);
+  /// EasyDateTime.setDefaultLocation(TimeZones.shanghai);
   /// final now = EasyDateTime.now(); // Shanghai time
   /// ```
   static void setDefaultLocation(Location? location) =>
@@ -775,7 +775,7 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// Call once at app startup:
   /// ```dart
   /// void main() {
-  ///   initializeTimeZone();
+  ///   EasyDateTime.initializeTimeZone();
   ///   runApp(MyApp());
   /// }
   /// ```
@@ -783,7 +783,7 @@ class EasyDateTime implements Comparable<EasyDateTime> {
 
   /// Checks if the IANA timezone database has been initialized.
   ///
-  /// Returns `true` if [initializeTimeZone] has been called successfully.
+  /// Returns `true` if [EasyDateTime.initializeTimeZone] has been called successfully.
   ///
   ///
   static bool get isTimeZoneInitialized => init.isTimeZoneInitialized;
