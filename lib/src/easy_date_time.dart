@@ -730,9 +730,9 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   static const int december = DateTime.december;
   static const int monthsPerYear = DateTime.monthsPerYear;
 
-  // These static methods provide convenient class-level access to the global timezone 
-  // configuration functions. Using `EasyDateTime.setDefaultLocation()` instead of the 
-  // global `setDefaultLocation()` makes it clearer which package the functionality 
+  // These static methods provide convenient class-level access to the global timezone
+  // configuration functions. Using `EasyDateTime.setDefaultLocation()` instead of the
+  // global `setDefaultLocation()` makes it clearer which package the functionality
   // belongs to, improving code readability and maintainability.
 
   /// Sets the global default timezone for all [EasyDateTime] operations.
@@ -784,8 +784,7 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// Checks if the IANA timezone database has been initialized.
   ///
   /// Returns `true` if [initializeTimeZone] has been called successfully.
-  /// 
-  /// 
+  ///
+  ///
   static bool get isTimeZoneInitialized => init.isTimeZoneInitialized;
-
 }
