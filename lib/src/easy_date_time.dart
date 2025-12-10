@@ -123,7 +123,8 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// final nowInTokyo = EasyDateTime.now(location: getLocation('Asia/Tokyo'));
   /// ```
   factory EasyDateTime.now({Location? location}) {
-    return EasyDateTime._(TZDateTime.now(location ?? config.effectiveDefaultLocation));
+    return EasyDateTime._(
+        TZDateTime.now(location ?? config.effectiveDefaultLocation));
   }
 
   /// Creates an [EasyDateTime] in UTC from the given components.
@@ -703,7 +704,6 @@ class EasyDateTime implements Comparable<EasyDateTime> {
     );
   }
 
-
   // These constants are provided for 'drop in' compatibility with DateTime. (They are copied from DateTime to ensure consistency.)
   // Weekday constants that are returned by [weekday] method:
   static const int monday = DateTime.monday;
@@ -736,7 +736,6 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   //   `EasyDateTime.clearDefaultLocation()` instead of `clearDefaultLocation()`
   // which provides no context of which package it references/belongs to.
 
-
   /// Sets the global default timezone for all [EasyDateTime] operations.
   ///
   /// This is **optional**. If not set, [EasyDateTime] uses the system's
@@ -746,7 +745,8 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// setDefaultLocation(TimeZones.shanghai);
   /// final now = EasyDateTime.now(); // Shanghai time
   /// ```
-  static void setDefaultLocation(Location? location) => config.setDefaultLocation(location);
+  static void setDefaultLocation(Location? location) =>
+      config.setDefaultLocation(location);
 
   /// Gets the current global default timezone.
   ///
@@ -766,6 +766,6 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   ///
   /// **Throws [TimeZoneNotInitializedException]** if [initializeTimeZone]
   /// has not been called.
-  static Location get effectiveDefaultLocation => config.effectiveDefaultLocation;
-
+  static Location get effectiveDefaultLocation =>
+      config.effectiveDefaultLocation;
 }
