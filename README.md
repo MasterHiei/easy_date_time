@@ -72,14 +72,29 @@ dependencies:
   easy_date_time: ^0.3.2
 ```
 
-**Note**: You **must** initialize the timezone database before using the library:
+**Note**: You **must** initialize the timezone database before using the library.
 
+You can use either the global functions or the static methods on `EasyDateTime`:
+
+**Option 1: Global functions**
 ```dart
 void main() {
   initializeTimeZone();  // Required
 
   // Optional: Set a global default location
   setDefaultLocation(TimeZones.shanghai);
+
+  runApp(MyApp());
+}
+```
+
+**Option 2: Static methods (more explicit about package context)**
+```dart
+void main() {
+  EasyDateTime.initializeTimeZone();  // Required
+
+  // Optional: Set a global default location
+  EasyDateTime.setDefaultLocation(TimeZones.shanghai);
 
   runApp(MyApp());
 }
@@ -120,11 +135,31 @@ final nairobi = EasyDateTime.now(location: getLocation('Africa/Nairobi'));
 
 ### 3. Global Default Timezone
 
-Set a default location to make `EasyDateTime.now()` use that timezone globally:
+Setting a default location allows `EasyDateTime.now()` to use that timezone globally.
+
+You can use either the global function or the static method on `EasyDateTime`:
 
 ```dart
+// Option 1: Global function
 setDefaultLocation(TimeZones.shanghai);
+
+// Option 2: Static method (more explicit about package context)
+EasyDateTime.setDefaultLocation(TimeZones.shanghai);
+
 final now = EasyDateTime.now();  // Returns time in Asia/Shanghai
+```
+
+**Managing the default timezone:**
+
+```dart
+// Get the current default timezone
+final current = EasyDateTime.getDefaultLocation();  // or getDefaultLocation()
+
+// Clear the default (reverts to system local timezone)
+EasyDateTime.clearDefaultLocation();  // or clearDefaultLocation()
+
+// Get the effective default location (user-set or system local)
+final effective = EasyDateTime.effectiveDefaultLocation;  // or effectiveDefaultLocation
 ```
 
 ---
