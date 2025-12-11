@@ -7,14 +7,14 @@ late Location localTimeZone;
 
 void main() {
   setUpAll(() {
-    initializeTimeZone();
+    EasyDateTime.initializeTimeZone();
     // Get local timezone reference after initialization
     localTimeZone = local;
   });
 
   tearDown(() {
     // Reset global default after each test to local timezone
-    clearDefaultLocation();
+    EasyDateTime.clearDefaultLocation();
   });
 
   group('EasyDateTime', () {
@@ -122,36 +122,36 @@ void main() {
 
     group('global default timezone', () {
       test('setDefaultLocation changes default timezone', () {
-        setDefaultLocation(getLocation('Asia/Tokyo'));
+        EasyDateTime.setDefaultLocation(getLocation('Asia/Tokyo'));
 
         final dt = EasyDateTime(2025, 12, 1, 10, 30);
         expect(dt.locationName, 'Asia/Tokyo');
       });
 
       test('clearDefaultLocation resets to local', () {
-        setDefaultLocation(getLocation('Asia/Tokyo'));
-        clearDefaultLocation();
+        EasyDateTime.setDefaultLocation(getLocation('Asia/Tokyo'));
+        EasyDateTime.clearDefaultLocation();
 
         final dt = EasyDateTime(2025, 12, 1, 10, 30);
         expect(dt.location, localTimeZone);
       });
 
       test('getDefaultLocation returns current default', () {
-        expect(getDefaultLocation(), isNull);
+        expect(EasyDateTime.getDefaultLocation(), isNull);
 
         final tokyo = getLocation('Asia/Tokyo');
-        setDefaultLocation(tokyo);
-        expect(getDefaultLocation(), tokyo);
+        EasyDateTime.setDefaultLocation(tokyo);
+        expect(EasyDateTime.getDefaultLocation(), tokyo);
       });
 
       test('now() uses global default', () {
-        setDefaultLocation(getLocation('America/New_York'));
+        EasyDateTime.setDefaultLocation(getLocation('America/New_York'));
         final dt = EasyDateTime.now();
         expect(dt.locationName, 'America/New_York');
       });
 
       test('explicit location overrides global default', () {
-        setDefaultLocation(getLocation('Asia/Tokyo'));
+        EasyDateTime.setDefaultLocation(getLocation('Asia/Tokyo'));
         final london = getLocation('Europe/London');
         final dt = EasyDateTime.now(location: london);
         expect(dt.locationName, 'Europe/London');
@@ -506,12 +506,12 @@ void main() {
     });
 
     test('toEasyDateTime() uses global default', () {
-      setDefaultLocation(getLocation('Europe/London'));
+      EasyDateTime.setDefaultLocation(getLocation('Europe/London'));
       final dt = DateTime.utc(2025, 12, 1, 10, 30);
       final easyDt = dt.toEasyDateTime();
 
       expect(easyDt.locationName, 'Europe/London');
-      clearDefaultLocation(); // Clean up
+      EasyDateTime.clearDefaultLocation(); // Clean up
     });
   });
 }

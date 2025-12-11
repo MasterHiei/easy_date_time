@@ -3,12 +3,12 @@ import 'package:test/test.dart';
 
 void main() {
   setUpAll(() {
-    initializeTimeZone();
+    EasyDateTime.initializeTimeZone();
   });
 
   tearDown(() {
     // Reset global default after each test
-    clearDefaultLocation();
+    EasyDateTime.clearDefaultLocation();
   });
 
   group('Date Utilities', () {

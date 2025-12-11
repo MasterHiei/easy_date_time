@@ -3,11 +3,11 @@ import 'package:test/test.dart';
 
 void main() {
   setUpAll(() {
-    initializeTimeZone();
+    EasyDateTime.initializeTimeZone();
   });
 
   tearDown(() {
-    clearDefaultLocation();
+    EasyDateTime.clearDefaultLocation();
   });
 
   group('Negative test cases - parse() error handling', () {

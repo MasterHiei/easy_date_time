@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 void main() {
   setUpAll(() {
-    initializeTimeZone();
+    EasyDateTime.initializeTimeZone();
   });
 
   group('TimeZones', () {
@@ -111,10 +111,10 @@ void main() {
       });
 
       test('TimeZones can be used with setDefaultLocation', () {
-        setDefaultLocation(TimeZones.tokyo);
+        EasyDateTime.setDefaultLocation(TimeZones.tokyo);
         final dt = EasyDateTime.now();
         expect(dt.locationName, 'Asia/Tokyo');
-        clearDefaultLocation();
+        EasyDateTime.clearDefaultLocation();
       });
     });
   });
