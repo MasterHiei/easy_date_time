@@ -2,7 +2,7 @@
 
 **Timezone-aware DateTime for Dart**
 
-A drop-in replacement for DateTime with full IANA timezone support, intuitive arithmetic, and flexible formatting. Accurately parses and calculates time across timezones without implicit UTC conversions.
+A drop-in replacement for DateTime with full IANA timezone support, intuitive arithmetic, and flexible formatting. **Immutable**, accurate, and developer-friendly.
 
 [![Build Status](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml)
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
@@ -26,40 +26,46 @@ Dart's built-in `DateTime` and existing libraries often face limitations when ha
 **Comparison:**
 
 ```dart
-// DateTime: Parses offset but converts to UTC, changing the hour value
-DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2 (Context lost)
+// ❌ Native DateTime: Implicitly converts to UTC/Local, losing the original offset context.
+DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2 (Changed to UTC hour)
 
-// EasyDateTime: Retains the parsed time value
-EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 (As expected)
+// ✅ EasyDateTime: Preserves the exact parsed hour and offset.
+EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 (Preserved)
 ```
 
 ---
 
 ## Key Features
 
-* 🌍 **Full IANA Timezone Support**
+### 🌍 Full IANA Timezone Support
+Use standard IANA constants or custom strings.
+```dart
+final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
+```
 
-  Use all standard IANA timezones (e.g., `Asia/Shanghai`, `America/New_York`) with a unified API.
+### 🕒 Lossless Parsing
+No implicit UTC conversion. Retains the exact parsed values.
+```dart
+EasyDateTime.parse('2025-12-07T10:00+08:00').hour // -> 10
+```
 
-* 🕒 **Lossless Parsing**
+### ➕ Intuitive Arithmetic
+Natural syntax for date calculations.
+```dart
+final later = now + 2.hours + 30.minutes;
+```
 
-  Parses and stores the exact time value. No implicit UTC conversion.
+### 🧱 Safe Date Calculation
+Handles month overflow intelligently.
+```dart
+jan31.copyWithClamped(month: 2); // -> Feb 28
+```
 
-* ➕ **Intuitive Arithmetic**
-
-  Calculate with natural syntax: `now + 1.days` or `2.hours`.
-
-* 🔄 **Explicit Conversion**
-
-  Timezone conversion happens only when explicit: `.inLocation()` or `.toUtc()`.
-
-* 🧱 **Safe Date Calculation**
-
-  Intelligent month overflow handling (e.g., Jan 31 + 1 month -> Feb 28) via `copyWithClamped`.
-
-* 📝 **Flexible Formatting**
-
-  Format with custom patterns (`format('yyyy-MM-dd')`) or standard constants (`DateTimeFormats.isoDate`).
+### 📝 Flexible Formatting
+Performance-optimized formatting.
+```dart
+dt.format('yyyy-MM-dd'); // -> 2025-12-07
+```
 
 ---
 
@@ -69,7 +75,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.3.4
+  easy_date_time: ^0.3.5
 ```
 
 **Note**: You **must** initialize the timezone database before using the library.
@@ -195,8 +201,8 @@ final later = now + 2.hours + 30.minutes;
 ```dart
 final jan31 = EasyDateTime.utc(2025, 1, 31);
 
-jan31.copyWith(month: 2);        // March 3rd (Standard overflow behavior)
-jan31.copyWithClamped(month: 2); // Feb 28 (Clamped to the last day of the month)
+jan31.copyWith(month: 2);        // ⚠️ Mar 3rd (Standard overflow)
+jan31.copyWithClamped(month: 2); // ✅ Feb 28 (Clamped to last valid day)
 ```
 
 ---
@@ -215,12 +221,11 @@ dt.format('hh:mm a');              // '02:30 PM'
 ```
 
 > [!TIP]
-> For high-performance scenarios (e.g., formatting dates in a loop), use `EasyDateTimeFormatter` to pre-compile patterns:
+> **Performance Optimization**: For hot paths (e.g., loops), use `EasyDateTimeFormatter` to pre-compile patterns.
 > ```dart
+> // Compiled once, reused multiple times
 > static final formatter = EasyDateTimeFormatter('yyyy-MM-dd HH:mm');
->
-> // Reuses parsed pattern for better performance
-> final str = formatter.format(date);
+> String result = formatter.format(date);
 > ```
 
 ### Predefined Formats
@@ -229,10 +234,11 @@ Use `DateTimeFormats` for common patterns:
 
 ```dart
 dt.format(DateTimeFormats.isoDate);      // '2025-12-01'
-dt.format(DateTimeFormats.usDate);       // '12/01/2025'
-dt.format(DateTimeFormats.fullDateTime); // '2025-12-01 14:30:45'
+dt.format(DateTimeFormats.isoTime);      // '14:30:45'
+dt.format(DateTimeFormats.isoDateTime);  // '2025-12-01T14:30:45'
 dt.format(DateTimeFormats.time12Hour);   // '02:30 PM'
-dt.format(DateTimeFormats.rfc2822);      // '01 12 2025 14:30:45'
+dt.format(DateTimeFormats.time24Hour);   // '14:30'
+dt.format(DateTimeFormats.rfc2822);      // 'Mon, 01 Dec 2025 14:30:45 +0800'
 ```
 
 ### Pattern Tokens
@@ -241,13 +247,18 @@ dt.format(DateTimeFormats.rfc2822);      // '01 12 2025 14:30:45'
 |-------|-------------|---------|
 | `yyyy` | 4-digit year | 2025 |
 | `MM`/`M` | Month (padded/unpadded) | 01, 1 |
+| `MMM` | Month abbreviation | Jan, Dec |
 | `dd`/`d` | Day (padded/unpadded) | 01, 1 |
+| `EEE` | Day-of-week abbreviation | Mon, Sun |
 | `HH`/`H` | 24-hour (padded/unpadded) | 09, 9 |
 | `hh`/`h` | 12-hour (padded/unpadded) | 02, 2 |
 | `mm`/`m` | Minutes (padded/unpadded) | 05, 5 |
 | `ss`/`s` | Seconds (padded/unpadded) | 05, 5 |
 | `SSS` | Milliseconds | 123 |
 | `a` | AM/PM marker | AM, PM |
+| `xxxx` | Timezone offset | +0800, -0500 |
+| `xx` | Short timezone offset | +08, -05 |
+| `X` | Z for UTC, else offset | Z, +0800 |
 
 ---
 

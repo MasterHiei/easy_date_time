@@ -45,16 +45,12 @@ void main() {
   // Predefined format constants
   // --------------------------------------------------------
   print('Predefined DateTimeFormats:');
-  print('  isoDate:          ${dt.format(DateTimeFormats.isoDate)}');
-  print('  isoTime:          ${dt.format(DateTimeFormats.isoTime)}');
-  print('  isoDateTime:      ${dt.format(DateTimeFormats.isoDateTime)}');
-  print('  usDate:           ${dt.format(DateTimeFormats.usDate)}');
-  print('  euDate:           ${dt.format(DateTimeFormats.euDate)}');
-  print('  asianDate:        ${dt.format(DateTimeFormats.asianDate)}');
-  print('  time12Hour:       ${dt.format(DateTimeFormats.time12Hour)}');
-  print('  time24Hour:       ${dt.format(DateTimeFormats.time24Hour)}');
-  print('  fullDateTime:     ${dt.format(DateTimeFormats.fullDateTime)}');
-  print('  fullDateTime12Hr: ${dt.format(DateTimeFormats.fullDateTime12Hour)}');
+  print('  isoDate:     ${dt.format(DateTimeFormats.isoDate)}');
+  print('  isoTime:     ${dt.format(DateTimeFormats.isoTime)}');
+  print('  isoDateTime: ${dt.format(DateTimeFormats.isoDateTime)}');
+  print('  rfc2822:     ${dt.format(DateTimeFormats.rfc2822)}');
+  print('  time12Hour:  ${dt.format(DateTimeFormats.time12Hour)}');
+  print('  time24Hour:  ${dt.format(DateTimeFormats.time24Hour)}');
   print('');
 
   // --------------------------------------------------------
