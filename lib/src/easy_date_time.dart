@@ -188,7 +188,17 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   factory EasyDateTime.fromMillisecondsSinceEpoch(
     int milliseconds, {
     Location? location,
+    bool isUtc = false,
   }) {
+    if(isUtc) {
+      assert(location==null, 'Cannot specify both isUtc and location.');
+      return EasyDateTime._(
+        TZDateTime.fromMillisecondsSinceEpoch(
+          getLocation('UTC'),
+          milliseconds,
+        ),
+      );
+    }
     return EasyDateTime._(
       TZDateTime.fromMillisecondsSinceEpoch(
         location ?? config.effectiveDefaultLocation,
