@@ -9,8 +9,10 @@ part of 'easy_date_time.dart';
 const _tokens = [
   'yyyy',
   'yy',
+  'MMM',
   'MM',
   'M',
+  'EEE',
   'dd',
   'd',
   'HH',
@@ -24,6 +26,29 @@ const _tokens = [
   'SSS',
   'S',
   'a',
+  'xxxx',
+  'xx',
+  'X',
+];
+
+/// Day-of-week abbreviations (ISO 8601: Monday = 1)
+const _dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+/// Month abbreviations (1-indexed, index 0 is empty)
+const _monthNames = [
+  '',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 
 /// Predefined date/time format patterns.
@@ -36,63 +61,57 @@ const _tokens = [
 /// print(dt.format(DateTimeFormats.usDate));   // '12/01/2025'
 /// ```
 abstract final class DateTimeFormats {
+  // ============================================================
+  // ISO 8601 Standard Formats
+  // See: https://en.wikipedia.org/wiki/ISO_8601
+  // ============================================================
+
   /// ISO 8601 date format: `yyyy-MM-dd`
+  ///
+  /// International standard for date representation.
   ///
   /// Example: `2025-12-01`
   static const String isoDate = 'yyyy-MM-dd';
 
   /// ISO 8601 time format: `HH:mm:ss`
   ///
+  /// International standard for time representation (24-hour clock).
+  ///
   /// Example: `14:30:45`
   static const String isoTime = 'HH:mm:ss';
 
-  /// ISO 8601 date and time format: `yyyy-MM-dd'T'HH:mm:ss`
+  /// ISO 8601 combined date and time format: `yyyy-MM-dd'T'HH:mm:ss`
+  ///
+  /// International standard using 'T' as separator.
   ///
   /// Example: `2025-12-01T14:30:45`
   static const String isoDateTime = "yyyy-MM-dd'T'HH:mm:ss";
 
-  /// US date format: `MM/dd/yyyy`
-  ///
-  /// Example: `12/01/2025`
-  static const String usDate = 'MM/dd/yyyy';
+  // ============================================================
+  // RFC 2822 Standard Format
+  // See: https://datatracker.ietf.org/doc/html/rfc2822#section-3.3
+  // ============================================================
 
-  /// European date format: `dd/MM/yyyy`
+  /// RFC 2822 date-time format: `EEE, dd MMM yyyy HH:mm:ss xxxx`
   ///
-  /// Example: `01/12/2025`
-  static const String euDate = 'dd/MM/yyyy';
-
-  /// Chinese/Japanese date format: `yyyy/MM/dd`
+  /// Standard format for email Date headers and HTTP headers.
   ///
-  /// Example: `2025/12/01`
-  static const String asianDate = 'yyyy/MM/dd';
+  /// Example: `Thu, 12 Dec 2025 14:30:45 +0800`
+  static const String rfc2822 = 'EEE, dd MMM yyyy HH:mm:ss xxxx';
 
-  /// Time with 12-hour clock and AM/PM: `hh:mm a`
+  // ============================================================
+  // Common Time Formats
+  // ============================================================
+
+  /// 12-hour time format with AM/PM: `hh:mm a`
   ///
   /// Example: `02:30 PM`
   static const String time12Hour = 'hh:mm a';
 
-  /// Time with 24-hour clock: `HH:mm`
+  /// 24-hour time format: `HH:mm`
   ///
   /// Example: `14:30`
   static const String time24Hour = 'HH:mm';
-
-  /// Full date and time with 24-hour clock: `yyyy-MM-dd HH:mm:ss`
-  ///
-  /// Example: `2025-12-01 14:30:45`
-  static const String fullDateTime = 'yyyy-MM-dd HH:mm:ss';
-
-  /// Full date and time with 12-hour clock: `yyyy-MM-dd hh:mm:ss a`
-  ///
-  /// Example: `2025-12-01 02:30:45 PM`
-  static const String fullDateTime12Hour = 'yyyy-MM-dd hh:mm:ss a';
-
-  /// HTTP/RFC 2822 compatible date format: `dd MM yyyy HH:mm:ss`
-  ///
-  /// Useful for HTTP headers and email Date fields.
-  /// Note: Does not include day-of-week or timezone abbreviation.
-  ///
-  /// Example: `01 12 2025 14:30:45`
-  static const String rfc2822 = 'dd MM yyyy HH:mm:ss';
 }
 
 /// Extension providing date/time formatting methods for [EasyDateTime].
@@ -119,7 +138,12 @@ extension EasyDateTimeFormatting on EasyDateTime {
   /// | `s` | Seconds (0-59) | 0, 45, 59 |
   /// | `SSS` | Milliseconds (000-999) | 000, 123, 999 |
   /// | `S` | Milliseconds without padding | 0, 123, 999 |
+  /// | `EEE` | Day-of-week abbreviation | Mon, Tue, Sun |
+  /// | `MMM` | Month abbreviation | Jan, Feb, Dec |
   /// | `a` | AM/PM marker (uppercase) | AM, PM |
+  /// | `xxxx` | Timezone offset (iso8601) | +0800, -0500 |
+  /// | `xx` | Short timezone offset | +08, -05 |
+  /// | `X` | Timezone (Z for UTC, else offset) | Z, +0800 |
   ///
   /// ## Escaping Literal Text
   ///
@@ -206,8 +230,10 @@ extension EasyDateTimeFormatting on EasyDateTime {
     return switch (token) {
       'yyyy' => year.toString().padLeft(4, '0'),
       'yy' => (year % 100).toString().padLeft(2, '0'),
+      'MMM' => _monthNames[month],
       'MM' => month.toString().padLeft(2, '0'),
       'M' => month.toString(),
+      'EEE' => _dayNames[weekday - 1],
       'dd' => day.toString().padLeft(2, '0'),
       'd' => day.toString(),
       'HH' => hour.toString().padLeft(2, '0'),
@@ -221,8 +247,44 @@ extension EasyDateTimeFormatting on EasyDateTime {
       'SSS' => millisecond.toString().padLeft(3, '0'),
       'S' => millisecond.toString(),
       'a' => hour < 12 ? 'AM' : 'PM',
+      'xxxx' => _formatTimezoneOffset(withColon: false),
+      'xx' => _formatTimezoneOffsetShort(),
+      'X' => _formatTimezoneOffsetOrZ(),
       _ => token,
     };
+  }
+
+  /// Formats timezone offset as +HHMM or -HHMM
+  String _formatTimezoneOffset({required bool withColon}) {
+    final offset = timeZoneOffset;
+    final hours = offset.inHours.abs();
+    final minutes = (offset.inMinutes.abs() % 60);
+    final sign = offset.isNegative ? '-' : '+';
+    if (withColon) {
+      return '$sign${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
+    }
+
+    return '$sign${hours.toString().padLeft(2, '0')}${minutes.toString().padLeft(2, '0')}';
+  }
+
+  /// Formats timezone offset as +HH or -HH (no minutes if zero)
+  String _formatTimezoneOffsetShort() {
+    final offset = timeZoneOffset;
+    final hours = offset.inHours.abs();
+    final minutes = (offset.inMinutes.abs() % 60);
+    final sign = offset.isNegative ? '-' : '+';
+    if (minutes == 0) {
+      return '$sign${hours.toString().padLeft(2, '0')}';
+    }
+
+    return '$sign${hours.toString().padLeft(2, '0')}${minutes.toString().padLeft(2, '0')}';
+  }
+
+  /// Formats timezone as Z for UTC or +HHMM/-HHMM otherwise
+  String _formatTimezoneOffsetOrZ() {
+    if (isUtc) return 'Z';
+
+    return _formatTimezoneOffset(withColon: false);
   }
 
   /// Converts 24-hour to 12-hour format.
@@ -343,8 +405,10 @@ class _PatternToken implements _FormatterToken {
     return switch (token) {
       'yyyy' => date.year.toString().padLeft(4, '0'),
       'yy' => (date.year % 100).toString().padLeft(2, '0'),
+      'MMM' => _monthNames[date.month],
       'MM' => date.month.toString().padLeft(2, '0'),
       'M' => date.month.toString(),
+      'EEE' => _dayNames[date.weekday - 1],
       'dd' => date.day.toString().padLeft(2, '0'),
       'd' => date.day.toString(),
       'HH' => date.hour.toString().padLeft(2, '0'),
@@ -358,6 +422,9 @@ class _PatternToken implements _FormatterToken {
       'SSS' => date.millisecond.toString().padLeft(3, '0'),
       'S' => date.millisecond.toString(),
       'a' => date.hour < 12 ? 'AM' : 'PM',
+      'xxxx' => _formatTimezoneOffset(date, withColon: false),
+      'xx' => _formatTimezoneOffsetShort(date),
+      'X' => _formatTimezoneOffsetOrZ(date),
       _ => token,
     };
   }
@@ -366,5 +433,35 @@ class _PatternToken implements _FormatterToken {
     final h = date.hour % 12;
 
     return h == 0 ? 12 : h;
+  }
+
+  String _formatTimezoneOffset(EasyDateTime date, {required bool withColon}) {
+    final offset = date.timeZoneOffset;
+    final hours = offset.inHours.abs();
+    final minutes = (offset.inMinutes.abs() % 60);
+    final sign = offset.isNegative ? '-' : '+';
+    if (withColon) {
+      return '$sign${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
+    }
+
+    return '$sign${hours.toString().padLeft(2, '0')}${minutes.toString().padLeft(2, '0')}';
+  }
+
+  String _formatTimezoneOffsetShort(EasyDateTime date) {
+    final offset = date.timeZoneOffset;
+    final hours = offset.inHours.abs();
+    final minutes = (offset.inMinutes.abs() % 60);
+    final sign = offset.isNegative ? '-' : '+';
+    if (minutes == 0) {
+      return '$sign${hours.toString().padLeft(2, '0')}';
+    }
+
+    return '$sign${hours.toString().padLeft(2, '0')}${minutes.toString().padLeft(2, '0')}';
+  }
+
+  String _formatTimezoneOffsetOrZ(EasyDateTime date) {
+    if (date.isUtc) return 'Z';
+
+    return _formatTimezoneOffset(date, withColon: false);
   }
 }
