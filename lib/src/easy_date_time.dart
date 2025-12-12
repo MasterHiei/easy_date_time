@@ -14,7 +14,7 @@ part 'easy_date_time_formatting.dart';
 /// Unlike [DateTime] which only supports UTC and local time, [EasyDateTime]
 /// can represent any IANA timezone.
 ///
-/// **This class is immutable and thread-safe.**
+/// **This class is immutable and safe to pass between isolates.**
 ///
 /// ## Creating instances
 ///

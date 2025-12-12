@@ -4,6 +4,28 @@ part of 'easy_date_time.dart';
 // Date/Time Formatting Extension
 // ============================================================
 
+/// Tokens for pattern matching.
+/// Order matters: check longer tokens first.
+const _tokens = [
+  'yyyy',
+  'yy',
+  'MM',
+  'M',
+  'dd',
+  'd',
+  'HH',
+  'H',
+  'hh',
+  'h',
+  'mm',
+  'm',
+  'ss',
+  's',
+  'SSS',
+  'S',
+  'a',
+];
+
 /// Predefined date/time format patterns.
 ///
 /// Use these constants with [EasyDateTime.format] for common formats:
@@ -126,6 +148,7 @@ extension EasyDateTimeFormatting on EasyDateTime {
   ///
   /// See also:
   /// - [DateTimeFormats] for predefined format patterns
+  /// - [EasyDateTimeFormatter] for pre-compiled patterns (better performance in loops)
   /// - [toIso8601String] for ISO 8601 format with timezone offset
   String format(String pattern) {
     final buffer = StringBuffer();
@@ -169,28 +192,7 @@ extension EasyDateTimeFormatting on EasyDateTime {
   ///
   /// Uses [String.startsWith] with index parameter for zero-allocation matching.
   String? _matchToken(String pattern, int index) {
-    // Order matters: check longer tokens first
-    const tokens = [
-      'yyyy',
-      'yy',
-      'MM',
-      'M',
-      'dd',
-      'd',
-      'HH',
-      'H',
-      'hh',
-      'h',
-      'mm',
-      'm',
-      'ss',
-      's',
-      'SSS',
-      'S',
-      'a',
-    ];
-
-    for (final token in tokens) {
+    for (final token in _tokens) {
       if (pattern.startsWith(token, index)) {
         return token;
       }
@@ -226,6 +228,142 @@ extension EasyDateTimeFormatting on EasyDateTime {
   /// Converts 24-hour to 12-hour format.
   int get _hour12 {
     final h = hour % 12;
+
+    return h == 0 ? 12 : h;
+  }
+}
+
+/// A pre-compiled date formatter for high-performance scenarios.
+///
+/// Unlike [EasyDateTime.format] which parses the pattern on every call,
+/// [EasyDateTimeFormatter] parses the pattern once during initialization.
+/// This provides significant performance benefits in loops or hot paths.
+///
+/// ```dart
+/// final formatter = EasyDateTimeFormatter('yyyy-MM-dd HH:mm');
+/// for (final date in dates) {
+///   print(formatter.format(date));
+/// }
+/// ```
+class EasyDateTimeFormatter {
+  /// The pattern string used by this formatter.
+  final String pattern;
+
+  /// The pre-compiled tokens.
+  final List<_FormatterToken> _compiledTokens;
+
+  /// Creates a [EasyDateTimeFormatter] with the given [pattern].
+  ///
+  /// The pattern is parsed immediately.
+  EasyDateTimeFormatter(this.pattern) : _compiledTokens = _compile(pattern);
+
+  /// Formats the [date] using the pre-compiled pattern.
+  String format(EasyDateTime date) {
+    if (_compiledTokens.isEmpty) return '';
+
+    final buffer = StringBuffer();
+    for (final token in _compiledTokens) {
+      buffer.write(token.format(date));
+    }
+
+    return buffer.toString();
+  }
+
+  /// Compiles the pattern into a list of executable tokens.
+  static List<_FormatterToken> _compile(String pattern) {
+    final tokens = <_FormatterToken>[];
+    final length = pattern.length;
+    var i = 0;
+
+    while (i < length) {
+      final char = pattern[i];
+
+      // Handle escaped text in single quotes
+      if (char == "'") {
+        i++;
+        final start = i;
+        while (i < length && pattern[i] != "'") {
+          i++;
+        }
+        tokens.add(_LiteralToken(pattern.substring(start, i)));
+        if (i < length) {
+          i++; // Skip closing quote
+        }
+        continue;
+      }
+
+      // Try to match tokens
+      final tokenStr = _matchToken(pattern, i);
+      if (tokenStr != null) {
+        tokens.add(_PatternToken(tokenStr));
+        i += tokenStr.length;
+      } else {
+        // Literal character
+        tokens.add(_LiteralToken(char));
+        i++;
+      }
+    }
+
+    return tokens;
+  }
+
+  /// Matches the longest token at position [index].
+  static String? _matchToken(String pattern, int index) {
+    for (final token in _tokens) {
+      if (pattern.startsWith(token, index)) {
+        return token;
+      }
+    }
+
+    return null;
+  }
+}
+
+/// Base class for compiled formatter tokens.
+abstract class _FormatterToken {
+  String format(EasyDateTime date);
+}
+
+/// A token representing a literal string.
+class _LiteralToken implements _FormatterToken {
+  final String value;
+  _LiteralToken(this.value);
+
+  @override
+  String format(EasyDateTime date) => value;
+}
+
+/// A token representing a variable date/time part.
+class _PatternToken implements _FormatterToken {
+  final String token;
+  _PatternToken(this.token);
+
+  @override
+  String format(EasyDateTime date) {
+    return switch (token) {
+      'yyyy' => date.year.toString().padLeft(4, '0'),
+      'yy' => (date.year % 100).toString().padLeft(2, '0'),
+      'MM' => date.month.toString().padLeft(2, '0'),
+      'M' => date.month.toString(),
+      'dd' => date.day.toString().padLeft(2, '0'),
+      'd' => date.day.toString(),
+      'HH' => date.hour.toString().padLeft(2, '0'),
+      'H' => date.hour.toString(),
+      'hh' => _hour12(date).toString().padLeft(2, '0'),
+      'h' => _hour12(date).toString(),
+      'mm' => date.minute.toString().padLeft(2, '0'),
+      'm' => date.minute.toString(),
+      'ss' => date.second.toString().padLeft(2, '0'),
+      's' => date.second.toString(),
+      'SSS' => date.millisecond.toString().padLeft(3, '0'),
+      'S' => date.millisecond.toString(),
+      'a' => date.hour < 12 ? 'AM' : 'PM',
+      _ => token,
+    };
+  }
+
+  int _hour12(EasyDateTime date) {
+    final h = date.hour % 12;
 
     return h == 0 ? 12 : h;
   }

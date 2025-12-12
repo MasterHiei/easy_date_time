@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.4] - 2025-12-12
+
+### Added
+- **EasyDateTimeFormatter**: Introduced `EasyDateTimeFormatter` class for pre-compiling date format patterns, improving performance in loops.
+
+### Performance
+- Added caching for offset location lookups in parsing module.
+
+### Documentation
+- Added `EasyDateTimeFormatter` usage examples to READMEs.
+
 ## [0.3.3] - 2025-12-11
 
 ### Added
@@ -124,6 +135,7 @@ Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#7](ht
 
 - Initial release of `easy_date_time` package.
 
+[0.3.4]: https://github.com/MasterHiei/easy_date_time/releases/tag/v0.3.4
 [0.3.3]: https://github.com/MasterHiei/easy_date_time/releases/tag/v0.3.3
 [0.3.2]: https://github.com/MasterHiei/easy_date_time/releases/tag/v0.3.2
 [0.3.1]: https://github.com/MasterHiei/easy_date_time/releases/tag/v0.3.1

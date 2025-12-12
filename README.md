@@ -69,7 +69,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.3.3
+  easy_date_time: ^0.3.4
 ```
 
 **Note**: You **must** initialize the timezone database before using the library.
@@ -214,6 +214,15 @@ dt.format('MM/dd/yyyy');           // '12/01/2025'
 dt.format('hh:mm a');              // '02:30 PM'
 ```
 
+> [!TIP]
+> For high-performance scenarios (e.g., formatting dates in a loop), use `EasyDateTimeFormatter` to pre-compile patterns:
+> ```dart
+> static final formatter = EasyDateTimeFormatter('yyyy-MM-dd HH:mm');
+>
+> // Reuses parsed pattern for better performance
+> final str = formatter.format(date);
+> ```
+
 ### Predefined Formats
 
 Use `DateTimeFormats` for common patterns:
@@ -223,6 +232,7 @@ dt.format(DateTimeFormats.isoDate);      // '2025-12-01'
 dt.format(DateTimeFormats.usDate);       // '12/01/2025'
 dt.format(DateTimeFormats.fullDateTime); // '2025-12-01 14:30:45'
 dt.format(DateTimeFormats.time12Hour);   // '02:30 PM'
+dt.format(DateTimeFormats.rfc2822);      // '01 12 2025 14:30:45'
 ```
 
 ### Pattern Tokens

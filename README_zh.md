@@ -69,7 +69,7 @@ EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 (符合预期)
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.3.3
+  easy_date_time: ^0.3.4
 ```
 
 **注意**：为了确保时区计算准确，**必须**在应用启动前初始化时区数据库：
@@ -196,6 +196,15 @@ dt.format('MM/dd/yyyy');           // '12/01/2025'
 dt.format('hh:mm a');              // '02:30 PM'
 ```
 
+> [!TIP]
+> 需要频繁格式化日期时，考虑预编译 `EasyDateTimeFormatter` 以提升性能：
+> ```dart
+> static final formatter = EasyDateTimeFormatter('yyyy-MM-dd HH:mm');
+>
+> // 复用Formatter，避免重复解析
+> final str = formatter.format(date);
+> ```
+
 ### 预设格式常量
 
 使用 `DateTimeFormats` 获取常用格式：
@@ -205,6 +214,7 @@ dt.format(DateTimeFormats.isoDate);      // '2025-12-01'
 dt.format(DateTimeFormats.asianDate);    // '2025/12/01'
 dt.format(DateTimeFormats.fullDateTime); // '2025-12-01 14:30:45'
 dt.format(DateTimeFormats.time12Hour);   // '02:30 PM'
+dt.format(DateTimeFormats.rfc2822);      // '01 12 2025 14:30:45'
 ```
 
 ### 格式符号表
