@@ -64,7 +64,7 @@ part 'easy_date_time_formatting.dart';
 /// {@template easyDateTime}
 /// This class is immutable and can be safely used as a value object.
 /// {@endtemplate}
-class EasyDateTime implements Comparable<EasyDateTime> {
+class EasyDateTime implements DateTime {
   /// The underlying TZDateTime from the timezone package.
   final TZDateTime _tzDateTime;
 
@@ -504,8 +504,9 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   }
 
   /// Returns the [Duration] between this and [other].
-  Duration difference(EasyDateTime other) {
-    return _tzDateTime.difference(other._tzDateTime);
+  @override
+  Duration difference(DateTime other) {
+    return _tzDateTime.difference(other);
   }
 
   // ============================================================
@@ -525,21 +526,20 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// final yesterday = now - Duration(days: 1);
   /// ```
   EasyDateTime operator -(Duration duration) => subtract(duration);
-
   /// Returns `true` if this is before [other].
-  bool operator <(EasyDateTime other) =>
+  bool operator <(DateTime other) =>
       microsecondsSinceEpoch < other.microsecondsSinceEpoch;
 
   /// Returns `true` if this is after [other].
-  bool operator >(EasyDateTime other) =>
+  bool operator >(DateTime other) =>
       microsecondsSinceEpoch > other.microsecondsSinceEpoch;
 
   /// Returns `true` if this is before or at the same moment as [other].
-  bool operator <=(EasyDateTime other) =>
+  bool operator <=(DateTime other) =>
       microsecondsSinceEpoch <= other.microsecondsSinceEpoch;
 
   /// Returns `true` if this is after or at the same moment as [other].
-  bool operator >=(EasyDateTime other) =>
+  bool operator >=(DateTime other) =>
       microsecondsSinceEpoch >= other.microsecondsSinceEpoch;
 
   // ============================================================
@@ -547,11 +547,13 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   // ============================================================
 
   /// Returns `true` if this is before [other].
-  bool isBefore(EasyDateTime other) =>
+  @override
+  bool isBefore(DateTime other) =>
       microsecondsSinceEpoch < other.microsecondsSinceEpoch;
 
   /// Returns `true` if this is after [other].
-  bool isAfter(EasyDateTime other) =>
+  @override
+  bool isAfter(DateTime other) =>
       microsecondsSinceEpoch > other.microsecondsSinceEpoch;
 
   /// Returns `true` if this and [other] represent the same moment in time.
@@ -560,11 +562,12 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// different timezones.
   ///
   /// This is consistent with [DateTime.isAtSameMomentAs].
-  bool isAtSameMomentAs(EasyDateTime other) =>
+  @override
+  bool isAtSameMomentAs(DateTime other) =>
       microsecondsSinceEpoch == other.microsecondsSinceEpoch;
 
   @override
-  int compareTo(EasyDateTime other) {
+  int compareTo(DateTime other) {
     return microsecondsSinceEpoch.compareTo(other.microsecondsSinceEpoch);
   }
 
