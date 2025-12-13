@@ -185,10 +185,28 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// Creates an [EasyDateTime] from milliseconds since Unix epoch.
   ///
   /// If [location] is not provided, uses the global default or local timezone.
+  /// If [isUtc] is true it uses UTC timezone. [location] MUST BE null if isUtc is true.
+  ///    (This is provided for compatibility with DateTime constructor)
   factory EasyDateTime.fromMillisecondsSinceEpoch(
     int milliseconds, {
     Location? location,
+    bool isUtc = false,
   }) {
+    if(isUtc) {
+      if (location != null) {
+        throw ArgumentError.value(
+          location,
+          'location',
+          'Cannot specify location when isUtc is true',
+        );
+      }
+      return EasyDateTime._(
+        TZDateTime.fromMillisecondsSinceEpoch(
+          getLocation('UTC'),
+          milliseconds,
+        ),
+      );
+    }
     return EasyDateTime._(
       TZDateTime.fromMillisecondsSinceEpoch(
         location ?? config.effectiveDefaultLocation,
