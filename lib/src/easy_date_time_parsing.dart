@@ -129,7 +129,7 @@ const _commonOffsetMappings = <int, String>{
 /// Returns null if no matching timezone is found or if timezone
 /// database is not initialized.
 Location? _findLocationForOffset(Duration offset) {
-  if (!init.isTimeZoneInitialized) {
+  if (!init.internalIsTimeZoneInitialized) {
     return null;
   }
 
