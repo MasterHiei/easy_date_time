@@ -310,6 +310,9 @@ extension EasyDateTimeFormatting on EasyDateTime {
 /// }
 /// ```
 class EasyDateTimeFormatter {
+  /// Cache all created formatters, as they are immutable.
+  static Map<String, EasyDateTimeFormatter> _availablePatterns = {};
+
   /// The pattern string used by this formatter.
   final String pattern;
 
@@ -318,8 +321,20 @@ class EasyDateTimeFormatter {
 
   /// Creates a [EasyDateTimeFormatter] with the given [pattern].
   ///
-  /// The pattern is parsed immediately.
-  EasyDateTimeFormatter(this.pattern) : _compiledTokens = _compile(pattern);
+  /// This method uses the cache to return an existing formatter if one
+  /// for this pattern already exists, otherwise the pattern is
+  /// parsed immediately, then cached and returned.
+  factory EasyDateTimeFormatter(String pattern) {
+    if (_availablePatterns.containsKey(pattern)) {
+      return _availablePatterns[pattern]!;
+    }
+    final formatter = EasyDateTimeFormatter._(pattern);
+    _availablePatterns[pattern] = formatter;
+    return formatter;
+  }
+
+  // Internal constructor that compiles the pattern.
+  EasyDateTimeFormatter._(this.pattern) : _compiledTokens = _compile(pattern);
 
   /// Formats the [date] using the pre-compiled pattern.
   String format(EasyDateTime date) {
@@ -335,6 +350,7 @@ class EasyDateTimeFormatter {
 
   /// Compiles the pattern into a list of executable tokens.
   static List<_FormatterToken> _compile(String pattern) {
+    // Compile the pattern into tokens
     final tokens = <_FormatterToken>[];
     final length = pattern.length;
     var i = 0;
@@ -367,7 +383,6 @@ class EasyDateTimeFormatter {
         i++;
       }
     }
-
     return tokens;
   }
 
@@ -381,6 +396,25 @@ class EasyDateTimeFormatter {
 
     return null;
   }
+
+  /// Creates a new formatter by combining this formatter's pattern with [formatter2]'s pattern.
+  ///
+  /// The resulting formatter will format dates using the concatenated pattern.
+  /// This method uses the cache to return an existing formatter if one with the
+  /// combined pattern already exists.
+  EasyDateTimeFormatter combineFormatters(EasyDateTimeFormatter formatter2) {
+    return EasyDateTimeFormatter(pattern + formatter2.pattern);
+  }
+
+  /// Creates a new formatter by appending [additionalPattern] to this formatter's pattern.
+  ///
+  /// The resulting formatter will format dates using the concatenated pattern.
+  /// This method uses the cache to return an existing formatter if one with the
+  /// combined pattern already exists.
+  EasyDateTimeFormatter addPattern(String additionalPattern) {
+    return EasyDateTimeFormatter(pattern + additionalPattern);
+  }
+  
 }
 
 /// Base class for compiled formatter tokens.
