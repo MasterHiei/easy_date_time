@@ -18,7 +18,7 @@ import 'exceptions/exceptions.dart';
 ///
 /// ```dart
 /// // Initialize timezone database first
-/// initializeTimeZone();
+/// EasyDateTime.initializeTimeZone();
 ///
 /// // Access common timezones easily
 /// final shanghai = EasyDateTime.now(location: TimeZones.shanghai);
@@ -278,7 +278,7 @@ abstract final class TimeZones {
   /// Gets all available timezone names from the database.
   ///
   /// Returns a list of all IANA timezone identifiers.
-  /// Requires [initializeTimeZone] to be called first.
+  /// Requires [EasyDateTime.initializeTimeZone] to be called first.
   ///
   /// ```dart
   /// final allZones = TimeZones.availableTimezones;
@@ -294,10 +294,10 @@ abstract final class TimeZones {
   /// TimeZones.isValid('Invalid/Zone'); // false
   /// ```
   static bool isValid(String timezoneName) {
-    if (!isTimeZoneInitialized) {
+    if (!internalIsTimeZoneInitialized) {
       throw TimeZoneNotInitializedException(
         'Timezone database not initialized. '
-        'Call initializeTimeZone() before calling TimeZones.isValid().',
+        'Call EasyDateTime.initializeTimeZone() before calling TimeZones.isValid().',
       );
     }
 
@@ -321,10 +321,10 @@ abstract final class TimeZones {
   /// }
   /// ```
   static Location? tryGet(String timezoneName) {
-    if (!isTimeZoneInitialized) {
+    if (!internalIsTimeZoneInitialized) {
       throw TimeZoneNotInitializedException(
         'Timezone database not initialized. '
-        'Call initializeTimeZone() before calling TimeZones.tryGet().',
+        'Call EasyDateTime.initializeTimeZone() before calling TimeZones.tryGet().',
       );
     }
 
@@ -341,20 +341,13 @@ abstract final class TimeZones {
   /// Throws [InvalidTimeZoneException] if location name is invalid.
   static Location _getSafeLocation(String locationName) {
     // Check initialization first for clear error message
-    if (!isTimeZoneInitialized) {
+    if (!internalIsTimeZoneInitialized) {
       throw TimeZoneNotInitializedException(
         'Timezone database not initialized. '
-        'Call initializeTimeZone() before accessing TimeZones.$locationName.',
+        'Call EasyDateTime.initializeTimeZone() before accessing TimeZones.$locationName.',
       );
     }
 
-    try {
-      return getLocation(locationName);
-    } on LocationNotFoundException {
-      throw InvalidTimeZoneException(
-        timeZoneId: locationName,
-        message: 'Timezone "$locationName" not found in IANA database.',
-      );
-    }
+    return getLocation(locationName);
   }
 }

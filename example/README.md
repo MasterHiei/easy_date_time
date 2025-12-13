@@ -36,6 +36,7 @@ No code generation needed. Run directly:
 | [date_utils.dart](lib/core/date_utils.dart) | isToday, startOfDay, etc. |
 | [json_serialization.dart](lib/core/json_serialization.dart) | JSON serialization |
 | [formatting.dart](lib/core/formatting.dart) | Output formats using format() and DateTimeFormats |
+| [formatter_example.dart](lib/core/formatter_example.dart) | Pre-compiled formatter for performance |
 | [copywith.dart](lib/core/copywith.dart) | Creating modified copies |
 | [error_handling.dart](lib/core/error_handling.dart) | Safe parsing, validation |
 

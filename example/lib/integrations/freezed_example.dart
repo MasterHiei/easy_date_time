@@ -98,7 +98,7 @@ abstract class Schedule with _$Schedule {
 // ============================================================
 
 void main() {
-  initializeTimeZone();
+  EasyDateTime.initializeTimeZone();
 
   print('=== Freezed + json_serializable ===\n');
 

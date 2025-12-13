@@ -103,7 +103,7 @@ class EventService {
 // ============================================================
 
 void main() {
-  initializeTimeZone();
+  EasyDateTime.initializeTimeZone();
 
   print('=== Dio HTTP Client ===\n');
 

@@ -2,7 +2,7 @@
 
 **Dart 时区感知日期库：精准支持 IANA 时区，提供直观的日期运算与灵活的格式化能力**
 
-基于 IANA 数据库，提供精准的全球时区支持。解决原生 `DateTime` 隐式转换 UTC/本地时间导致的语义丢失问题，让跨时区开发精准可控。
+基于 IANA 数据库，提供精准的全球时区支持。**不可变**、算术直观且格式化灵活。解决原生 `DateTime` 隐式转换 UTC/本地时间导致的语义丢失问题，让跨时区开发精准可控。
 
 [![Build Status](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml)
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
@@ -18,7 +18,7 @@
 
 | 方案 | 优势 | 局限性 | easy_date_time 的改进 |
 | --- | --- | --- | --- |
-| **DateTime** (原生) | 官方库，零依赖 | 自动转为 UTC/本地时间，**丢失时区上下文** | **语义保留**：无损记录解析时的数值与时区偏移。 |
+| **DateTime** (原生) | 官方库，零依赖 | 自动转为 UTC/本地时间，**丢失时区信息** | **语义保留**：无损记录解析时的数值与时区偏移。 |
 | **timezone** | 完整的 IANA 实现 | API 繁复，需手动查找时区代码 | **开发友好**：内置常用时区常量（如 `TimeZones.shanghai`）。 |
 | **intl** | 强大的格式化功能 | 侧重展示，缺乏计算能力 | **专注计算**：专注日期逻辑运算，可与 `intl` 无缝配合。 |
 | **flutter_native_timezone** | 获取系统时区 | 仅具备获取功能，无法计算 | **一站式**：解析、计算、转换全链路覆盖。 |
@@ -26,40 +26,46 @@
 **对比示例：**
 
 ```dart
-// Native DateTime: 解析偏移量后会强制转换为 UTC，导致小时数改变
-DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2 (语义丢失)
+// ❌ Native DateTime: 隐式转换 UTC/本地时间，丢失时区信息
+DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2
 
-// EasyDateTime: 保持解析时的原始数值
-EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 (符合预期)
+// ✅ EasyDateTime: 完整保留解析时的小时与偏移量
+EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10
 ```
 
 ---
 
 ## 主要特性
 
-* 🌍 **全量 IANA 时区支持**
+### 🌍 全量 IANA 时区支持
+支持所有标准 IANA 时区常量或自定义字符串。
+```dart
+final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
+```
 
-  支持所有标准 IANA 时区（如 `Asia/Shanghai`, `America/New_York`），API 调用简洁统一。
+### 🕒 精准无损解析
+拒绝隐式转换。完整保留解析时的数值与时区。
+```dart
+EasyDateTime.parse('2025-12-07T10:00+08:00').hour // -> 10
+```
 
-* 🕒 **精准解析**
+### ➕ 自然语言运算
+符合直觉的时间计算语法。
+```dart
+final later = now + 2.hours + 30.minutes;
+```
 
-  解析时完整保留时间数值，拒绝隐式 UTC 转换，所见即所得。
+### 🧱 智能安全计算
+自动处理月份溢出等边界情况。
+```dart
+jan31.copyWithClamped(month: 2); // -> 2月28日
+```
 
-* ➕ **自然语言运算**
-
-  支持 `now + 1.days`、`2.hours` 等符合直觉的链式计算。
-
-* 🔄 **显式时区转换**
-
-  仅在调用 `.inLocation()` 或 `.toUtc()` 时转换时区，杜绝隐式变更。
-
-* 🧱 **智能日期计算**
-
-  自动处理“月末溢出”边界情况（如 1月31日 + 1个月 → 2月28日），使用 `copyWithClamped` 即可。
-
-* 📝 **灵活格式化**
-
-  支持自定义模式（`format('yyyy-MM-dd')`）或标准常量（`DateTimeFormats.isoDate`）。
+### 📝 高性能灵活格式化
+支持自定义模式与预编译优化。
+```dart
+dt.format('yyyy-MM-dd'); // -> 2025-12-07
+```
 
 ---
 
@@ -69,21 +75,25 @@ EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 (符合预期)
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.3.2
+  easy_date_time: ^0.3.5
 ```
 
 **注意**：为了确保时区计算准确，**必须**在应用启动前初始化时区数据库：
 
 ```dart
 void main() {
-  initializeTimeZone();  // 必须调用
+  EasyDateTime.initializeTimeZone();  // 必须调用
 
   // 可选：设置全局默认时区
-  setDefaultLocation(TimeZones.shanghai);
+  EasyDateTime.setDefaultLocation(TimeZones.shanghai);
 
   runApp(MyApp());
 }
 ```
+
+> [!NOTE]
+> 全局函数 `initializeTimeZone()` 和 `setDefaultLocation()` 已**废弃**。
+> 请改用 `EasyDateTime.initializeTimeZone()` 和 `EasyDateTime.setDefaultLocation()`。
 
 ---
 
@@ -120,7 +130,7 @@ final nairobi = EasyDateTime.now(location: getLocation('Africa/Nairobi'));
 设置全局默认值后，`EasyDateTime.now()` 将自动适配该时区：
 
 ```dart
-setDefaultLocation(TimeZones.shanghai);
+EasyDateTime.setDefaultLocation(TimeZones.shanghai);
 final now = EasyDateTime.now(); // 此时为 Asia/Shanghai 时间
 ```
 
@@ -173,8 +183,8 @@ final later = now + 2.hours + 30.minutes;
 ```dart
 final jan31 = EasyDateTime.utc(2025, 1, 31);
 
-jan31.copyWith(month: 2);        // 3月3日 (常规逻辑溢出)
-jan31.copyWithClamped(month: 2); // 2月28日 (自动修正为当月最后一天)
+jan31.copyWith(month: 2);        // ⚠️ 3月3日 (常规溢出)
+jan31.copyWithClamped(month: 2); // ✅ 2月28日 (自动修正为当月最后一天)
 ```
 
 ---
@@ -192,15 +202,25 @@ dt.format('MM/dd/yyyy');           // '12/01/2025'
 dt.format('hh:mm a');              // '02:30 PM'
 ```
 
+> [!TIP]
+> **性能优化**: 在循环等被频繁执行的代码中，考虑预编译 `EasyDateTimeFormatter` 以提高性能：
+> ```dart
+> // 编译一次即可多次复用
+> static final formatter = EasyDateTimeFormatter('yyyy-MM-dd HH:mm');
+> String result = formatter.format(date);
+> ```
+
 ### 预设格式常量
 
 使用 `DateTimeFormats` 获取常用格式：
 
 ```dart
 dt.format(DateTimeFormats.isoDate);      // '2025-12-01'
-dt.format(DateTimeFormats.asianDate);    // '2025/12/01'
-dt.format(DateTimeFormats.fullDateTime); // '2025-12-01 14:30:45'
+dt.format(DateTimeFormats.isoTime);      // '14:30:45'
+dt.format(DateTimeFormats.isoDateTime);  // '2025-12-01T14:30:45'
 dt.format(DateTimeFormats.time12Hour);   // '02:30 PM'
+dt.format(DateTimeFormats.time24Hour);   // '14:30'
+dt.format(DateTimeFormats.rfc2822);      // 'Mon, 01 Dec 2025 14:30:45 +0800'
 ```
 
 ### 格式符号表
@@ -209,13 +229,19 @@ dt.format(DateTimeFormats.time12Hour);   // '02:30 PM'
 |------|------|------|
 | `yyyy` | 4位年份 | 2025 |
 | `MM`/`M` | 月份（补零/不补零） | 01, 1 |
+| `MMM` | 月份缩写 | Jan, Dec |
 | `dd`/`d` | 日期（补零/不补零） | 01, 1 |
+| `EEE` | 星期缩写 | Mon, Sun |
 | `HH`/`H` | 24小时制（补零/不补零） | 09, 9 |
 | `hh`/`h` | 12小时制（补零/不补零） | 02, 2 |
 | `mm`/`m` | 分钟（补零/不补零） | 05, 5 |
 | `ss`/`s` | 秒（补零/不补零） | 05, 5 |
 | `SSS` | 毫秒 | 123 |
 | `a` | 上午/下午标识 | AM, PM |
+| `xxxxx` | 带冒号的时区偏移 | +08:00, -05:00 |
+| `xxxx` | 时区偏移 | +0800, -0500 |
+| `xx` | 短时区偏移 | +08, -05 |
+| `X` | UTC为Z，否则偏移 | Z, +0800 |
 
 ---
 
@@ -251,7 +277,7 @@ class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
 
 * `==` 运算符比较的是**绝对时间戳**是否相等，而非原始数值。
 * 只有有效的 IANA 时区偏移才能被正确解析，非标准偏移将抛出异常。
-* 请务必调用 `initializeTimeZone()` 进行初始化。
+* 请务必调用 `EasyDateTime.initializeTimeZone()` 进行初始化。
 
 ### 安全解析
 对于不确定的用户输入，建议使用 `tryParse`：

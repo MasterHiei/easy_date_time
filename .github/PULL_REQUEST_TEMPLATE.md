@@ -16,8 +16,9 @@
 
 - [ ] I have added tests that prove my fix is effective or my feature works
 - [ ] All new and existing tests pass locally
-- [ ] I have run `dart analyze` with no issues
-- [ ] I have run `dart format` on my changes
+- [ ] I have run `dart analyze --fatal-infos` with no issues
+- [ ] I have run `dart format .` on my changes
+- [ ] I have checked coverage is >= 90%
 
 ## Checklist
 
@@ -28,5 +29,5 @@
 - [ ] I have updated the CHANGELOG.md file
 - [ ] My changes generate no new warnings
 
-## Additional Notes
-<!-- Any additional information -->
+### Date/Time Logic Changes (if applicable)
+- [ ] I have added **Boundary Tests** for DST transitions (Spring Forward/Fall Back) if my changes involve time calculation.

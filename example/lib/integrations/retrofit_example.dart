@@ -158,7 +158,7 @@ abstract class ApiClient {
 // ============================================================
 
 void main() {
-  initializeTimeZone();
+  EasyDateTime.initializeTimeZone();
 
   print('=== Retrofit Type-Safe API ===\n');
 

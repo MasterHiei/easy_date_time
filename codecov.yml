@@ -9,7 +9,7 @@ coverage:
     # Project coverage: overall repository coverage
     project:
       default:
-        target: auto      # Compare against base commit
+        target: 90%       # Minimum baseline threshold
         threshold: 1%     # Allow 1% drop (common in small packages)
 
     # Patch coverage: coverage of new/changed lines only

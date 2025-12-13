@@ -89,5 +89,100 @@ void main() {
       // Should match America/New_York which uses EDT in summer
       expect(edt.locationName, 'America/New_York');
     });
+    group('Edge cases (migrated from core_coverage)', () {
+      test('parse date with time and offset', () {
+        final dt = EasyDateTime.parse('2025-12-01T00:00:00+08:00');
+        expect(dt.year, 2025);
+        expect(dt.month, 12);
+        expect(dt.day, 1);
+        expect(dt.hour, 0);
+      });
+
+      test('tryParse returns null for empty string', () {
+        expect(EasyDateTime.tryParse(''), isNull);
+      });
+
+      test('tryParse returns null for whitespace only', () {
+        expect(EasyDateTime.tryParse('   '), isNull);
+      });
+
+      test('parse with negative timezone offset', () {
+        final dt = EasyDateTime.parse('2025-12-01T10:00:00-05:00');
+        expect(dt.hour, 10);
+        expect(dt.locationName, 'America/New_York');
+      });
+
+      test('parse handles fractional seconds', () {
+        final dt = EasyDateTime.parse('2025-12-01T10:30:45.123456Z');
+        expect(dt.millisecond, 123);
+        expect(dt.microsecond, 456);
+      });
+
+      test('parse with explicit location converts timezone', () {
+        final dt = EasyDateTime.parse(
+          '2025-12-01T10:00:00Z',
+          location: TimeZones.tokyo,
+        );
+        expect(dt.hour, 19); // 10:00 UTC = 19:00 Tokyo
+        expect(dt.locationName, 'Asia/Tokyo');
+      });
+
+      test('parse with location for offset string', () {
+        final dt = EasyDateTime.parse(
+          '2025-12-01T10:00:00+08:00',
+          location: TimeZones.newYork,
+        );
+        // Should convert: 10:00+08:00 = 02:00 UTC = 21:00 prev day NY
+        expect(dt.locationName, 'America/New_York');
+      });
+
+      test('parse date-only with offset triggers different path', () {
+        // Date-only format without time but with default timezone
+        final dt = EasyDateTime.parse('2025-12-01');
+        expect(dt.year, 2025);
+        expect(dt.month, 12);
+        expect(dt.day, 1);
+        expect(dt.hour, 0);
+      });
+
+      test('tryParse handles invalid format gracefully', () {
+        expect(EasyDateTime.tryParse('not-a-date'), isNull);
+        expect(EasyDateTime.tryParse('invalid-date-format'), isNull);
+      });
+    });
+
+    group('Timezone offset parsing covers various offsets (migrated)', () {
+      test('parses +00:00 offset as UTC', () {
+        final dt = EasyDateTime.parse('2025-12-01T10:00:00+00:00');
+        expect(dt.locationName, 'UTC');
+      });
+
+      test('parses +01:00 offset', () {
+        final dt = EasyDateTime.parse('2025-12-01T10:00:00+01:00');
+        expect(dt.hour, 10);
+      });
+
+      test('parses +05:00 offset', () {
+        final dt = EasyDateTime.parse('2025-12-01T10:00:00+05:00');
+        expect(dt.hour, 10);
+      });
+
+      test('parses +09:00 offset as Tokyo', () {
+        final dt = EasyDateTime.parse('2025-12-01T10:00:00+09:00');
+        expect(dt.locationName, 'Asia/Tokyo');
+      });
+
+      test('parses +09:30 offset as Adelaide', () {
+        final dt = EasyDateTime.parse('2025-12-01T10:00:00+09:30');
+        expect(dt.hour, 10);
+      });
+
+      test('parses -03:30 offset (St. Johns) triggers fallback lookup', () {
+        // -03:30 is not in _commonOffsetMappings, so this hits the fallback loop
+        final dt = EasyDateTime.parse('2025-12-01T10:00:00-03:30');
+        expect(dt.hour, 10);
+        expect(dt.locationName, 'America/St_Johns');
+      });
+    });
   });
 }

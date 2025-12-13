@@ -5,11 +5,11 @@ import 'package:timezone/timezone.dart' show local;
 /// Additional boundary value and edge case tests for comprehensive coverage
 void main() {
   setUpAll(() {
-    initializeTimeZone();
+    EasyDateTime.initializeTimeZone();
   });
 
   tearDown(() {
-    clearDefaultLocation();
+    EasyDateTime.clearDefaultLocation();
   });
 
   group('Boundary Value Tests', () {
@@ -318,8 +318,8 @@ void main() {
 
     group('Global configuration edge cases', () {
       test('clearing default when none set does not throw', () {
-        clearDefaultLocation();
-        clearDefaultLocation();
+        EasyDateTime.clearDefaultLocation();
+        EasyDateTime.clearDefaultLocation();
 
         final dt = EasyDateTime.now();
         expect(dt.location, local);
@@ -329,19 +329,19 @@ void main() {
         final tokyo = getLocation('Asia/Tokyo');
         final london = getLocation('Europe/London');
 
-        setDefaultLocation(tokyo);
-        expect(getDefaultLocation()!.name, 'Asia/Tokyo');
+        EasyDateTime.setDefaultLocation(tokyo);
+        expect(EasyDateTime.getDefaultLocation()!.name, 'Asia/Tokyo');
 
-        setDefaultLocation(london);
-        expect(getDefaultLocation()!.name, 'Europe/London');
+        EasyDateTime.setDefaultLocation(london);
+        expect(EasyDateTime.getDefaultLocation()!.name, 'Europe/London');
 
-        clearDefaultLocation();
-        expect(getDefaultLocation(), isNull);
+        EasyDateTime.clearDefaultLocation();
+        expect(EasyDateTime.getDefaultLocation(), isNull);
       });
 
       test('default location affects new instances', () {
         final tokyo = getLocation('Asia/Tokyo');
-        setDefaultLocation(tokyo);
+        EasyDateTime.setDefaultLocation(tokyo);
 
         final dt = EasyDateTime(2025, 6, 15, 10, 0);
         expect(dt.locationName, 'Asia/Tokyo');

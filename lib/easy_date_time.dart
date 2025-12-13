@@ -9,7 +9,7 @@
 /// import 'package:easy_date_time/easy_date_time.dart';
 ///
 /// void main() {
-///   initializeTimeZone();  // Required - call once at startup
+///   EasyDateTime.initializeTimeZone();  // Required - call once at startup
 ///
 ///   final now = EasyDateTime.now();  // Local time
 ///   final tokyo = EasyDateTime.now(location: TimeZones.tokyo);

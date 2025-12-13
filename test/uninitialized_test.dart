@@ -3,11 +3,11 @@ import 'package:test/test.dart';
 
 void main() {
   group('Uninitialized TimeZone behavior', () {
-    // IMPORTANT: Do NOT call initializeTimeZone() in this file
+    // IMPORTANT: Do NOT call EasyDateTime.initializeTimeZone() in this file
     // These tests verify exception behavior when NOT initialized.
 
     test('isTimeZoneInitialized returns false', () {
-      expect(isTimeZoneInitialized, isFalse);
+      expect(EasyDateTime.isTimeZoneInitialized, isFalse);
     });
 
     test('effectiveDefaultLocation throws TimeZoneNotInitializedException', () {

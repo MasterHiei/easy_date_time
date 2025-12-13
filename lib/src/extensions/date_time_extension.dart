@@ -13,7 +13,7 @@ extension DateTimeExtension on DateTime {
   /// Converts this [DateTime] to an [EasyDateTime] in the specified [location].
   ///
   /// If no [location] is provided, uses the global default timezone
-  /// (set via [setDefaultLocation]) or the system's local timezone.
+  /// (set via [EasyDateTime.setDefaultLocation]) or the system's local timezone.
   ///
   /// ```dart
   /// final easyDt = DateTime.now().toEasyDateTime(

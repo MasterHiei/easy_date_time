@@ -3,12 +3,12 @@ import 'package:test/test.dart';
 
 void main() {
   setUpAll(() {
-    initializeTimeZone();
+    EasyDateTime.initializeTimeZone();
   });
 
   tearDown(() {
     // Reset global default after each test
-    clearDefaultLocation();
+    EasyDateTime.clearDefaultLocation();
   });
 
   group('Date Utilities', () {
@@ -163,6 +163,36 @@ void main() {
     });
 
     group('isToday / isTomorrow / isYesterday', () {
+      test('isToday returns true for today', () {
+        final now = EasyDateTime.now();
+        expect(now.isToday, isTrue);
+      });
+
+      test('isToday returns false for other days', () {
+        final yesterday = EasyDateTime.now().yesterday;
+        expect(yesterday.isToday, isFalse);
+      });
+
+      test('isTomorrow returns true for tomorrow', () {
+        final tomorrow = EasyDateTime.now().tomorrow;
+        expect(tomorrow.isTomorrow, isTrue);
+      });
+
+      test('isTomorrow returns false for today', () {
+        final now = EasyDateTime.now();
+        expect(now.isTomorrow, isFalse);
+      });
+
+      test('isYesterday returns true for yesterday', () {
+        final yesterday = EasyDateTime.now().yesterday;
+        expect(yesterday.isYesterday, isTrue);
+      });
+
+      test('isYesterday returns false for today', () {
+        final now = EasyDateTime.now();
+        expect(now.isYesterday, isFalse);
+      });
+
       test('tomorrow property adds exactly one day', () {
         final dt = EasyDateTime(2025, 6, 15, 14, 30);
         final tom = dt.tomorrow;

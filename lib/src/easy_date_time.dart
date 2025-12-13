@@ -14,7 +14,7 @@ part 'easy_date_time_formatting.dart';
 /// Unlike [DateTime] which only supports UTC and local time, [EasyDateTime]
 /// can represent any IANA timezone.
 ///
-/// **This class is immutable and thread-safe.**
+/// **This class is immutable and safe to pass between isolates.**
 ///
 /// ## Creating instances
 ///
@@ -38,7 +38,7 @@ part 'easy_date_time_formatting.dart';
 ///
 /// ```dart
 /// // Set global default timezone to China
-/// setDefaultLocation(TimeZones.shanghai);
+/// EasyDateTime.setDefaultLocation(TimeZones.shanghai);
 ///
 /// // All operations now default to China time (UTC+8)
 /// final now = EasyDateTime.now(); // Shanghai time
@@ -730,30 +730,77 @@ class EasyDateTime implements Comparable<EasyDateTime> {
     );
   }
 
-  // These constants are provided for 'drop in' compatibility with DateTime. (They are copied from DateTime to ensure consistency.)
-  // Weekday constants that are returned by [weekday] method:
+  // ============================================================
+  // DateTime Compatibility Constants
+  // ============================================================
+
+  /// Weekday constants for 'drop in' compatibility with [DateTime].
+  ///
+  /// These values follow ISO 8601 standard:
+  /// - [monday] = 1
+  /// - [sunday] = 7
   static const int monday = DateTime.monday;
+
+  /// See [monday] for weekday constant documentation.
   static const int tuesday = DateTime.tuesday;
+
+  /// See [monday] for weekday constant documentation.
   static const int wednesday = DateTime.wednesday;
+
+  /// See [monday] for weekday constant documentation.
   static const int thursday = DateTime.thursday;
+
+  /// See [monday] for weekday constant documentation.
   static const int friday = DateTime.friday;
+
+  /// See [monday] for weekday constant documentation.
   static const int saturday = DateTime.saturday;
+
+  /// See [monday] for weekday constant documentation.
   static const int sunday = DateTime.sunday;
+
+  /// Number of days per week.
   static const int daysPerWeek = DateTime.daysPerWeek;
 
-  // Month constants that are returned by the [month] getter.
+  /// Month constants for 'drop in' compatibility with [DateTime].
+  ///
+  /// Values range from 1 ([january]) to 12 ([december]).
   static const int january = DateTime.january;
+
+  /// See [january] for month constant documentation.
   static const int february = DateTime.february;
+
+  /// See [january] for month constant documentation.
   static const int march = DateTime.march;
+
+  /// See [january] for month constant documentation.
   static const int april = DateTime.april;
+
+  /// See [january] for month constant documentation.
   static const int may = DateTime.may;
+
+  /// See [january] for month constant documentation.
   static const int june = DateTime.june;
+
+  /// See [january] for month constant documentation.
   static const int july = DateTime.july;
+
+  /// See [january] for month constant documentation.
   static const int august = DateTime.august;
+
+  /// See [january] for month constant documentation.
   static const int september = DateTime.september;
+
+  /// See [january] for month constant documentation.
   static const int october = DateTime.october;
+
+  /// See [january] for month constant documentation.
   static const int november = DateTime.november;
+
+  /// See [january] for month constant documentation.
   static const int december = DateTime.december;
+
+  /// Number of months per year.
   static const int monthsPerYear = DateTime.monthsPerYear;
 
   // These static methods provide convenient class-level access to the global timezone
@@ -771,17 +818,17 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// final now = EasyDateTime.now(); // Shanghai time
   /// ```
   static void setDefaultLocation(Location? location) =>
-      config.setDefaultLocation(location);
+      config.internalSetDefaultLocation(location);
 
   /// Gets the current global default timezone.
   ///
   /// Returns `null` if no default has been set.
-  static Location? getDefaultLocation() => config.getDefaultLocation();
+  static Location? getDefaultLocation() => config.internalGetDefaultLocation();
 
   /// Clears the global default timezone.
   ///
   /// After calling this, [EasyDateTime] will use the system's local timezone.
-  static void clearDefaultLocation() => config.clearDefaultLocation();
+  static void clearDefaultLocation() => config.internalClearDefaultLocation();
 
   /// Gets the effective default location for EasyDateTime operations.
   ///
@@ -805,12 +852,12 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   ///   runApp(MyApp());
   /// }
   /// ```
-  static void initializeTimeZone() => init.initializeTimeZone();
+  static void initializeTimeZone() => init.internalInitializeTimeZone();
 
   /// Checks if the IANA timezone database has been initialized.
   ///
   /// Returns `true` if [EasyDateTime.initializeTimeZone] has been called successfully.
   ///
   ///
-  static bool get isTimeZoneInitialized => init.isTimeZoneInitialized;
+  static bool get isTimeZoneInitialized => init.internalIsTimeZoneInitialized;
 }

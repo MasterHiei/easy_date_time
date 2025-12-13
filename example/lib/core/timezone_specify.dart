@@ -9,7 +9,7 @@ library;
 import 'package:easy_date_time/easy_date_time.dart';
 
 void main() {
-  initializeTimeZone();
+  EasyDateTime.initializeTimeZone();
 
   print('=== Timezone Specification ===\n');
 
@@ -43,7 +43,7 @@ void main() {
   // Method 3: Global default
   // --------------------------------------------------------
   print('Method 3: Global default');
-  setDefaultLocation(TimeZones.shanghai);
+  EasyDateTime.setDefaultLocation(TimeZones.shanghai);
   final dt1 = EasyDateTime.now();
   final dt2 = EasyDateTime(2025, 12, 25, 10, 0);
 
@@ -51,7 +51,7 @@ void main() {
   print('  now():        $dt1');
   print('  constructor:  $dt2');
 
-  clearDefaultLocation();
+  EasyDateTime.clearDefaultLocation();
   print('  Cleared default');
   print('');
 

@@ -155,17 +155,17 @@ Special considerations when testing timezone-dependent code:
 
 ```dart
 setUpAll(() {
-  initializeTimeZone();
+  EasyDateTime.initializeTimeZone();
   // Save original default location
-  _originalDefault = getDefaultLocation();
+  _originalDefault = EasyDateTime.getDefaultLocation();
 });
 
 tearDown(() {
   // Restore original default location
   if (_originalDefault != null) {
-    setDefaultLocation(_originalDefault);
+    EasyDateTime.setDefaultLocation(_originalDefault);
   } else {
-    clearDefaultLocation();
+    EasyDateTime.clearDefaultLocation();
   }
 });
 ```

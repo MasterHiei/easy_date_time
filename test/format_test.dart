@@ -3,11 +3,11 @@ import 'package:test/test.dart';
 
 void main() {
   setUpAll(() {
-    initializeTimeZone();
+    EasyDateTime.initializeTimeZone();
   });
 
   tearDown(() {
-    clearDefaultLocation();
+    EasyDateTime.clearDefaultLocation();
   });
 
   group('format()', () {
@@ -278,18 +278,6 @@ void main() {
       expect(dt.format(DateTimeFormats.isoDateTime), '2025-12-01T14:30:45');
     });
 
-    test('usDate', () {
-      expect(dt.format(DateTimeFormats.usDate), '12/01/2025');
-    });
-
-    test('euDate', () {
-      expect(dt.format(DateTimeFormats.euDate), '01/12/2025');
-    });
-
-    test('asianDate', () {
-      expect(dt.format(DateTimeFormats.asianDate), '2025/12/01');
-    });
-
     test('time12Hour', () {
       expect(dt.format(DateTimeFormats.time12Hour), '02:30 PM');
     });
@@ -298,22 +286,46 @@ void main() {
       expect(dt.format(DateTimeFormats.time24Hour), '14:30');
     });
 
-    test('fullDateTime', () {
-      expect(dt.format(DateTimeFormats.fullDateTime), '2025-12-01 14:30:45');
-    });
-
-    test('fullDateTime12Hour', () {
-      expect(
-        dt.format(DateTimeFormats.fullDateTime12Hour),
-        '2025-12-01 02:30:45 PM',
-      );
-    });
-
     test('rfc2822', () {
+      final dtWithTz =
+          EasyDateTime(2025, 12, 1, 14, 30, 45, 0, 0, TimeZones.shanghai);
       expect(
-        dt.format(DateTimeFormats.rfc2822),
-        '01 12 2025 14:30:45',
+        dtWithTz.format(DateTimeFormats.rfc2822),
+        'Mon, 01 Dec 2025 14:30:45 +0800',
       );
+    });
+  });
+
+  group('New format tokens', () {
+    late EasyDateTime dt;
+
+    setUp(() {
+      dt = EasyDateTime(2025, 12, 1, 14, 30, 45, 0, 0, TimeZones.tokyo);
+    });
+
+    test('EEE formats day-of-week abbreviation', () {
+      expect(dt.format('EEE'), 'Mon');
+    });
+
+    test('MMM formats month abbreviation', () {
+      expect(dt.format('MMM'), 'Dec');
+    });
+
+    test('xxxx formats timezone offset without colon', () {
+      expect(dt.format('xxxx'), '+0900');
+    });
+
+    test('xx formats short timezone offset', () {
+      expect(dt.format('xx'), '+09');
+    });
+
+    test('X formats Z for UTC', () {
+      final utc = EasyDateTime.utc(2025, 12, 1, 14, 30);
+      expect(utc.format('X'), 'Z');
+    });
+
+    test('X formats offset for non-UTC', () {
+      expect(dt.format('X'), '+0900');
     });
   });
 

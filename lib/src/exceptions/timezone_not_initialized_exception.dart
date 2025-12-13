@@ -1,13 +1,13 @@
 /// Exception thrown when timezone initialization is required but hasn't been performed.
 ///
 /// This typically occurs when calling timezone-dependent operations before
-/// calling [initializeTimeZone()] from the `timezone` package.
+/// calling [EasyDateTime.initializeTimeZone].
 ///
-/// **Solution**: Call `initializeTimeZone()` at the start of your main() function:
+/// **Solution**: Call `EasyDateTime.initializeTimeZone()` at the start of your main() function:
 ///
 /// ```dart
 /// void main() {
-///   initializeTimeZone(); // Required for timezone support
+///   EasyDateTime.initializeTimeZone(); // Required for timezone support
 ///   runApp(MyApp());
 /// }
 /// ```

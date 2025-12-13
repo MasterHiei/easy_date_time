@@ -9,7 +9,7 @@ library;
 import 'package:easy_date_time/easy_date_time.dart';
 
 void main() {
-  initializeTimeZone();
+  EasyDateTime.initializeTimeZone();
 
   print('=== copyWith ===\n');
 

@@ -124,6 +124,10 @@ const _commonOffsetMappings = <int, String>{
   -600: 'Pacific/Honolulu', // HST (-10)
 };
 
+/// Cache for offset to location lookups to improve performance of parsing.
+/// Maps offset in minutes -> Location.
+final _offsetLocationCache = <int, Location?>{};
+
 /// Finds an IANA timezone that matches the given UTC offset.
 ///
 /// Returns null if no matching timezone is found or if timezone
@@ -134,10 +138,18 @@ Location? _findLocationForOffset(Duration offset) {
   }
 
   final offsetMinutes = offset.inMinutes;
+  // Check cache first
+  if (_offsetLocationCache.containsKey(offsetMinutes)) {
+    return _offsetLocationCache[offsetMinutes];
+  }
+
   final mappedName = _commonOffsetMappings[offsetMinutes];
   if (mappedName != null) {
     try {
-      return getLocation(mappedName);
+      final loc = getLocation(mappedName);
+      _offsetLocationCache[offsetMinutes] = loc;
+
+      return loc;
     } catch (_) {
       // Continue to fallback
     }
@@ -148,6 +160,8 @@ Location? _findLocationForOffset(Duration offset) {
     for (final name in timeZoneDatabase.locations.keys) {
       final loc = getLocation(name);
       if (loc.currentTimeZone.offset == offset.inMilliseconds) {
+        _offsetLocationCache[offsetMinutes] = loc;
+
         return loc;
       }
     }

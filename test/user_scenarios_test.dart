@@ -11,16 +11,16 @@ import 'package:timezone/timezone.dart' as tz;
 
 void main() {
   setUpAll(() {
-    initializeTimeZone();
+    EasyDateTime.initializeTimeZone();
   });
 
   tearDown(() {
-    clearDefaultLocation();
+    EasyDateTime.clearDefaultLocation();
   });
 
   group('Scenario 1: Flutter App Startup', () {
     test('gets current time after initialization', () {
-      // User: calls initializeTimeZone() in main(), then gets current time
+      // User: calls EasyDateTime.initializeTimeZone() in main(), then gets current time
       final now = EasyDateTime.now();
 
       expect(now, isNotNull);
@@ -29,7 +29,7 @@ void main() {
 
     test('sets global default timezone', () {
       // User: sets app default timezone to Shanghai for a China-focused app
-      setDefaultLocation(TimeZones.shanghai);
+      EasyDateTime.setDefaultLocation(TimeZones.shanghai);
       final now = EasyDateTime.now();
 
       expect(now.locationName, 'Asia/Shanghai');

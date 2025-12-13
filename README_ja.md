@@ -2,7 +2,7 @@
 
 **Dart 向けタイムゾーン対応日時ライブラリ**
 
-IANA タイムゾーンを完全にサポートし、Dart 標準の `DateTime` だけでは難しいタイムゾーン処理を直感的に扱えます。意図しない UTC 変換を行わず、解析された日時情報を正確に保持します。
+IANA タイムゾーンを完全にサポートし、Dart 標準の `DateTime` だけでは難しいタイムゾーン処理を直感的に扱えます。**不変(Immutable)** であり、意図しない UTC 変換を行わず、解析された日時情報を正確に保持します。
 
 [![Build Status](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml)
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
@@ -16,7 +16,7 @@ IANA タイムゾーンを完全にサポートし、Dart 標準の `DateTime` �
 
 Dart 標準の `DateTime` や既存のライブラリは、複雑なタイムゾーン処理においていくつかの制限がありました。
 
-| 既存のソリューション | 利点 | 課題 | 本ライブラリのアプローチ |
+| 既存のソリューション | メリット | 課題 | 本ライブラリのアプローチ |
 | --- | --- | --- | --- |
 | **DateTime** (標準) | 公式、依存なし | 自動で UTC/Local へ変換され、**タイムゾーン情報が失われる** | **値の保持**: 解析時の数値とオフセットを完全に維持します。 |
 | **timezone** | IANA 完全対応 | API が複雑で、タイムゾーン文字列の検索が必要 | **開発者に優しい**: `TimeZones.tokyo` などの定数ですぐに使えます。 |
@@ -26,40 +26,46 @@ Dart 標準の `DateTime` や既存のライブラリは、複雑なタイムゾ
 **比較:**
 
 ```dart
-// DateTime: オフセットは解析されますが、UTC に変換されるため時間が変わります
-DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2 (文脈が失われる)
+// ❌ DateTime: 暗黙的に UTC/Local へ変換され、オフセットの情報が失われる
+DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2
 
-// EasyDateTime: 入力された時間をそのまま保持します
-EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 (期待通り)
+// ✅ EasyDateTime: 時間とオフセットを正確に保持する
+EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10
 ```
 
 ---
 
 ## 主な特徴
 
-* 🌍 **完全な IANA タイムゾーン対応**
+### 🌍 完全な IANA タイムゾーン対応
+標準 IANA 定数またはカスタム文字列を使用。
+```dart
+final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
+```
 
-  `Asia/Shanghai` や `America/New_York` など、すべての IANA タイムゾーンをシンプルな API で利用できます。
+### 🕒 解析値をそのまま保持
+暗黙的な UTC 変換なし。解析された値を正確に保持。
+```dart
+EasyDateTime.parse('2025-12-07T10:00+08:00').hour // -> 10
+```
 
-* 🕒 **解析値をそのまま保持**
+### ➕ 直感的な演算
+直感的な日付計算構文。
+```dart
+final later = now + 2.hours + 30.minutes;
+```
 
-  意図せず UTC へ変換されることはありません。解析した日時情報はそのまま保存されます。
+### 🧱 安全な計算
+月のオーバーフローをインテリジェントに処理。
+```dart
+jan31.copyWithClamped(month: 2); // -> 2月28日
+```
 
-* ➕ **直感的な演算**
-
-  `now + 1.days` や `2.hours` のような自然な記述で計算が可能です。
-
-* 🔄 **明示的な変換**
-
-  `.inLocation()` または `.toUtc()` を呼び出した場合のみ、タイムゾーンの変換が行われます。
-
-* 🧱 **安全な計算**
-
-  月末の計算（例: 1月31日 + 1ヶ月 → 2月28日）などを `copyWithClamped` で自動補正します。
-
-* 📝 **柔軟なフォーマット**
-
-  カスタムパターン（`format('yyyy-MM-dd')`）や定数（`DateTimeFormats.isoDate`）でフォーマットできます。
+### 📝 柔軟なフォーマット
+パフォーマンスに最適化されたフォーマット。
+```dart
+dt.format('yyyy-MM-dd'); // -> 2025-12-07
+```
 
 ---
 
@@ -69,21 +75,25 @@ EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 (期待通り)
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.3.2
+  easy_date_time: ^0.3.5
 ```
 
 **注意**: 正確な計算を行うため、アプリ起動時に**必ず**タイムゾーンデータベースの初期化を行ってください。
 
 ```dart
 void main() {
-  initializeTimeZone();  // 必須
+  EasyDateTime.initializeTimeZone();  // 必須
 
   // オプション: デフォルトのタイムゾーンを設定
-  setDefaultLocation(TimeZones.shanghai);
+  EasyDateTime.setDefaultLocation(TimeZones.shanghai);
 
   runApp(MyApp());
 }
 ```
+
+> [!NOTE]
+> グローバル関数 `initializeTimeZone()` と `setDefaultLocation()` は**非推奨**です。
+> 代わりに `EasyDateTime.initializeTimeZone()` と `EasyDateTime.setDefaultLocation()` を使用してください。
 
 ---
 
@@ -123,7 +133,7 @@ final nairobi = EasyDateTime.now(location: getLocation('Africa/Nairobi'));
 デフォルトを設定すると、`EasyDateTime.now()` は常にそのタイムゾーンを使用します。
 
 ```dart
-setDefaultLocation(TimeZones.shanghai);
+EasyDateTime.setDefaultLocation(TimeZones.shanghai);
 final now = EasyDateTime.now(); // Asia/Shanghai として扱われます
 ```
 
@@ -177,8 +187,8 @@ final later = now + 2.hours + 30.minutes;
 ```dart
 final jan31 = EasyDateTime.utc(2025, 1, 31);
 
-jan31.copyWith(month: 2);        // 3月3日 (通常のオーバーフロー挙動)
-jan31.copyWithClamped(month: 2); // 2月28日 (月末にクランプ)
+jan31.copyWith(month: 2);        // ⚠️ 3月3日 (通常のオーバーフロー)
+jan31.copyWithClamped(month: 2); // ✅ 2月28日 (月末にクランプ)
 ```
 
 ---
@@ -196,15 +206,25 @@ dt.format('MM/dd/yyyy');           // '12/01/2025'
 dt.format('hh:mm a');              // '02:30 PM'
 ```
 
+> [!TIP]
+> **パフォーマンス最適化**: ループ処理などでは `EasyDateTimeFormatter` でパターンを事前コンパイルしてください。
+> ```dart
+> // 一度コンパイルして再利用
+> static final formatter = EasyDateTimeFormatter('yyyy-MM-dd HH:mm');
+> String result = formatter.format(date);
+> ```
+
 ### 定義済みフォーマット
 
 `DateTimeFormats` で一般的なパターンを使用できます：
 
 ```dart
 dt.format(DateTimeFormats.isoDate);      // '2025-12-01'
-dt.format(DateTimeFormats.asianDate);    // '2025/12/01'
-dt.format(DateTimeFormats.fullDateTime); // '2025-12-01 14:30:45'
+dt.format(DateTimeFormats.isoTime);      // '14:30:45'
+dt.format(DateTimeFormats.isoDateTime);  // '2025-12-01T14:30:45'
 dt.format(DateTimeFormats.time12Hour);   // '02:30 PM'
+dt.format(DateTimeFormats.time24Hour);   // '14:30'
+dt.format(DateTimeFormats.rfc2822);      // 'Mon, 01 Dec 2025 14:30:45 +0800'
 ```
 
 ### パターントークン
@@ -213,13 +233,19 @@ dt.format(DateTimeFormats.time12Hour);   // '02:30 PM'
 |----------|------|-----|
 | `yyyy` | 4桁の年 | 2025 |
 | `MM`/`M` | 月（ゼロ埋め/なし） | 01, 1 |
+| `MMM` | 月の略称 | Jan, Dec |
 | `dd`/`d` | 日（ゼロ埋め/なし） | 01, 1 |
+| `EEE` | 曜日の略称 | Mon, Sun |
 | `HH`/`H` | 24時間制（ゼロ埋め/なし） | 09, 9 |
 | `hh`/`h` | 12時間制（ゼロ埋め/なし） | 02, 2 |
 | `mm`/`m` | 分（ゼロ埋め/なし） | 05, 5 |
 | `ss`/`s` | 秒（ゼロ埋め/なし） | 05, 5 |
 | `SSS` | ミリ秒 | 123 |
 | `a` | 午前/午後 | AM, PM |
+| `xxxxx` | タイムゾーンオフセット（コロン付き） | +08:00, -05:00 |
+| `xxxx` | タイムゾーンオフセット | +0800, -0500 |
+| `xx` | 短いタイムゾーンオフセット | +08, -05 |
+| `X` | UTCはZ、それ以外はオフセット | Z, +0800 |
 
 ---
 
@@ -255,7 +281,7 @@ class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
 
 * `==` 演算子は、タイムゾーンに関わらず**絶対時間（Instant）**の等価性を判定します。
 * 有効な IANA タイムゾーンオフセットのみがサポートされます。非標準のオフセットはエラーとなります。
-* 使用前に `initializeTimeZone()` の呼び出しが必要です。
+* 使用前に `EasyDateTime.initializeTimeZone()` の呼び出しが必要です。
 
 ### 安全な解析
 ユーザー入力を解析する場合は、`tryParse` の使用を推奨します。
