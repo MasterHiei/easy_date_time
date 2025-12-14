@@ -311,7 +311,7 @@ extension EasyDateTimeFormatting on EasyDateTime {
 /// ```
 class EasyDateTimeFormatter {
   /// Cache all created formatters, as they are immutable.
-  static Map<String, EasyDateTimeFormatter> _availablePatterns = {};
+  static final Map<String, EasyDateTimeFormatter> _availablePatterns = {};
 
   /// The pattern string used by this formatter.
   final String pattern;
