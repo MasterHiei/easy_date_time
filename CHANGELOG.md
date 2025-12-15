@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.7] - 2025-12-16
+
+### Added
+- `EasyDateTimeFormatter`: Named constructors (`.isoDate()`, `.isoTime()`, `.isoDateTime()`, `.rfc2822()`, `.time12Hour()`, `.time24Hour()`).
+- `EasyDateTimeFormatter`: Pattern caching for better performance in repeated use.
+- `EasyDateTimeFormatter.clearCache()`: Clears cached formatters for long-running apps.
+
+### Contributors
+Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#13](https://github.com/MasterHiei/easy_date_time/pull/13)).
+
 ## [0.3.6] - 2025-12-14
 
 ### Added
@@ -14,7 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved `fromMillisecondsSinceEpoch()` API docs with examples.
 
 ### Contributors
-
 Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#11](https://github.com/MasterHiei/easy_date_time/pull/11)).
 
 ## [0.3.5] - 2025-12-13
@@ -55,7 +64,6 @@ Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#11](h
 ## [0.3.3] - 2025-12-11
 
 ### Added
-
 - **DateTime Compatibility Constants**: Added weekday and month constants for drop-in compatibility with `DateTime`:
   - Weekday: `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, `saturday`, `sunday`, `daysPerWeek`
   - Month: `january`, `february`, `march`, `april`, `may`, `june`, `july`, `august`, `september`, `october`, `november`, `december`, `monthsPerYear`
@@ -68,7 +76,6 @@ Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#11](h
   - `EasyDateTime.isTimeZoneInitialized` - Checks initialization status
 
 ### Deprecated
-
 - **Global functions deprecated in favor of static methods** (will be removed in v0.4.0):
   - `initializeTimeZone()` → Use `EasyDateTime.initializeTimeZone()`
   - `setDefaultLocation()` → Use `EasyDateTime.setDefaultLocation()`
@@ -77,11 +84,9 @@ Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#11](h
   - `isTimeZoneInitialized` → Use `EasyDateTime.isTimeZoneInitialized`
 
 ### Fixed
-
 - Fixed undefined `isTimeZoneInitialized` reference in parsing module
 
 ### Contributors
-
 Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#7](https://github.com/MasterHiei/easy_date_time/pull/7)).
 
 ## [0.3.2] - 2025-12-11
@@ -112,7 +117,6 @@ Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#7](ht
 ## [0.3.0] - 2025-12-10
 
 ### Added
-
 - **Date Formatting API**: New `format(String pattern)` method for flexible date/time formatting
   - Supports tokens: `yyyy`, `yy`, `MM`, `M`, `dd`, `d`, `HH`, `H`, `hh`, `h`, `mm`, `m`, `ss`, `s`, `SSS`, `S`, `a`
   - Supports escaped literal text using single quotes
@@ -147,19 +151,16 @@ Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#7](ht
 ## [0.2.0] - 2025-12-08
 
 ### ⚠️ Breaking Changes
-
 - **Renamed** `inUtc()` → `toUtc()` — Consistent with `DateTime.toUtc()`
 - **Renamed** `inLocalTime()` → `toLocal()` — Consistent with `DateTime.toLocal()`
 - **Renamed** `isAtSameMoment()` → `isAtSameMomentAs()` — Consistent with `DateTime.isAtSameMomentAs()`
 - **Removed** `fromJson()` and `toJson()` — Use `fromIso8601String()` and `toIso8601String()` instead
 
 ### Added
-
 - `fromSecondsSinceEpoch(int seconds, {Location? location})` — Factory for Unix timestamps in seconds
 - `fromIso8601String(String dateTimeString)` — Explicit factory for ISO 8601 strings
 
 ### Changed
-
 - Modularized codebase: split `easy_date_time.dart` into `easy_date_time_parsing.dart` and `easy_date_time_utilities.dart`
 - Improved documentation and code comments
 

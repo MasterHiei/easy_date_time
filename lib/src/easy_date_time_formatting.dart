@@ -59,8 +59,9 @@ const _monthNames = [
 /// ```dart
 /// final dt = EasyDateTime.now();
 /// print(dt.format(DateTimeFormats.isoDate));  // '2025-12-01'
-/// print(dt.format(DateTimeFormats.usDate));   // '12/01/2025'
+/// print(dt.format(DateTimeFormats.isoTime));  // '14:30:45'
 /// ```
+
 abstract final class DateTimeFormats {
   // ============================================================
   // ISO 8601 Standard Formats
@@ -167,8 +168,9 @@ extension EasyDateTimeFormatting on EasyDateTime {
   /// dt.format('HH:mm:ss.SSS');         // '14:30:45.123'
   ///
   /// // Using predefined formats
-  /// dt.format(DateTimeFormats.isoDate);      // '2025-12-01'
-  /// dt.format(DateTimeFormats.fullDateTime); // '2025-12-01 14:30:45'
+  /// dt.format(DateTimeFormats.isoDate);     // '2025-12-01'
+  /// dt.format(DateTimeFormats.isoDateTime); // '2025-12-01T14:30:45'
+
   /// ```
   ///
   /// See also:
@@ -303,12 +305,40 @@ extension EasyDateTimeFormatting on EasyDateTime {
 /// [EasyDateTimeFormatter] parses the pattern once during initialization.
 /// This provides significant performance benefits in loops or hot paths.
 ///
+/// ## Basic Usage
+///
 /// ```dart
 /// final formatter = EasyDateTimeFormatter('yyyy-MM-dd HH:mm');
 /// for (final date in dates) {
 ///   print(formatter.format(date));
 /// }
 /// ```
+///
+/// ## Using Named Constructors
+///
+/// ```dart
+/// final isoFormatter = EasyDateTimeFormatter.isoDate();
+/// print(isoFormatter.format(EasyDateTime.now())); // '2025-12-15'
+/// ```
+///
+/// ## Caching Behavior
+///
+/// Formatters are cached by pattern string. Creating multiple formatters
+/// with the same pattern returns the same instance:
+///
+/// ```dart
+/// final f1 = EasyDateTimeFormatter('yyyy-MM-dd');
+/// final f2 = EasyDateTimeFormatter('yyyy-MM-dd');
+/// print(identical(f1, f2)); // true
+/// ```
+///
+/// For long-running applications or when using many unique patterns,
+/// use [clearCache] to release memory:
+///
+/// ```dart
+/// EasyDateTimeFormatter.clearCache();
+/// ```
+
 class EasyDateTimeFormatter {
   /// Cache all created formatters, as they are immutable.
   static final Map<String, EasyDateTimeFormatter> _availablePatterns = {};
@@ -330,8 +360,67 @@ class EasyDateTimeFormatter {
     }
     final formatter = EasyDateTimeFormatter._(pattern);
     _availablePatterns[pattern] = formatter;
+
     return formatter;
   }
+
+  /// Clears all cached formatters.
+  ///
+  /// This method is useful for long-running applications where many unique
+  /// patterns may have been created over time and are no longer needed.
+  ///
+  /// After calling this method, any subsequent calls to [EasyDateTimeFormatter]
+  /// will recompile the pattern.
+  ///
+  /// ```dart
+  /// // Clear all cached formatters
+  /// EasyDateTimeFormatter.clearCache();
+  /// ```
+  static void clearCache() {
+    _availablePatterns.clear();
+  }
+
+  // ============================================================
+  // Named Constructors for Common Patterns
+  // ============================================================
+
+  /// ISO 8601 date format: `yyyy-MM-dd`
+  ///
+  /// Example output: `2025-12-15`
+  factory EasyDateTimeFormatter.isoDate() =>
+      EasyDateTimeFormatter(DateTimeFormats.isoDate);
+
+  /// ISO 8601 time format: `HH:mm:ss`
+  ///
+  /// Example output: `14:30:45`
+  factory EasyDateTimeFormatter.isoTime() =>
+      EasyDateTimeFormatter(DateTimeFormats.isoTime);
+
+  /// ISO 8601 date and time format: `yyyy-MM-dd'T'HH:mm:ss`
+  ///
+  /// Example output: `2025-12-15T14:30:45`
+  factory EasyDateTimeFormatter.isoDateTime() =>
+      EasyDateTimeFormatter(DateTimeFormats.isoDateTime);
+
+  /// RFC 2822 format: `EEE, dd MMM yyyy HH:mm:ss xxxx`
+  ///
+  /// Standard format for email Date headers and HTTP headers.
+  ///
+  /// Example output: `Mon, 15 Dec 2025 14:30:45 +0800`
+  factory EasyDateTimeFormatter.rfc2822() =>
+      EasyDateTimeFormatter(DateTimeFormats.rfc2822);
+
+  /// 12-hour time format: `hh:mm a`
+  ///
+  /// Example output: `02:30 PM`
+  factory EasyDateTimeFormatter.time12Hour() =>
+      EasyDateTimeFormatter(DateTimeFormats.time12Hour);
+
+  /// 24-hour time format: `HH:mm`
+  ///
+  /// Example output: `14:30`
+  factory EasyDateTimeFormatter.time24Hour() =>
+      EasyDateTimeFormatter(DateTimeFormats.time24Hour);
 
   // Internal constructor that compiles the pattern.
   EasyDateTimeFormatter._(this.pattern) : _compiledTokens = _compile(pattern);
@@ -383,6 +472,7 @@ class EasyDateTimeFormatter {
         i++;
       }
     }
+
     return tokens;
   }
 
@@ -414,7 +504,6 @@ class EasyDateTimeFormatter {
   EasyDateTimeFormatter addPattern(String additionalPattern) {
     return EasyDateTimeFormatter(pattern + additionalPattern);
   }
-  
 }
 
 /// Base class for compiled formatter tokens.
