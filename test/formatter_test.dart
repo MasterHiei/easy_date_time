@@ -218,4 +218,125 @@ void main() {
       expect(dt.format('xx'), '+0530');
     });
   });
+
+  group('Named Constructors', () {
+    test('isoDate() formats for API date fields', () {
+      final formatter = EasyDateTimeFormatter.isoDate();
+      final dt = EasyDateTime(2025, 12, 15);
+
+      expect(formatter.format(dt), '2025-12-15');
+      expect(formatter.pattern, 'yyyy-MM-dd');
+    });
+
+    test('isoTime() formats for time displays', () {
+      final formatter = EasyDateTimeFormatter.isoTime();
+      final dt = EasyDateTime(2025, 12, 15, 14, 30, 45);
+
+      expect(formatter.format(dt), '14:30:45');
+    });
+
+    test('isoDateTime() formats for ISO timestamps', () {
+      final formatter = EasyDateTimeFormatter.isoDateTime();
+      final dt = EasyDateTime(2025, 12, 15, 14, 30, 45);
+
+      expect(formatter.format(dt), '2025-12-15T14:30:45');
+    });
+
+    test('rfc2822() formats for email headers', () {
+      final formatter = EasyDateTimeFormatter.rfc2822();
+      final dt = EasyDateTime.utc(2025, 12, 15, 14, 30, 45);
+
+      final result = formatter.format(dt);
+
+      expect(result, contains('Mon, 15 Dec 2025'));
+      expect(result, contains('14:30:45'));
+    });
+
+    test('time12Hour() formats AM/PM time', () {
+      final formatter = EasyDateTimeFormatter.time12Hour();
+      final morning = EasyDateTime(2025, 12, 15, 9, 30);
+      final afternoon = EasyDateTime(2025, 12, 15, 14, 30);
+
+      expect(formatter.format(morning), '09:30 AM');
+      expect(formatter.format(afternoon), '02:30 PM');
+    });
+
+    test('time24Hour() formats 24-hour time', () {
+      final formatter = EasyDateTimeFormatter.time24Hour();
+      final dt = EasyDateTime(2025, 12, 15, 14, 30);
+
+      expect(formatter.format(dt), '14:30');
+    });
+
+    test('named constructors share cached instances', () {
+      final f1 = EasyDateTimeFormatter.isoDate();
+      final f2 = EasyDateTimeFormatter.isoDate();
+      final f3 = EasyDateTimeFormatter(DateTimeFormats.isoDate);
+
+      expect(identical(f1, f2), isTrue);
+      expect(identical(f1, f3), isTrue);
+    });
+  });
+
+  group('Pattern Composition', () {
+    test('combineFormatters() merges two patterns', () {
+      final dateFormatter = EasyDateTimeFormatter.isoDate();
+      final timeFormatter = EasyDateTimeFormatter(' HH:mm:ss');
+
+      final combined = dateFormatter.combineFormatters(timeFormatter);
+      final dt = EasyDateTime(2025, 12, 15, 14, 30, 45);
+
+      expect(combined.format(dt), '2025-12-15 14:30:45');
+      expect(combined.pattern, 'yyyy-MM-dd HH:mm:ss');
+    });
+
+    test('addPattern() appends to existing pattern', () {
+      final dateFormatter = EasyDateTimeFormatter('yyyyMMdd_HHmmss');
+      final withExtension = dateFormatter.addPattern("'.log'");
+      final dt = EasyDateTime(2025, 12, 15, 14, 30, 45);
+
+      expect(withExtension.format(dt), '20251215_143045.log');
+    });
+
+    test('combined formatters share cached instances', () {
+      final f1 = EasyDateTimeFormatter.isoDate();
+      final f2 = EasyDateTimeFormatter(' HH:mm');
+      final combined1 = f1.combineFormatters(f2);
+      final combined2 = f1.combineFormatters(f2);
+
+      expect(identical(combined1, combined2), isTrue);
+    });
+
+    test('clearCache() removes all cached formatters', () {
+      // Create some formatters
+      final f1 = EasyDateTimeFormatter('yyyy-MM-dd');
+      final f2 = EasyDateTimeFormatter('HH:mm:ss');
+
+      // Clear cache
+      EasyDateTimeFormatter.clearCache();
+
+      // New formatters should be different instances
+      final f3 = EasyDateTimeFormatter('yyyy-MM-dd');
+      final f4 = EasyDateTimeFormatter('HH:mm:ss');
+
+      expect(identical(f1, f3), isFalse);
+      expect(identical(f2, f4), isFalse);
+    });
+
+    test('clearCache() allows formatter to be recreated', () {
+      final original = EasyDateTimeFormatter.isoDate();
+      final dt = EasyDateTime(2025, 12, 15);
+
+      // Verify original works
+      expect(original.format(dt), '2025-12-15');
+
+      // Clear and recreate
+      EasyDateTimeFormatter.clearCache();
+      final recreated = EasyDateTimeFormatter.isoDate();
+
+      // Recreated should work identically
+      expect(recreated.format(dt), '2025-12-15');
+      expect(identical(original, recreated), isFalse);
+    });
+  });
 }
