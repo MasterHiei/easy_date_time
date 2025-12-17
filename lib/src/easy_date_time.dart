@@ -256,7 +256,24 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   factory EasyDateTime.fromSecondsSinceEpoch(
     int seconds, {
     Location? location,
+    bool isUtc = false,
   }) {
+    if (isUtc) {
+      if (location != null) {
+        throw ArgumentError.value(
+          location,
+          'location',
+          'Cannot specify location when isUtc is true',
+        );
+      }
+
+      return EasyDateTime._(
+        TZDateTime.fromMillisecondsSinceEpoch(
+          getLocation('UTC'),
+          seconds * 1000,
+        ),
+      );
+    }  
     return EasyDateTime.fromMillisecondsSinceEpoch(
       seconds * 1000,
       location: location,
@@ -269,7 +286,24 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   factory EasyDateTime.fromMicrosecondsSinceEpoch(
     int microseconds, {
     Location? location,
+    bool isUtc = false,
   }) {
+    if (isUtc) {
+      if (location != null) {
+        throw ArgumentError.value(
+          location,
+          'location',
+          'Cannot specify location when isUtc is true',
+        );
+      }
+
+      return EasyDateTime._(
+        TZDateTime.fromMicrosecondsSinceEpoch(
+          getLocation('UTC'),
+          microseconds,
+        ),
+      );
+    }  
     return EasyDateTime._(
       TZDateTime.fromMicrosecondsSinceEpoch(
         location ?? config.effectiveDefaultLocation,
