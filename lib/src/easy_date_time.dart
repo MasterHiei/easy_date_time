@@ -4,9 +4,9 @@ import 'easy_date_time_config.dart' as config;
 import 'easy_date_time_init.dart' as init;
 import 'exceptions/exceptions.dart';
 
+part 'easy_date_time_formatting.dart';
 part 'easy_date_time_parsing.dart';
 part 'easy_date_time_utilities.dart';
-part 'easy_date_time_formatting.dart';
 
 /// A timezone-aware DateTime implementation.
 ///
@@ -68,6 +68,19 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// The underlying TZDateTime from the timezone package.
   final TZDateTime _tzDateTime;
 
+  /// Validates that [isUtc] and [location] are mutually exclusive.
+  ///
+  /// Throws [ArgumentError] if both are specified.
+  static void _validateUtcLocation(bool isUtc, Location? location) {
+    if (isUtc && location != null) {
+      throw ArgumentError.value(
+        location,
+        'location',
+        'Cannot specify location when isUtc is true',
+      );
+    }
+  }
+
   /// Creates an [EasyDateTime] from the given components.
   ///
   /// If [location] is not provided, uses the global default timezone
@@ -80,6 +93,9 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   ///   automatically adjusted forward to the next valid time.
   /// - **Fall Back (Overlap):** If you create a time during the "repeated hour"
   ///   (e.g., 1:30 AM that occurs twice), the DST time (before fall back) is used.
+  ///
+  /// **Throws [TimeZoneNotInitializedException]** if [EasyDateTime.initializeTimeZone]
+  /// has not been called at app startup.
   ///
   /// ```dart
   /// // Uses global default or local timezone
@@ -123,6 +139,9 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// **Important**: Call [initializeTimeZone] before using this method
   /// if you need proper timezone support.
   ///
+  /// **Throws [TimeZoneNotInitializedException]** if [EasyDateTime.initializeTimeZone]
+  /// has not been called at app startup.
+  ///
   /// ```dart
   /// // Uses global default or local timezone
   /// final now = EasyDateTime.now();
@@ -133,6 +152,26 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   factory EasyDateTime.now({Location? location}) {
     return EasyDateTime._(
         TZDateTime.now(location ?? config.effectiveDefaultLocation));
+  }
+
+  /// Creates a UTC [EasyDateTime] representing the current moment.
+  ///
+  /// This is equivalent to `EasyDateTime.now(location: TimeZones.utc)`.
+  ///
+  /// Unlike [now] which uses the global default timezone, this method
+  /// always returns UTC time. This is useful for timestamps that should
+  /// be timezone-agnostic.
+  ///
+  /// This method provides equivalent functionality to [DateTime.timestamp]
+  /// (introduced in Dart 3.6) for users on earlier Dart versions.
+  ///
+  /// ```dart
+  /// final utcNow = EasyDateTime.timestamp();
+  /// print(utcNow.locationName); // 'UTC'
+  /// print(utcNow.timeZoneOffset); // Duration.zero
+  /// ```
+  factory EasyDateTime.timestamp() {
+    return EasyDateTime._(TZDateTime.now(getLocation('UTC')));
   }
 
   /// Creates an [EasyDateTime] in UTC from the given components.
@@ -217,15 +256,8 @@ class EasyDateTime implements Comparable<EasyDateTime> {
     Location? location,
     bool isUtc = false,
   }) {
+    _validateUtcLocation(isUtc, location);
     if (isUtc) {
-      if (location != null) {
-        throw ArgumentError.value(
-          location,
-          'location',
-          'Cannot specify location when isUtc is true',
-        );
-      }
-
       return EasyDateTime._(
         TZDateTime.fromMillisecondsSinceEpoch(
           getLocation('UTC'),
@@ -247,33 +279,46 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// This is useful for parsing Unix timestamps from backend APIs that return
   /// seconds (common in Python, Go, Rust, and Unix-based systems).
   ///
-  /// If [location] is not provided, uses the global default or local timezone.
+  /// ## Parameters
+  ///
+  /// - [location]: The timezone to display the result in. If not provided,
+  ///   uses the global default (set via [setDefaultLocation]) or local timezone.
+  /// - [isUtc]: If `true`, returns a UTC datetime. This is provided for
+  ///   compatibility with [DateTime.fromMillisecondsSinceEpoch].
+  ///
+  /// **Note**: [isUtc] and [location] are mutually exclusive. Specifying both
+  /// throws an [ArgumentError].
+  ///
+  /// ## Examples
   ///
   /// ```dart
-  /// // Backend returns: {"created_at": 1733644200}
+  /// // Basic usage (uses default/local timezone)
   /// final dt = EasyDateTime.fromSecondsSinceEpoch(1733644200);
+  ///
+  /// // With explicit UTC
+  /// final utc = EasyDateTime.fromSecondsSinceEpoch(1733644200, isUtc: true);
+  ///
+  /// // With explicit timezone
+  /// final tokyo = EasyDateTime.fromSecondsSinceEpoch(
+  ///   1733644200,
+  ///   location: TimeZones.tokyo,
+  /// );
   /// ```
   factory EasyDateTime.fromSecondsSinceEpoch(
     int seconds, {
     Location? location,
     bool isUtc = false,
   }) {
+    _validateUtcLocation(isUtc, location);
     if (isUtc) {
-      if (location != null) {
-        throw ArgumentError.value(
-          location,
-          'location',
-          'Cannot specify location when isUtc is true',
-        );
-      }
-
       return EasyDateTime._(
         TZDateTime.fromMillisecondsSinceEpoch(
           getLocation('UTC'),
           seconds * 1000,
         ),
       );
-    }  
+    }
+
     return EasyDateTime.fromMillisecondsSinceEpoch(
       seconds * 1000,
       location: location,
@@ -282,28 +327,49 @@ class EasyDateTime implements Comparable<EasyDateTime> {
 
   /// Creates an [EasyDateTime] from microseconds since Unix epoch.
   ///
-  /// If [location] is not provided, uses the global default or local timezone.
+  /// ## Parameters
+  ///
+  /// - [location]: The timezone to display the result in. If not provided,
+  ///   uses the global default (set via [setDefaultLocation]) or local timezone.
+  /// - [isUtc]: If `true`, returns a UTC datetime. This is provided for
+  ///   compatibility with [DateTime.fromMicrosecondsSinceEpoch].
+  ///
+  /// **Note**: [isUtc] and [location] are mutually exclusive. Specifying both
+  /// throws an [ArgumentError].
+  ///
+  /// ## Examples
+  ///
+  /// ```dart
+  /// // Basic usage (uses default/local timezone)
+  /// final dt = EasyDateTime.fromMicrosecondsSinceEpoch(1733644200000000);
+  ///
+  /// // With explicit UTC
+  /// final utc = EasyDateTime.fromMicrosecondsSinceEpoch(
+  ///   1733644200000000,
+  ///   isUtc: true,
+  /// );
+  ///
+  /// // With explicit timezone
+  /// final tokyo = EasyDateTime.fromMicrosecondsSinceEpoch(
+  ///   1733644200000000,
+  ///   location: TimeZones.tokyo,
+  /// );
+  /// ```
   factory EasyDateTime.fromMicrosecondsSinceEpoch(
     int microseconds, {
     Location? location,
     bool isUtc = false,
   }) {
+    _validateUtcLocation(isUtc, location);
     if (isUtc) {
-      if (location != null) {
-        throw ArgumentError.value(
-          location,
-          'location',
-          'Cannot specify location when isUtc is true',
-        );
-      }
-
       return EasyDateTime._(
         TZDateTime.fromMicrosecondsSinceEpoch(
           getLocation('UTC'),
           microseconds,
         ),
       );
-    }  
+    }
+
     return EasyDateTime._(
       TZDateTime.fromMicrosecondsSinceEpoch(
         location ?? config.effectiveDefaultLocation,
@@ -338,13 +404,18 @@ class EasyDateTime implements Comparable<EasyDateTime> {
   /// final dt = EasyDateTime.parse('2025-12-01T10:30:00+08:00');
   /// print(dt.hour); // 10 (not 2!)
   ///
-  /// // Explicit location converts to that timezone
   /// final inNY = EasyDateTime.parse(
   ///   '2025-12-01T10:30:00Z',
   ///   location: getLocation('America/New_York'),
   /// );
   /// print(inNY.hour); // 5 (10:00 UTC → 05:00 NY)
   /// ```
+  ///
+  /// **Throws [TimeZoneNotInitializedException]** if [EasyDateTime.initializeTimeZone]
+  /// has not been called at app startup.
+  ///
+  /// See also:
+  /// - [tryParse] for safe parsing of user input.
   factory EasyDateTime.parse(String dateTimeString, {Location? location}) {
     final trimmed = dateTimeString.trim();
 
