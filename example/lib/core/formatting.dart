@@ -3,7 +3,7 @@
 /// Formatting Example
 ///
 /// Demonstrates: various output formats using format() method.
-/// Run: dart run example/08_formatting.dart
+/// Run: dart run example/lib/core/formatting.dart
 library;
 
 import 'package:easy_date_time/easy_date_time.dart';

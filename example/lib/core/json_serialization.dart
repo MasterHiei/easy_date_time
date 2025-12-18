@@ -3,10 +3,11 @@
 /// JSON Serialization Example
 ///
 /// Demonstrates: toJson, fromJson, and integration patterns.
-/// Run: dart run example/07_json.dart
+/// Run: dart run example/lib/core/json_serialization.dart
 library;
 
 import 'dart:convert';
+
 import 'package:easy_date_time/easy_date_time.dart';
 
 void main() {

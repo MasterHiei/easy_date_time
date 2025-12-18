@@ -3,7 +3,7 @@
 /// Basic Usage Example
 ///
 /// Demonstrates: initialization, creating, and basic operations.
-/// Run: dart run example/01_basic_usage.dart
+/// Run: dart run example/lib/core/basic_usage.dart
 library;
 
 import 'package:easy_date_time/easy_date_time.dart';
