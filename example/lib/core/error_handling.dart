@@ -3,7 +3,7 @@
 /// Error Handling Example
 ///
 /// Demonstrates: safe parsing and validation.
-/// Run: dart run example/10_error_handling.dart
+/// Run: dart run example/lib/core/error_handling.dart
 library;
 
 import 'package:easy_date_time/easy_date_time.dart';

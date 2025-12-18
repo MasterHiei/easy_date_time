@@ -52,6 +52,83 @@ const _monthNames = [
   'Dec',
 ];
 
+// ============================================================
+// Shared Formatting Utility Functions
+// ============================================================
+
+/// Formats a token value for the given date.
+///
+/// This is the shared implementation used by both [EasyDateTimeFormatting]
+/// extension and [EasyDateTimeFormatter] class to avoid code duplication.
+String _formatTokenValue(String token, EasyDateTime date) {
+  return switch (token) {
+    'yyyy' => date.year.toString().padLeft(4, '0'),
+    'yy' => (date.year % 100).toString().padLeft(2, '0'),
+    'MMM' => _monthNames[date.month],
+    'MM' => date.month.toString().padLeft(2, '0'),
+    'M' => date.month.toString(),
+    'EEE' => _dayNames[date.weekday - 1],
+    'dd' => date.day.toString().padLeft(2, '0'),
+    'd' => date.day.toString(),
+    'HH' => date.hour.toString().padLeft(2, '0'),
+    'H' => date.hour.toString(),
+    'hh' => _hour12(date).toString().padLeft(2, '0'),
+    'h' => _hour12(date).toString(),
+    'mm' => date.minute.toString().padLeft(2, '0'),
+    'm' => date.minute.toString(),
+    'ss' => date.second.toString().padLeft(2, '0'),
+    's' => date.second.toString(),
+    'SSS' => date.millisecond.toString().padLeft(3, '0'),
+    'S' => date.millisecond.toString(),
+    'a' => date.hour < 12 ? 'AM' : 'PM',
+    'xxxxx' => _formatTimezoneOffset(date, withColon: true),
+    'xxxx' => _formatTimezoneOffset(date, withColon: false),
+    'xx' => _formatTimezoneOffsetShort(date),
+    'X' => _formatTimezoneOffsetOrZ(date),
+    _ => token,
+  };
+}
+
+/// Converts 24-hour to 12-hour format.
+int _hour12(EasyDateTime date) {
+  final h = date.hour % 12;
+
+  return h == 0 ? 12 : h;
+}
+
+/// Formats timezone offset as +HHMM or -HHMM.
+String _formatTimezoneOffset(EasyDateTime date, {required bool withColon}) {
+  final offset = date.timeZoneOffset;
+  final hours = offset.inHours.abs();
+  final minutes = (offset.inMinutes.abs() % 60);
+  final sign = offset.isNegative ? '-' : '+';
+  if (withColon) {
+    return '$sign${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
+  }
+
+  return '$sign${hours.toString().padLeft(2, '0')}${minutes.toString().padLeft(2, '0')}';
+}
+
+/// Formats timezone offset as +HH or -HH (no minutes if zero).
+String _formatTimezoneOffsetShort(EasyDateTime date) {
+  final offset = date.timeZoneOffset;
+  final hours = offset.inHours.abs();
+  final minutes = (offset.inMinutes.abs() % 60);
+  final sign = offset.isNegative ? '-' : '+';
+  if (minutes == 0) {
+    return '$sign${hours.toString().padLeft(2, '0')}';
+  }
+
+  return '$sign${hours.toString().padLeft(2, '0')}${minutes.toString().padLeft(2, '0')}';
+}
+
+/// Formats timezone as Z for UTC or +HHMM/-HHMM otherwise.
+String _formatTimezoneOffsetOrZ(EasyDateTime date) {
+  if (date.isUtc) return 'Z';
+
+  return _formatTimezoneOffset(date, withColon: false);
+}
+
 /// Predefined date/time format patterns.
 ///
 /// Use these constants with [EasyDateTime.format] for common formats:
@@ -203,7 +280,7 @@ extension EasyDateTimeFormatting on EasyDateTime {
       final token = _matchToken(pattern, i);
 
       if (token != null) {
-        buffer.write(_formatToken(token));
+        buffer.write(_formatTokenValue(token, this));
         i += token.length;
       } else {
         // No token matched, write character as-is
@@ -226,76 +303,6 @@ extension EasyDateTimeFormatting on EasyDateTime {
     }
 
     return null;
-  }
-
-  /// Formats a single token to its string value.
-  String _formatToken(String token) {
-    return switch (token) {
-      'yyyy' => year.toString().padLeft(4, '0'),
-      'yy' => (year % 100).toString().padLeft(2, '0'),
-      'MMM' => _monthNames[month],
-      'MM' => month.toString().padLeft(2, '0'),
-      'M' => month.toString(),
-      'EEE' => _dayNames[weekday - 1],
-      'dd' => day.toString().padLeft(2, '0'),
-      'd' => day.toString(),
-      'HH' => hour.toString().padLeft(2, '0'),
-      'H' => hour.toString(),
-      'hh' => _hour12.toString().padLeft(2, '0'),
-      'h' => _hour12.toString(),
-      'mm' => minute.toString().padLeft(2, '0'),
-      'm' => minute.toString(),
-      'ss' => second.toString().padLeft(2, '0'),
-      's' => second.toString(),
-      'SSS' => millisecond.toString().padLeft(3, '0'),
-      'S' => millisecond.toString(),
-      'a' => hour < 12 ? 'AM' : 'PM',
-      'xxxxx' => _formatTimezoneOffset(withColon: true),
-      'xxxx' => _formatTimezoneOffset(withColon: false),
-      'xx' => _formatTimezoneOffsetShort(),
-      'X' => _formatTimezoneOffsetOrZ(),
-      _ => token,
-    };
-  }
-
-  /// Formats timezone offset as +HHMM or -HHMM
-  String _formatTimezoneOffset({required bool withColon}) {
-    final offset = timeZoneOffset;
-    final hours = offset.inHours.abs();
-    final minutes = (offset.inMinutes.abs() % 60);
-    final sign = offset.isNegative ? '-' : '+';
-    if (withColon) {
-      return '$sign${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
-    }
-
-    return '$sign${hours.toString().padLeft(2, '0')}${minutes.toString().padLeft(2, '0')}';
-  }
-
-  /// Formats timezone offset as +HH or -HH (no minutes if zero)
-  String _formatTimezoneOffsetShort() {
-    final offset = timeZoneOffset;
-    final hours = offset.inHours.abs();
-    final minutes = (offset.inMinutes.abs() % 60);
-    final sign = offset.isNegative ? '-' : '+';
-    if (minutes == 0) {
-      return '$sign${hours.toString().padLeft(2, '0')}';
-    }
-
-    return '$sign${hours.toString().padLeft(2, '0')}${minutes.toString().padLeft(2, '0')}';
-  }
-
-  /// Formats timezone as Z for UTC or +HHMM/-HHMM otherwise
-  String _formatTimezoneOffsetOrZ() {
-    if (isUtc) return 'Z';
-
-    return _formatTimezoneOffset(withColon: false);
-  }
-
-  /// Converts 24-hour to 12-hour format.
-  int get _hour12 {
-    final h = hour % 12;
-
-    return h == 0 ? 12 : h;
   }
 }
 
@@ -526,68 +533,5 @@ class _PatternToken implements _FormatterToken {
   _PatternToken(this.token);
 
   @override
-  String format(EasyDateTime date) {
-    return switch (token) {
-      'yyyy' => date.year.toString().padLeft(4, '0'),
-      'yy' => (date.year % 100).toString().padLeft(2, '0'),
-      'MMM' => _monthNames[date.month],
-      'MM' => date.month.toString().padLeft(2, '0'),
-      'M' => date.month.toString(),
-      'EEE' => _dayNames[date.weekday - 1],
-      'dd' => date.day.toString().padLeft(2, '0'),
-      'd' => date.day.toString(),
-      'HH' => date.hour.toString().padLeft(2, '0'),
-      'H' => date.hour.toString(),
-      'hh' => _hour12(date).toString().padLeft(2, '0'),
-      'h' => _hour12(date).toString(),
-      'mm' => date.minute.toString().padLeft(2, '0'),
-      'm' => date.minute.toString(),
-      'ss' => date.second.toString().padLeft(2, '0'),
-      's' => date.second.toString(),
-      'SSS' => date.millisecond.toString().padLeft(3, '0'),
-      'S' => date.millisecond.toString(),
-      'a' => date.hour < 12 ? 'AM' : 'PM',
-      'xxxxx' => _formatTimezoneOffset(date, withColon: true),
-      'xxxx' => _formatTimezoneOffset(date, withColon: false),
-      'xx' => _formatTimezoneOffsetShort(date),
-      'X' => _formatTimezoneOffsetOrZ(date),
-      _ => token,
-    };
-  }
-
-  int _hour12(EasyDateTime date) {
-    final h = date.hour % 12;
-
-    return h == 0 ? 12 : h;
-  }
-
-  String _formatTimezoneOffset(EasyDateTime date, {required bool withColon}) {
-    final offset = date.timeZoneOffset;
-    final hours = offset.inHours.abs();
-    final minutes = (offset.inMinutes.abs() % 60);
-    final sign = offset.isNegative ? '-' : '+';
-    if (withColon) {
-      return '$sign${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
-    }
-
-    return '$sign${hours.toString().padLeft(2, '0')}${minutes.toString().padLeft(2, '0')}';
-  }
-
-  String _formatTimezoneOffsetShort(EasyDateTime date) {
-    final offset = date.timeZoneOffset;
-    final hours = offset.inHours.abs();
-    final minutes = (offset.inMinutes.abs() % 60);
-    final sign = offset.isNegative ? '-' : '+';
-    if (minutes == 0) {
-      return '$sign${hours.toString().padLeft(2, '0')}';
-    }
-
-    return '$sign${hours.toString().padLeft(2, '0')}${minutes.toString().padLeft(2, '0')}';
-  }
-
-  String _formatTimezoneOffsetOrZ(EasyDateTime date) {
-    if (date.isUtc) return 'Z';
-
-    return _formatTimezoneOffset(date, withColon: false);
-  }
+  String format(EasyDateTime date) => _formatTokenValue(token, date);
 }

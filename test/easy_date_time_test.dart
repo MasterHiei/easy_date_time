@@ -69,6 +69,17 @@ void main() {
         expect(dt.locationName, 'UTC');
       });
 
+      test('timestamp() returns current UTC time', () {
+        final before = DateTime.now().toUtc().millisecondsSinceEpoch;
+        final dt = EasyDateTime.timestamp();
+        final after = DateTime.now().toUtc().millisecondsSinceEpoch;
+
+        expect(dt.locationName, 'UTC');
+        expect(dt.timeZoneOffset, Duration.zero);
+        expect(dt.millisecondsSinceEpoch, greaterThanOrEqualTo(before));
+        expect(dt.millisecondsSinceEpoch, lessThanOrEqualTo(after));
+      });
+
       test('fromDateTime() converts DateTime to default timezone', () {
         final utcDt = DateTime.utc(2025, 12, 1, 0, 0);
         final easyDt = EasyDateTime.fromDateTime(utcDt);
@@ -525,6 +536,59 @@ void main() {
 
         expect(dt.locationName, 'Asia/Tokyo');
         expect(dt.hour, 21); // 12 UTC = 21 Tokyo
+      });
+
+      test('fromMicrosecondsSinceEpoch() with isUtc=true returns UTC', () {
+        final timestamp =
+            DateTime.utc(2025, 6, 15, 12, 0).microsecondsSinceEpoch;
+        final dt = EasyDateTime.fromMicrosecondsSinceEpoch(
+          timestamp,
+          isUtc: true,
+        );
+
+        expect(dt.locationName, 'UTC');
+        expect(dt.year, 2025);
+        expect(dt.month, 6);
+        expect(dt.day, 15);
+        expect(dt.hour, 12);
+      });
+
+      test(
+          'fromMicrosecondsSinceEpoch() throws when isUtc and location both set',
+          () {
+        expect(
+          () => EasyDateTime.fromMicrosecondsSinceEpoch(
+            1000,
+            isUtc: true,
+            location: TimeZones.tokyo,
+          ),
+          throwsArgumentError,
+        );
+      });
+
+      test('fromSecondsSinceEpoch() with isUtc=true returns UTC', () {
+        // 2025-06-15 12:00:00 UTC
+        final seconds =
+            DateTime.utc(2025, 6, 15, 12, 0).millisecondsSinceEpoch ~/ 1000;
+        final dt = EasyDateTime.fromSecondsSinceEpoch(seconds, isUtc: true);
+
+        expect(dt.locationName, 'UTC');
+        expect(dt.year, 2025);
+        expect(dt.month, 6);
+        expect(dt.day, 15);
+        expect(dt.hour, 12);
+      });
+
+      test('fromSecondsSinceEpoch() throws when isUtc and location both set',
+          () {
+        expect(
+          () => EasyDateTime.fromSecondsSinceEpoch(
+            1000,
+            isUtc: true,
+            location: TimeZones.tokyo,
+          ),
+          throwsArgumentError,
+        );
       });
     });
 

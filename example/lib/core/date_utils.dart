@@ -3,7 +3,7 @@
 /// Date Utilities Example
 ///
 /// Demonstrates: isToday, startOfDay, endOfMonth, etc.
-/// Run: dart run example/06_date_utils.dart
+/// Run: dart run example/lib/core/date_utils.dart
 library;
 
 import 'package:easy_date_time/easy_date_time.dart';

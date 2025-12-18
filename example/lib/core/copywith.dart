@@ -3,7 +3,7 @@
 /// copyWith Example
 ///
 /// Demonstrates: creating modified copies.
-/// Run: dart run example/09_copywith.dart
+/// Run: dart run example/lib/core/copywith.dart
 library;
 
 import 'package:easy_date_time/easy_date_time.dart';

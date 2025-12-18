@@ -18,6 +18,7 @@ final _iso8601Pattern = RegExp(
 /// Extracts timezone offset from an ISO 8601 string.
 /// Returns the offset as Duration, or null if no offset found.
 Duration? _extractTimezoneOffset(String input) {
+  if (input.length > 100) return null;
   final match = _timezoneOffsetPattern.firstMatch(input);
   if (match == null) return null;
 
@@ -51,6 +52,7 @@ String _formatOffset(Duration offset) {
   int millisecond,
   int microsecond
 })? _extractOriginalTimeComponents(String input) {
+  if (input.length > 100) return null;
   // Remove timezone suffix for parsing
   final withoutTz = input.replaceAll(_timezoneSuffixPattern, '');
 

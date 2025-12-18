@@ -3,7 +3,7 @@
 /// Timezone Specification Example
 ///
 /// Demonstrates: three ways to specify timezone.
-/// Run: dart run example/02_timezone_specify.dart
+/// Run: dart run example/lib/core/timezone_specify.dart
 library;
 
 import 'package:easy_date_time/easy_date_time.dart';

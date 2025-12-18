@@ -3,7 +3,7 @@
 /// Parsing Example
 ///
 /// Demonstrates: parsing timestamps with preserved original values.
-/// Run: dart run example/03_parsing.dart
+/// Run: dart run example/lib/core/parsing.dart
 library;
 
 import 'package:easy_date_time/easy_date_time.dart';

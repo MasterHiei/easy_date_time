@@ -4,6 +4,8 @@ import 'package:easy_date_time/easy_date_time.dart';
 
 /// Demonstrates the high-performance [EasyDateTimeFormatter].
 ///
+/// Run: dart run example/lib/core/formatter_example.dart
+///
 /// Unlike [EasyDateTime.format] which parses the pattern on every call,
 /// [EasyDateTimeFormatter] parses the pattern once during initialization.
 /// This provides significant performance benefits in loops or hot paths.

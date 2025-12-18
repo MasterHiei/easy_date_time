@@ -3,7 +3,7 @@
 /// Timezone Conversion Example
 ///
 /// Demonstrates: converting between timezones.
-/// Run: dart run example/04_timezone_convert.dart
+/// Run: dart run example/lib/core/timezone_convert.dart
 library;
 
 import 'package:easy_date_time/easy_date_time.dart';

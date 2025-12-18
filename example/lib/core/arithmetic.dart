@@ -3,7 +3,7 @@
 /// Date Arithmetic Example
 ///
 /// Demonstrates: adding, subtracting, comparing dates.
-/// Run: dart run example/05_arithmetic.dart
+/// Run: dart run example/lib/core/arithmetic.dart
 library;
 
 import 'package:easy_date_time/easy_date_time.dart';
