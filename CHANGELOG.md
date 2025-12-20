@@ -5,10 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-12-20
+
+### ⚠️ Breaking Changes
+- **Removed deprecated global functions** (use static methods instead):
+  - `initializeTimeZone()` → `EasyDateTime.initializeTimeZone()`
+  - `setDefaultLocation()` → `EasyDateTime.setDefaultLocation()`
+  - `getDefaultLocation()` → `EasyDateTime.getDefaultLocation()`
+  - `clearDefaultLocation()` → `EasyDateTime.clearDefaultLocation()`
+  - `isTimeZoneInitialized` → `EasyDateTime.isTimeZoneInitialized`
+
+### Added
+- `startOf(DateTimeUnit)` / `endOf(DateTimeUnit)`: Truncate to time unit boundaries
+- `DateTimeUnit` enum: year, month, day, hour, minute, second
+
+### Changed
+- `==` operator now matches `DateTime` semantics (compares moment + isUtc)
+- Updated documentation with clearer equality comparison examples
+- Added intl integration examples
+
+### Contributors
+- Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#12](https://github.com/MasterHiei/easy_date_time/pull/12)).
+
 ## [0.3.8] - 2025-12-18
 
 ### Added
-- `EasyDateTime.timestamp()`: Returns current UTC time, equivalent to `DateTime.timestamp()` (Dart 3.6+).
+- `EasyDateTime.timestamp()`: Returns current UTC time, equivalent to `DateTime.timestamp()`.
 - `fromSecondsSinceEpoch()`: Added `isUtc` parameter for `DateTime` API compatibility.
 - `fromMicrosecondsSinceEpoch()`: Added `isUtc` parameter for `DateTime` API compatibility.
 
