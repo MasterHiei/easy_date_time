@@ -757,6 +757,33 @@ void main() {
         expect(start.minute, 0);
       });
 
+      test('startOf(hour) truncates to start of current hour', () {
+        final dt = EasyDateTime.utc(2025, 6, 15, 14, 30, 45, 123, 456);
+        final start = dt.startOf(DateTimeUnit.hour);
+        expect(start.hour, 14);
+        expect(start.minute, 0);
+        expect(start.second, 0);
+        expect(start.millisecond, 0);
+        expect(start.microsecond, 0);
+      });
+
+      test('startOf(minute) truncates to start of current minute', () {
+        final dt = EasyDateTime.utc(2025, 6, 15, 14, 30, 45, 123, 456);
+        final start = dt.startOf(DateTimeUnit.minute);
+        expect(start.minute, 30);
+        expect(start.second, 0);
+        expect(start.millisecond, 0);
+        expect(start.microsecond, 0);
+      });
+
+      test('startOf(second) truncates to start of current second', () {
+        final dt = EasyDateTime.utc(2025, 6, 15, 14, 30, 45, 123, 456);
+        final start = dt.startOf(DateTimeUnit.second);
+        expect(start.second, 45);
+        expect(start.millisecond, 0);
+        expect(start.microsecond, 0);
+      });
+
       test('startOf preserves location', () {
         final dt = EasyDateTime(2025, 6, 15, 14, 30, 0, 0, 0, TimeZones.tokyo);
         final start = dt.startOf(DateTimeUnit.day);
@@ -800,6 +827,33 @@ void main() {
         final dt = EasyDateTime(2025, 6, 15, 14, 30, 0, 0, 0, TimeZones.tokyo);
         final end = dt.endOf(DateTimeUnit.day);
         expect(end.locationName, 'Asia/Tokyo');
+      });
+
+      test('endOf(hour) extends to last moment of current hour', () {
+        final dt = EasyDateTime.utc(2025, 6, 15, 14, 30, 45);
+        final end = dt.endOf(DateTimeUnit.hour);
+        expect(end.hour, 14);
+        expect(end.minute, 59);
+        expect(end.second, 59);
+        expect(end.millisecond, 999);
+        expect(end.microsecond, 999);
+      });
+
+      test('endOf(minute) extends to last moment of current minute', () {
+        final dt = EasyDateTime.utc(2025, 6, 15, 14, 30, 45);
+        final end = dt.endOf(DateTimeUnit.minute);
+        expect(end.minute, 30);
+        expect(end.second, 59);
+        expect(end.millisecond, 999);
+        expect(end.microsecond, 999);
+      });
+
+      test('endOf(second) extends to last moment of current second', () {
+        final dt = EasyDateTime.utc(2025, 6, 15, 14, 30, 45, 123, 456);
+        final end = dt.endOf(DateTimeUnit.second);
+        expect(end.second, 45);
+        expect(end.millisecond, 999);
+        expect(end.microsecond, 999);
       });
     });
   });
