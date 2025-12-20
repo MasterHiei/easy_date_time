@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `isTimeZoneInitialized` → `EasyDateTime.isTimeZoneInitialized`
 
 ### Added
+- `EasyDateTime` now **implements `DateTime`** — true drop-in replacement for any `DateTime` API
 - `startOf(DateTimeUnit)` / `endOf(DateTimeUnit)`: Truncate to time unit boundaries
 - `DateTimeUnit` enum: year, month, day, hour, minute, second
 
