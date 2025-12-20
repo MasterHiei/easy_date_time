@@ -1,5 +1,6 @@
 import 'package:timezone/timezone.dart';
 
+import 'date_time_unit.dart';
 import 'easy_date_time_config.dart' as config;
 import 'easy_date_time_init.dart' as init;
 import 'exceptions/exceptions.dart';
@@ -10,11 +11,16 @@ part 'easy_date_time_utilities.dart';
 
 /// A timezone-aware DateTime implementation.
 ///
-/// [EasyDateTime] wraps Dart's [DateTime] to provide timezone-aware operations.
-/// Unlike [DateTime] which only supports UTC and local time, [EasyDateTime]
-/// can represent any IANA timezone.
+/// [EasyDateTime] implements Dart's [DateTime] interface, extending it with
+/// full IANA timezone support. Unlike [DateTime] which only supports UTC and
+/// local time, [EasyDateTime] can represent any IANA timezone while remaining
+/// fully compatible with all APIs that accept [DateTime].
 ///
-/// **This class is immutable and safe to pass between isolates.**
+/// **Key characteristics:**
+/// - Implements [DateTime] — can be used anywhere DateTime is expected
+/// - Supports any IANA timezone (Asia/Tokyo, America/New_York, etc.)
+/// - Preserves original time values when parsing (no implicit UTC conversion)
+/// - Immutable and safe to pass between isolates
 ///
 /// ## Creating instances
 ///
@@ -162,8 +168,7 @@ class EasyDateTime implements DateTime {
   /// always returns UTC time. This is useful for timestamps that should
   /// be timezone-agnostic.
   ///
-  /// This method provides equivalent functionality to [DateTime.timestamp]
-  /// (introduced in Dart 3.6) for users on earlier Dart versions.
+  /// This method provides equivalent functionality to [DateTime.timestamp].
   ///
   /// ```dart
   /// final utcNow = EasyDateTime.timestamp();
@@ -559,30 +564,39 @@ class EasyDateTime implements DateTime {
   // ============================================================
 
   /// The year component.
+  @override
   int get year => _tzDateTime.year;
 
   /// The month component (1-12).
+  @override
   int get month => _tzDateTime.month;
 
   /// The day of the month component (1-31).
+  @override
   int get day => _tzDateTime.day;
 
   /// The hour component (0-23).
+  @override
   int get hour => _tzDateTime.hour;
 
   /// The minute component (0-59).
+  @override
   int get minute => _tzDateTime.minute;
 
   /// The second component (0-59).
+  @override
   int get second => _tzDateTime.second;
 
   /// The millisecond component (0-999).
+  @override
   int get millisecond => _tzDateTime.millisecond;
 
   /// The microsecond component (0-999).
+  @override
   int get microsecond => _tzDateTime.microsecond;
 
   /// The day of the week (1 = Monday, 7 = Sunday).
+  @override
   int get weekday => _tzDateTime.weekday;
 
   /// The timezone [Location] of this datetime.
@@ -592,18 +606,23 @@ class EasyDateTime implements DateTime {
   String get locationName => _tzDateTime.location.name;
 
   /// Whether this datetime is in UTC.
+  @override
   bool get isUtc => _tzDateTime.isUtc;
 
   /// The timezone offset from UTC.
+  @override
   Duration get timeZoneOffset => _tzDateTime.timeZoneOffset;
 
   /// The timezone name abbreviation (e.g., 'JST', 'EST').
+  @override
   String get timeZoneName => _tzDateTime.timeZoneName;
 
   /// Milliseconds since Unix epoch (January 1, 1970 UTC).
+  @override
   int get millisecondsSinceEpoch => _tzDateTime.millisecondsSinceEpoch;
 
   /// Microseconds since Unix epoch (January 1, 1970 UTC).
+  @override
   int get microsecondsSinceEpoch => _tzDateTime.microsecondsSinceEpoch;
 
   // ============================================================
@@ -623,6 +642,7 @@ class EasyDateTime implements DateTime {
   /// Returns this datetime converted to UTC.
   ///
   /// This is consistent with [DateTime.toUtc].
+  @override
   EasyDateTime toUtc() {
     return EasyDateTime._(
       TZDateTime.from(_tzDateTime.toUtc(), getLocation('UTC')),
@@ -632,6 +652,7 @@ class EasyDateTime implements DateTime {
   /// Returns this datetime converted to the system's local timezone.
   ///
   /// This is consistent with [DateTime.toLocal].
+  @override
   EasyDateTime toLocal() {
     return EasyDateTime._(TZDateTime.from(_tzDateTime.toLocal(), local));
   }
@@ -644,11 +665,13 @@ class EasyDateTime implements DateTime {
   // ============================================================
 
   /// Returns a new [EasyDateTime] with the [duration] added.
+  @override
   EasyDateTime add(Duration duration) {
     return EasyDateTime._(_tzDateTime.add(duration));
   }
 
   /// Returns a new [EasyDateTime] with the [duration] subtracted.
+  @override
   EasyDateTime subtract(Duration duration) {
     return EasyDateTime._(_tzDateTime.subtract(duration));
   }
@@ -676,6 +699,7 @@ class EasyDateTime implements DateTime {
   /// final yesterday = now - Duration(days: 1);
   /// ```
   EasyDateTime operator -(Duration duration) => subtract(duration);
+
   /// Returns `true` if this is before [other].
   bool operator <(DateTime other) =>
       microsecondsSinceEpoch < other.microsecondsSinceEpoch;
@@ -730,6 +754,7 @@ class EasyDateTime implements DateTime {
   /// ```dart
   /// print(dt.toIso8601String()); // '2025-12-01T10:30:00.000+0900'
   /// ```
+  @override
   String toIso8601String() => _tzDateTime.toIso8601String();
 
   @override
@@ -754,16 +779,34 @@ class EasyDateTime implements DateTime {
   // Equality
   // ============================================================
 
+  /// Returns `true` if [other] represents the same moment and timezone type.
+  ///
+  /// This is consistent with [DateTime.==] which compares both the moment
+  /// in time and the timezone classification (UTC vs non-UTC).
+  ///
+  /// ```dart
+  /// final utc = EasyDateTime.utc(2025, 1, 1, 0, 0);
+  /// final local = EasyDateTime.parse('2025-01-01T08:00:00+08:00');
+  ///
+  /// utc == local;                  // false (different timezone type)
+  /// utc.isAtSameMomentAs(local);   // true (same absolute instant)
+  /// ```
+  ///
+  /// Use [isAtSameMomentAs] to compare absolute instants regardless of timezone.
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
     return other is EasyDateTime &&
-        microsecondsSinceEpoch == other.microsecondsSinceEpoch;
+        microsecondsSinceEpoch == other.microsecondsSinceEpoch &&
+        isUtc == other.isUtc;
   }
 
+  /// The hash code for this [EasyDateTime].
+  ///
+  /// Two [EasyDateTime] objects that are [==] have the same hash code.
   @override
-  int get hashCode => microsecondsSinceEpoch.hashCode;
+  int get hashCode => Object.hash(microsecondsSinceEpoch, isUtc);
 
   // ============================================================
   // Utility Methods
@@ -863,6 +906,57 @@ class EasyDateTime implements DateTime {
       microsecond ?? this.microsecond,
       location ?? this.location,
     );
+  }
+
+  /// Returns a new [EasyDateTime] set to the start of the specified [unit].
+  ///
+  /// ```dart
+  /// final dt = EasyDateTime(2025, 6, 15, 14, 30, 45);
+  ///
+  /// dt.startOf(DateTimeUnit.day);   // 2025-06-15 00:00:00
+  /// dt.startOf(DateTimeUnit.month); // 2025-06-01 00:00:00
+  /// dt.startOf(DateTimeUnit.year);  // 2025-01-01 00:00:00
+  /// ```
+  EasyDateTime startOf(DateTimeUnit unit) {
+    return switch (unit) {
+      DateTimeUnit.year => EasyDateTime(year, 1, 1, 0, 0, 0, 0, 0, location),
+      DateTimeUnit.month =>
+        EasyDateTime(year, month, 1, 0, 0, 0, 0, 0, location),
+      DateTimeUnit.day =>
+        EasyDateTime(year, month, day, 0, 0, 0, 0, 0, location),
+      DateTimeUnit.hour =>
+        EasyDateTime(year, month, day, hour, 0, 0, 0, 0, location),
+      DateTimeUnit.minute =>
+        EasyDateTime(year, month, day, hour, minute, 0, 0, 0, location),
+      DateTimeUnit.second =>
+        EasyDateTime(year, month, day, hour, minute, second, 0, 0, location),
+    };
+  }
+
+  /// Returns a new [EasyDateTime] set to the end of the specified [unit].
+  ///
+  /// ```dart
+  /// final dt = EasyDateTime(2025, 6, 15, 14, 30, 45);
+  ///
+  /// dt.endOf(DateTimeUnit.day);   // 2025-06-15 23:59:59.999999
+  /// dt.endOf(DateTimeUnit.month); // 2025-06-30 23:59:59.999999
+  /// dt.endOf(DateTimeUnit.year);  // 2025-12-31 23:59:59.999999
+  /// ```
+  EasyDateTime endOf(DateTimeUnit unit) {
+    return switch (unit) {
+      DateTimeUnit.year =>
+        EasyDateTime(year, 12, 31, 23, 59, 59, 999, 999, location),
+      DateTimeUnit.month =>
+        EasyDateTime(year, month + 1, 0, 23, 59, 59, 999, 999, location),
+      DateTimeUnit.day =>
+        EasyDateTime(year, month, day, 23, 59, 59, 999, 999, location),
+      DateTimeUnit.hour =>
+        EasyDateTime(year, month, day, hour, 59, 59, 999, 999, location),
+      DateTimeUnit.minute =>
+        EasyDateTime(year, month, day, hour, minute, 59, 999, 999, location),
+      DateTimeUnit.second => EasyDateTime(
+          year, month, day, hour, minute, second, 999, 999, location),
+    };
   }
 
   // ============================================================
