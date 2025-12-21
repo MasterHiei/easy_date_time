@@ -9,13 +9,13 @@ coverage:
     # Project coverage: overall repository coverage
     project:
       default:
-        target: 90%       # Minimum baseline threshold
+        target: 99%       # Minimum baseline threshold
         threshold: 1%     # Allow 1% drop (common in small packages)
 
     # Patch coverage: coverage of new/changed lines only
     patch:
       default:
-        target: 90%       # New code should be well-tested
+        target: 99%       # New code should be well-tested
 
 comment:
   layout: "reach,diff,flags,files"

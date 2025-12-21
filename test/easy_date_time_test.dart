@@ -784,6 +784,41 @@ void main() {
         expect(start.microsecond, 0);
       });
 
+      test('startOf(week) on Monday returns same day at 00:00', () {
+        // 2025-06-16 is Monday
+        final mon = EasyDateTime.utc(2025, 6, 16, 14, 30);
+        final start = mon.startOf(DateTimeUnit.week);
+        expect(start.day, 16);
+        expect(start.weekday, DateTime.monday);
+        expect(start.hour, 0);
+        expect(start.minute, 0);
+      });
+
+      test('startOf(week) on Sunday returns previous Monday', () {
+        // 2025-06-22 is Sunday
+        final sun = EasyDateTime.utc(2025, 6, 22, 10, 0);
+        final start = sun.startOf(DateTimeUnit.week);
+        expect(start.day, 16); // Previous Monday (June 16)
+        expect(start.weekday, DateTime.monday);
+      });
+
+      test('startOf(week) on Wednesday returns Monday of same week', () {
+        // 2025-06-18 is Wednesday
+        final wed = EasyDateTime.utc(2025, 6, 18, 12, 0);
+        final start = wed.startOf(DateTimeUnit.week);
+        expect(start.day, 16);
+        expect(start.weekday, DateTime.monday);
+      });
+
+      test('startOf(week) across month boundary', () {
+        // 2025-07-02 is Wednesday, week starts June 30 (Monday)
+        final wed = EasyDateTime.utc(2025, 7, 2, 12, 0);
+        final start = wed.startOf(DateTimeUnit.week);
+        expect(start.month, 6); // June
+        expect(start.day, 30); // Monday June 30
+        expect(start.weekday, DateTime.monday);
+      });
+
       test('startOf preserves location', () {
         final dt = EasyDateTime(2025, 6, 15, 14, 30, 0, 0, 0, TimeZones.tokyo);
         final start = dt.startOf(DateTimeUnit.day);
@@ -854,6 +889,41 @@ void main() {
         expect(end.second, 45);
         expect(end.millisecond, 999);
         expect(end.microsecond, 999);
+      });
+
+      test('endOf(week) on Sunday returns same day at 23:59:59.999999', () {
+        // 2025-06-22 is Sunday
+        final sun = EasyDateTime.utc(2025, 6, 22, 10, 0);
+        final end = sun.endOf(DateTimeUnit.week);
+        expect(end.day, 22);
+        expect(end.weekday, DateTime.sunday);
+        expect(end.hour, 23);
+        expect(end.minute, 59);
+        expect(end.second, 59);
+        expect(end.millisecond, 999);
+      });
+
+      test('endOf(week) on Monday returns Sunday of same week', () {
+        // 2025-06-16 is Monday
+        final mon = EasyDateTime.utc(2025, 6, 16, 14, 30);
+        final end = mon.endOf(DateTimeUnit.week);
+        expect(end.day, 22); // Sunday June 22
+        expect(end.weekday, DateTime.sunday);
+      });
+
+      test('endOf(week) across month boundary', () {
+        // 2025-06-30 is Monday, week ends July 6 (Sunday)
+        final mon = EasyDateTime.utc(2025, 6, 30, 12, 0);
+        final end = mon.endOf(DateTimeUnit.week);
+        expect(end.month, 7); // July
+        expect(end.day, 6); // Sunday July 6
+        expect(end.weekday, DateTime.sunday);
+      });
+
+      test('endOf(week) preserves location', () {
+        final dt = EasyDateTime(2025, 6, 18, 14, 30, 0, 0, 0, TimeZones.tokyo);
+        final end = dt.endOf(DateTimeUnit.week);
+        expect(end.locationName, 'Asia/Tokyo');
       });
     });
   });

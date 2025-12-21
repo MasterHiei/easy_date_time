@@ -922,6 +922,7 @@ class EasyDateTime implements DateTime {
       DateTimeUnit.year => EasyDateTime(year, 1, 1, 0, 0, 0, 0, 0, location),
       DateTimeUnit.month =>
         EasyDateTime(year, month, 1, 0, 0, 0, 0, 0, location),
+      DateTimeUnit.week => _startOfWeek(),
       DateTimeUnit.day =>
         EasyDateTime(year, month, day, 0, 0, 0, 0, 0, location),
       DateTimeUnit.hour =>
@@ -948,6 +949,7 @@ class EasyDateTime implements DateTime {
         EasyDateTime(year, 12, 31, 23, 59, 59, 999, 999, location),
       DateTimeUnit.month =>
         EasyDateTime(year, month + 1, 0, 23, 59, 59, 999, 999, location),
+      DateTimeUnit.week => _endOfWeek(),
       DateTimeUnit.day =>
         EasyDateTime(year, month, day, 23, 59, 59, 999, 999, location),
       DateTimeUnit.hour =>
@@ -957,6 +959,40 @@ class EasyDateTime implements DateTime {
       DateTimeUnit.second => EasyDateTime(
           year, month, day, hour, minute, second, 999, 999, location),
     };
+  }
+
+  /// Returns the Monday of the current week at 00:00:00.000000.
+  EasyDateTime _startOfWeek() {
+    final daysToSubtract = weekday - DateTime.monday;
+
+    return EasyDateTime(
+      year,
+      month,
+      day - daysToSubtract,
+      0,
+      0,
+      0,
+      0,
+      0,
+      location,
+    );
+  }
+
+  /// Returns the Sunday of the current week at 23:59:59.999999.
+  EasyDateTime _endOfWeek() {
+    final daysToAdd = DateTime.sunday - weekday;
+
+    return EasyDateTime(
+      year,
+      month,
+      day + daysToAdd,
+      23,
+      59,
+      59,
+      999,
+      999,
+      location,
+    );
   }
 
   // ============================================================

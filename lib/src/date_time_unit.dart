@@ -15,6 +15,9 @@ enum DateTimeUnit {
   /// Month boundary.
   month,
 
+  /// Week boundary (ISO 8601: weeks start on Monday).
+  week,
+
   /// Day boundary.
   day,
 
