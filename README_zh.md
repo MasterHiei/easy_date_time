@@ -16,12 +16,12 @@
 
 在处理复杂时区业务时，Dart 内置的 `DateTime` 及现有第三方库通常面临以下挑战：
 
-| 方案 | 优势 | 局限性 | easy_date_time 的改进 |
-| --- | --- | --- | --- |
-| **DateTime** (原生) | 官方库，零依赖 | 自动转为 UTC/本地时间，**丢失时区信息** | **语义保留**：无损记录解析时的数值与时区偏移。 |
-| **timezone** | 完整的 IANA 实现 | API 繁复，需手动查找时区代码 | **开发友好**：内置常用时区常量（如 `TimeZones.shanghai`）。 |
-| **intl** | 强大的格式化功能 | 侧重展示，缺乏计算能力 | **专注计算**：专注日期逻辑运算，可与 `intl` 无缝配合。 |
-| **flutter_native_timezone** | 获取系统时区 | 仅具备获取功能，无法计算 | **一站式**：解析、计算、转换全链路覆盖。 |
+| 方案 | 特点 | 本库处理方式 |
+|------|------|-------------|
+| **DateTime** | 解析偏移后隐式转换为 UTC | 保留原始时间值 |
+| **timezone** | 需手动调用 `getLocation()` | 提供 `TimeZones.tokyo` 等常量 |
+| **intl** | 专注格式化输出 | 可配合使用 |
+| **jiffy** | 可变对象设计 | 不可变，实现 DateTime 接口 |
 
 **对比示例：**
 
@@ -75,7 +75,7 @@ dt.format('yyyy-MM-dd'); // -> 2025-12-07
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.4.0
+  easy_date_time: ^0.4.1
 ```
 
 **注意**：为了确保时区计算准确，**必须**在应用启动前初始化时区数据库：
@@ -192,14 +192,18 @@ jan31.copyWithClamped(month: 2); // ✅ 2月28日 (自动修正为当月最后�
 截取或扩展到时间单位的边界：
 
 ```dart
-final dt = EasyDateTime(2025, 6, 15, 14, 30, 45);
+final dt = EasyDateTime(2025, 6, 18, 14, 30, 45); // 周三
 
-dt.startOf(DateTimeUnit.day);   // 2025-06-15 00:00:00
+dt.startOf(DateTimeUnit.day);   // 2025-06-18 00:00:00
+dt.startOf(DateTimeUnit.week);  // 2025-06-16 00:00:00 (周一)
 dt.startOf(DateTimeUnit.month); // 2025-06-01 00:00:00
 
-dt.endOf(DateTimeUnit.day);     // 2025-06-15 23:59:59.999999
+dt.endOf(DateTimeUnit.day);     // 2025-06-18 23:59:59.999999
+dt.endOf(DateTimeUnit.week);    // 2025-06-22 23:59:59.999999 (周日)
 dt.endOf(DateTimeUnit.month);   // 2025-06-30 23:59:59.999999
 ```
+
+> 周边界遵循 ISO 8601 标准（周一为每周第一天）。
 
 ---
 

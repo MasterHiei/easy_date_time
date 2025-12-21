@@ -16,12 +16,12 @@ A drop-in replacement for DateTime with full IANA timezone support, intuitive ar
 
 Dart's built-in `DateTime` and existing libraries often face limitations when handling complex timezone scenarios:
 
-| Existing Solution | Strengths | Limitations | EasyDateTime Approach |
-|-------------------|-----------|-------------|-----------------------|
-| **DateTime** (Built-in) | Standard, zero dependencies | Auto-converts offsets to UTC/Local, **loses timezone context** | **Semantics Preserved**: Losslessly retains parsed time and offset. |
-| **timezone** | Full IANA support | Complex API, manual zone lookup required | **Developer Friendly**: Type-safe constants (e.g., `TimeZones.tokyo`). |
-| **intl** | Excellent for formatting | Display-focused, lacks calculation APIs | **Calculation Logic**: Works alongside `intl` for complex math sequences. |
-| **flutter_native_timezone** | Access system timezone | Fetch-only, no calculation capabilities | **Complete Solution**: Unified parsing, calculation, and conversion. |
+| Solution | Behavior | This Library |
+|----------|----------|--------------|
+| **DateTime** | Implicitly converts parsed offset to UTC | Preserves original time values |
+| **timezone** | Requires manual `getLocation()` calls | Provides constants like `TimeZones.tokyo` |
+| **intl** | Focused on formatting output | Compatible for combined use |
+| **jiffy** | Mutable object design | Immutable, implements DateTime interface |
 
 **Comparison:**
 
@@ -75,7 +75,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.4.0
+  easy_date_time: ^0.4.1
 ```
 
 **Note**: You **must** initialize the timezone database before using the library.
@@ -210,15 +210,18 @@ jan31.copyWithClamped(month: 2); // ✅ Feb 28 (Clamped to last valid day)
 Truncate or extend a datetime to the boundary of a time unit:
 
 ```dart
-final dt = EasyDateTime(2025, 6, 15, 14, 30, 45);
+final dt = EasyDateTime(2025, 6, 18, 14, 30, 45); // Wednesday
 
-dt.startOf(DateTimeUnit.day);   // 2025-06-15 00:00:00
+dt.startOf(DateTimeUnit.day);   // 2025-06-18 00:00:00
+dt.startOf(DateTimeUnit.week);  // 2025-06-16 00:00:00 (Monday)
 dt.startOf(DateTimeUnit.month); // 2025-06-01 00:00:00
-dt.startOf(DateTimeUnit.year);  // 2025-01-01 00:00:00
 
-dt.endOf(DateTimeUnit.day);     // 2025-06-15 23:59:59.999999
+dt.endOf(DateTimeUnit.day);     // 2025-06-18 23:59:59.999999
+dt.endOf(DateTimeUnit.week);    // 2025-06-22 23:59:59.999999 (Sunday)
 dt.endOf(DateTimeUnit.month);   // 2025-06-30 23:59:59.999999
 ```
+
+> Week boundaries follow ISO 8601 (Monday = first day of week).
 
 ---
 
