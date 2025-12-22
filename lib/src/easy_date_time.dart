@@ -797,8 +797,11 @@ class EasyDateTime implements DateTime {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    if(other is EasyDateTime) {
-      return microsecondsSinceEpoch == other.               microsecondsSinceEpoch && isUtc == other.isUtc;
+    // we can compare with both EasyDateTime specifically and then general DateTime
+    // * for now the code is identical and we compare both microsecondsSinceEpoch and isUtc
+    if (other is EasyDateTime) {
+      return microsecondsSinceEpoch == other.microsecondsSinceEpoch &&
+          isUtc == other.isUtc;
     }
 
     return other is DateTime &&
