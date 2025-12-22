@@ -75,7 +75,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.4.1
+  easy_date_time: ^0.4.2
 ```
 
 **Note**: You **must** initialize the timezone database before using the library.
