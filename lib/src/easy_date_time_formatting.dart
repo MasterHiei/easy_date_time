@@ -220,6 +220,7 @@ extension EasyDateTimeFormatting on EasyDateTime {
   /// | `EEE` | Day-of-week abbreviation | Mon, Tue, Sun |
   /// | `MMM` | Month abbreviation | Jan, Feb, Dec |
   /// | `a` | AM/PM marker (uppercase) | AM, PM |
+  /// | `xxxxx` | Timezone offset with colon | +08:00, -05:00 |
   /// | `xxxx` | Timezone offset (iso8601) | +0800, -0500 |
   /// | `xx` | Short timezone offset | +08, -05 |
   /// | `X` | Timezone (Z for UTC, else offset) | Z, +0800 |

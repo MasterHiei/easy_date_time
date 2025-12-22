@@ -75,7 +75,7 @@ dt.format('yyyy-MM-dd'); // -> 2025-12-07
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.4.1
+  easy_date_time: ^0.4.2
 ```
 
 **注意**：为了确保时区计算准确，**必须**在应用启动前初始化时区数据库：
@@ -90,10 +90,6 @@ void main() {
   runApp(MyApp());
 }
 ```
-
-> [!NOTE]
-> 全局函数 `initializeTimeZone()` 和 `setDefaultLocation()` 已**废弃**。
-> 请改用 `EasyDateTime.initializeTimeZone()` 和 `EasyDateTime.setDefaultLocation()`。
 
 ---
 

@@ -75,7 +75,7 @@ dt.format('yyyy-MM-dd'); // -> 2025-12-07
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.4.1
+  easy_date_time: ^0.4.2
 ```
 
 **注意**: 正確な計算を行うため、アプリ起動時に**必ず**タイムゾーンデータベースの初期化を行ってください。
@@ -90,10 +90,6 @@ void main() {
   runApp(MyApp());
 }
 ```
-
-> [!NOTE]
-> グローバル関数 `initializeTimeZone()` と `setDefaultLocation()` は**非推奨**です。
-> 代わりに `EasyDateTime.initializeTimeZone()` と `EasyDateTime.setDefaultLocation()` を使用してください。
 
 ---
 
