@@ -781,24 +781,22 @@ class EasyDateTime implements DateTime {
 
   /// Returns `true` if [other] represents the same moment and timezone type.
   ///
-  /// This is consistent with [DateTime.==] which compares both the moment
-  /// in time and the timezone classification (UTC vs non-UTC).
+  /// Compares [microsecondsSinceEpoch] and [isUtc], consistent with [DateTime.==].
   ///
   /// ```dart
   /// final utc = EasyDateTime.utc(2025, 1, 1, 0, 0);
   /// final local = EasyDateTime.parse('2025-01-01T08:00:00+08:00');
   ///
-  /// utc == local;                  // false (different timezone type)
-  /// utc.isAtSameMomentAs(local);   // true (same absolute instant)
+  /// utc == local;                  // false (different isUtc)
+  /// utc.isAtSameMomentAs(local);   // true (same instant)
   /// ```
   ///
-  /// Use [isAtSameMomentAs] to compare absolute instants regardless of timezone.
+  /// **Cross-type note**: `==` works with DateTime, but hashCode differs.
+  /// Do not mix types in Set/Map. Use [isAtSameMomentAs] for instant comparison.
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    // we can compare with both EasyDateTime specifically and then general DateTime
-    // * for now the code is identical and we compare both microsecondsSinceEpoch and isUtc
     if (other is EasyDateTime) {
       return microsecondsSinceEpoch == other.microsecondsSinceEpoch &&
           isUtc == other.isUtc;
@@ -808,10 +806,13 @@ class EasyDateTime implements DateTime {
         microsecondsSinceEpoch == other.microsecondsSinceEpoch &&
         isUtc == other.isUtc;
   }
-  
+
   /// The hash code for this [EasyDateTime].
   ///
-  /// Two [EasyDateTime] objects that are [==] have the same hash code.
+  /// Consistent with [operator ==] for [EasyDateTime] comparisons.
+  ///
+  /// **Note**: When comparing with [DateTime], [hashCode] may differ even if
+  /// `==` returns true. Avoid mixing types in [Set] or [Map].
   @override
   int get hashCode => Object.hash(microsecondsSinceEpoch, isUtc);
 

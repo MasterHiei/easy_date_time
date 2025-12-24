@@ -153,13 +153,13 @@ void main() {
     });
   });
 
-  group('Negative test cases - boundary values', () {
-    test('very large year values', () {
+  group('Boundary value validation', () {
+    test('year 9999 is handled correctly as maximum reasonable year', () {
       final dt = EasyDateTime(9999, 12, 31, 23, 59, 59);
       expect(dt.year, equals(9999));
     });
 
-    test('minimum year values', () {
+    test('year 1 is handled correctly as minimum year', () {
       final dt = EasyDateTime(1, 1, 1, 0, 0, 0);
       expect(dt.year, equals(1));
     });
@@ -169,7 +169,7 @@ void main() {
       expect(dt.day, equals(29));
     });
 
-    test('December 31 at 23:59:59', () {
+    test('year-end boundary (Dec 31, 23:59:59) is handled correctly', () {
       final dt = EasyDateTime(2025, 12, 31, 23, 59, 59);
       expect(dt.month, equals(12));
       expect(dt.day, equals(31));
@@ -178,7 +178,7 @@ void main() {
       expect(dt.second, equals(59));
     });
 
-    test('January 1 at 00:00:00', () {
+    test('year-start boundary (Jan 1, 00:00:00) is handled correctly', () {
       final dt = EasyDateTime(2025, 1, 1, 0, 0, 0);
       expect(dt.month, equals(1));
       expect(dt.day, equals(1));
@@ -188,27 +188,29 @@ void main() {
     });
   });
 
-  group('Negative test cases - null safety', () {
-    test('now() without explicit location uses default or local', () {
+  group('Default value behavior', () {
+    test('now() uses local timezone when no location specified', () {
       final now = EasyDateTime.now();
       expect(now, isNotNull);
       expect(now.location, isNotNull);
     });
 
-    test('fromDateTime with null location uses default', () {
+    test('fromDateTime() uses default timezone when location not provided', () {
       final dt = EasyDateTime.fromDateTime(DateTime.now());
       expect(dt, isNotNull);
       expect(dt.location, isNotNull);
     });
 
-    test('inLocation returns non-null EasyDateTime', () {
+    test('inLocation() always returns a valid EasyDateTime', () {
       final tokyo = EasyDateTime.now(location: getLocation('Asia/Tokyo'));
       final london = tokyo.inLocation(getLocation('Europe/London'));
       expect(london, isNotNull);
       expect(london.location.name, equals('Europe/London'));
     });
 
-    test('isAtSameMoment works across timezones', () {
+    test(
+        'isAtSameMomentAs() correctly compares times across different timezones',
+        () {
       final tokyo =
           EasyDateTime(2025, 6, 15, 20, 0, 0, 0, 0, getLocation('Asia/Tokyo'));
       final london = tokyo.inLocation(getLocation('Europe/London'));
@@ -316,6 +318,85 @@ void main() {
       // because isToday uses the instance's own timezone for comparison
       final utc = tokyo.toUtc();
       expect(utc.isToday, isTrue); // Same moment, also today in UTC
+    });
+  });
+
+  group('Exception classes', () {
+    group('toString() output', () {
+      test('TimeZoneNotInitializedException includes type name and message',
+          () {
+        final e = TimeZoneNotInitializedException('Test message');
+
+        expect(e.toString(), contains('TimeZoneNotInitializedException'));
+        expect(e.toString(), contains('Test message'));
+      });
+
+      test('InvalidDateFormatException includes source, message, and offset',
+          () {
+        final e = InvalidDateFormatException(
+          source: 'invalid-date',
+          message: 'Could not parse',
+          offset: 5,
+        );
+
+        expect(e.toString(), contains('InvalidDateFormatException'));
+        expect(e.toString(), contains('invalid-date'));
+        expect(e.toString(), contains('Could not parse'));
+        expect(e.toString(), contains('offset 5'));
+      });
+
+      test('InvalidDateFormatException omits offset when not provided', () {
+        final e = InvalidDateFormatException(
+          source: 'bad-input',
+          message: 'Parse error',
+        );
+
+        expect(e.toString(), contains('bad-input'));
+        expect(e.toString(), isNot(contains('offset')));
+      });
+
+      test('InvalidTimeZoneException includes timezone ID and message', () {
+        final e = InvalidTimeZoneException(
+          timeZoneId: 'Invalid/Zone',
+          message: 'Not found',
+        );
+
+        expect(e.toString(), contains('InvalidTimeZoneException'));
+        expect(e.toString(), contains('Invalid/Zone'));
+        expect(e.toString(), contains('Not found'));
+      });
+    });
+
+    group('Exception interface compliance', () {
+      test('InvalidDateFormatException implements FormatException interface',
+          () {
+        final e = InvalidDateFormatException(
+          source: 'src',
+          message: 'msg',
+          offset: 10,
+        );
+
+        expect(e, isA<FormatException>());
+        expect(e.source, 'src');
+        expect(e.message, 'msg');
+        expect(e.offset, 10);
+      });
+
+      test('TimeZoneNotInitializedException exposes message property', () {
+        final e = TimeZoneNotInitializedException('Custom message');
+        expect(e.message, 'Custom message');
+      });
+
+      test('InvalidTimeZoneException exposes timeZoneId and message properties',
+          () {
+        final e = InvalidTimeZoneException(
+          timeZoneId: 'Asia/Invalid',
+          message: 'Zone not found',
+        );
+
+        expect(e.timeZoneId, 'Asia/Invalid');
+        expect(e.message, 'Zone not found');
+      });
     });
   });
 }

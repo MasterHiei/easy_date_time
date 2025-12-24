@@ -4,9 +4,12 @@
 
 基于 IANA 数据库，提供精准的全球时区支持。**不可变**、算术直观且格式化灵活。解决原生 `DateTime` 隐式转换 UTC/本地时间导致的语义丢失问题，让跨时区开发精准可控。
 
-[![Build Status](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml)
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
+[![Pub Points](https://img.shields.io/pub/points/easy_date_time)](https://pub.dev/packages/easy_date_time/score)
+[![Build Status](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/MasterHiei/easy_date_time/branch/main/graph/badge.svg)](https://codecov.io/gh/MasterHiei/easy_date_time)
+[![License](https://img.shields.io/badge/license-BSD--2--Clause-blue.svg)](https://opensource.org/licenses/BSD-2-Clause)
+
 
 **[English](https://github.com/MasterHiei/easy_date_time/blob/main/README.md)** | **[日本語](https://github.com/MasterHiei/easy_date_time/blob/main/README_ja.md)**
 
@@ -14,24 +17,33 @@
 
 ## 为什么选择 easy_date_time？
 
-在处理复杂时区业务时，Dart 内置的 `DateTime` 及现有第三方库通常面临以下挑战：
+Dart 的 `DateTime` 仅支持 UTC 和本地时区。本库添加完整 IANA 时区支持，作为真正的替代方案。
 
-| 方案 | 特点 | 本库处理方式 |
-|------|------|-------------|
-| **DateTime** | 解析偏移后隐式转换为 UTC | 保留原始时间值 |
-| **timezone** | 需手动调用 `getLocation()` | 提供 `TimeZones.tokyo` 等常量 |
-| **intl** | 专注格式化输出 | 可配合使用 |
-| **jiffy** | 可变对象设计 | 不可变，实现 DateTime 接口 |
+### 与其他日期时间包对比
 
-**对比示例：**
+| 库 | IANA 时区 | 不可变 | 核心特点 |
+|----|:---------:|:------:|----------|
+| **DateTime** | ❌ | ✅ | 仅 UTC/local |
+| **timezone** | ✅ | ✅ | 需手动调用 `getLocation()` |
+| **jiffy** | ❌ | ❌ | 相对时间、60+ 语言 |
+| **easy_date_time** | ✅ | ✅ | `implements DateTime`，保留解析时间 |
+
+### DateTime vs EasyDateTime
 
 ```dart
-// ❌ Native DateTime: 隐式转换 UTC/本地时间，丢失时区信息
+// DateTime: 偏移 → UTC (小时改变)
 DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2
 
-// ✅ EasyDateTime: 完整保留解析时的小时与偏移量
+// EasyDateTime: 保留小时
 EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10
 ```
+
+| | DateTime | EasyDateTime |
+|---|----------|--------------|
+| **时区** | UTC / local | 任意 IANA |
+| **解析偏移** | 转换为 UTC | 保留小时 |
+| **类型** | 基类 | `implements DateTime` |
+| **Set/Map 混用** | N/A | ⚠️ 避免 (hashCode 不同) |
 
 ---
 
@@ -75,7 +87,7 @@ dt.format('yyyy-MM-dd'); // -> 2025-12-07
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.4.2
+  easy_date_time: ^0.5.0
 ```
 
 **注意**：为了确保时区计算准确，**必须**在应用启动前初始化时区数据库：
@@ -326,6 +338,10 @@ utc.isAtSameMomentAs(local);   // true
 | `==` | 时刻 + 时区类型（UTC/非 UTC） | 完全相等 |
 | `isAtSameMomentAs()` | 仅绝对时刻 | 跨时区比较 |
 | `isBefore()` / `isAfter()` | 时间顺序 | 排序、范围检查 |
+
+> [!WARNING]
+> **避免在同一 `Set` 或 `Map` 中混用 `EasyDateTime` 和 `DateTime`**。
+> 虽然 `==` 可跨类型工作，但 `hashCode` 实现不同。
 
 ### 其他说明
 

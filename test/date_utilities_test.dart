@@ -273,6 +273,194 @@ void main() {
         final dt = EasyDateTime(2025, 12, 1, 9, 5, 3);
         expect(dt.toTimeString(), '09:05:03');
       });
+    }); // end toDateString / toTimeString group
+
+    group('startOf and endOf', () {
+      test('startOf(year) returns start of year (Jan 1, 00:00:00)', () {
+        final dt = EasyDateTime(2025, 6, 15, 14, 30, 45, 123, 456);
+        final start = dt.startOf(DateTimeUnit.year);
+
+        expect(start.year, 2025);
+        expect(start.month, 1);
+        expect(start.day, 1);
+        expect(start.hour, 0);
+        expect(start.minute, 0);
+        expect(start.second, 0);
+        expect(start.millisecond, 0);
+        expect(start.microsecond, 0);
+      });
+
+      test('startOf(month) returns start of month (1st, 00:00:00)', () {
+        final dt = EasyDateTime(2025, 6, 15, 14, 30, 45, 123, 456);
+        final start = dt.startOf(DateTimeUnit.month);
+
+        expect(start.year, 2025);
+        expect(start.month, 6);
+        expect(start.day, 1);
+        expect(start.hour, 0);
+      });
+
+      test('startOf(day) returns midnight (00:00:00)', () {
+        final dt = EasyDateTime(2025, 6, 15, 14, 30, 45, 123, 456);
+        final start = dt.startOf(DateTimeUnit.day);
+
+        expect(start.day, 15);
+        expect(start.hour, 0);
+        expect(start.minute, 0);
+      });
+
+      test('startOf(hour) returns start of current hour', () {
+        final dt = EasyDateTime(2025, 6, 15, 14, 30, 45, 123, 456);
+        final start = dt.startOf(DateTimeUnit.hour);
+
+        expect(start.hour, 14);
+        expect(start.minute, 0);
+        expect(start.second, 0);
+        expect(start.millisecond, 0);
+        expect(start.microsecond, 0);
+      });
+
+      test('startOf(minute) returns start of current minute', () {
+        final dt = EasyDateTime(2025, 6, 15, 14, 30, 45, 123, 456);
+        final start = dt.startOf(DateTimeUnit.minute);
+
+        expect(start.minute, 30);
+        expect(start.second, 0);
+        expect(start.millisecond, 0);
+      });
+
+      test('startOf(second) returns start of current second', () {
+        final dt = EasyDateTime(2025, 6, 15, 14, 30, 45, 123, 456);
+        final start = dt.startOf(DateTimeUnit.second);
+
+        expect(start.second, 45);
+        expect(start.millisecond, 0);
+        expect(start.microsecond, 0);
+      });
+
+      test('startOf(week) returns previous Monday midnight (Dart standard)',
+          () {
+        // 2025-06-18 is a Wednesday
+        final wed = EasyDateTime(2025, 6, 18, 14, 30);
+        final start = wed.startOf(DateTimeUnit.week);
+
+        expect(start.weekday, DateTime.monday);
+        expect(start.day, 16); // Monday, June 16
+        expect(start.hour, 0);
+      });
+
+      test('startOf(week) on Monday returns same day at midnight', () {
+        // 2025-06-16 is a Monday
+        final mon = EasyDateTime(2025, 6, 16, 14, 30);
+        final start = mon.startOf(DateTimeUnit.week);
+
+        expect(start.day, 16);
+        expect(start.hour, 0);
+      });
+
+      test('startOf(week) on Sunday returns Monday of that week', () {
+        // 2025-06-22 is a Sunday
+        final sun = EasyDateTime(2025, 6, 22, 14, 30);
+        final start = sun.startOf(DateTimeUnit.week);
+
+        expect(start.day, 16); // Monday, June 16
+        expect(start.weekday, DateTime.monday);
+      });
+
+      test('endOf(year) returns last microsecond of year', () {
+        final dt = EasyDateTime(2025, 6, 15, 14, 30, 45);
+        final end = dt.endOf(DateTimeUnit.year);
+
+        expect(end.year, 2025);
+        expect(end.month, 12);
+        expect(end.day, 31);
+        expect(end.hour, 23);
+        expect(end.minute, 59);
+        expect(end.second, 59);
+        expect(end.millisecond, 999);
+        expect(end.microsecond, 999);
+      });
+
+      test('endOf(month) returns last microsecond of month', () {
+        final dt = EasyDateTime(2025, 6, 15, 14, 30, 45);
+        final end = dt.endOf(DateTimeUnit.month);
+
+        expect(end.month, 6);
+        expect(end.day, 30); // June has 30 days
+        expect(end.hour, 23);
+        expect(end.minute, 59);
+      });
+
+      test('endOf(day) returns last microsecond of day', () {
+        final dt = EasyDateTime(2025, 6, 15, 14, 30, 45);
+        final end = dt.endOf(DateTimeUnit.day);
+
+        expect(end.day, 15);
+        expect(end.hour, 23);
+        expect(end.minute, 59);
+        expect(end.second, 59);
+        expect(end.millisecond, 999);
+        expect(end.microsecond, 999);
+      });
+
+      test('endOf(hour) returns last microsecond of current hour', () {
+        final dt = EasyDateTime(2025, 6, 15, 14, 30, 45);
+        final end = dt.endOf(DateTimeUnit.hour);
+
+        expect(end.hour, 14);
+        expect(end.minute, 59);
+        expect(end.second, 59);
+        expect(end.millisecond, 999);
+        expect(end.microsecond, 999);
+      });
+
+      test('endOf(minute) returns last microsecond of current minute', () {
+        final dt = EasyDateTime(2025, 6, 15, 14, 30, 45);
+        final end = dt.endOf(DateTimeUnit.minute);
+
+        expect(end.minute, 30);
+        expect(end.second, 59);
+        expect(end.millisecond, 999);
+        expect(end.microsecond, 999);
+      });
+
+      test('endOf(second) returns last microsecond of current second', () {
+        final dt = EasyDateTime(2025, 6, 15, 14, 30, 45);
+        final end = dt.endOf(DateTimeUnit.second);
+
+        expect(end.second, 45);
+        expect(end.millisecond, 999);
+        expect(end.microsecond, 999);
+      });
+
+      test('endOf(week) returns upcoming Sunday at last microsecond', () {
+        // 2025-06-18 is a Wednesday
+        final wed = EasyDateTime(2025, 6, 18, 14, 30);
+        final end = wed.endOf(DateTimeUnit.week);
+
+        expect(end.weekday, DateTime.sunday);
+        expect(end.day, 22); // Sunday, June 22
+        expect(end.hour, 23);
+        expect(end.minute, 59);
+      });
+
+      test('endOf(week) on Sunday returns same day at last microsecond', () {
+        // 2025-06-22 is a Sunday
+        final sun = EasyDateTime(2025, 6, 22, 14, 30);
+        final end = sun.endOf(DateTimeUnit.week);
+
+        expect(end.day, 22);
+        expect(end.hour, 23);
+      });
+
+      test('endOf(week) on Monday returns Sunday of same week', () {
+        // 2025-06-16 is a Monday
+        final mon = EasyDateTime(2025, 6, 16, 10, 0);
+        final end = mon.endOf(DateTimeUnit.week);
+
+        expect(end.day, 22); // Sunday, June 22
+        expect(end.weekday, DateTime.sunday);
+      });
     });
   });
 }

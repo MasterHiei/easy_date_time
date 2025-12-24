@@ -4,9 +4,12 @@
 
 IANA タイムゾーンを完全にサポートし、Dart 標準の `DateTime` だけでは難しいタイムゾーン処理を直感的に扱えます。**不変(Immutable)** であり、意図しない UTC 変換を行わず、解析された日時情報を正確に保持します。
 
-[![Build Status](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml)
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
+[![Pub Points](https://img.shields.io/pub/points/easy_date_time)](https://pub.dev/packages/easy_date_time/score)
+[![Build Status](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/MasterHiei/easy_date_time/branch/main/graph/badge.svg)](https://codecov.io/gh/MasterHiei/easy_date_time)
+[![License](https://img.shields.io/badge/license-BSD--2--Clause-blue.svg)](https://opensource.org/licenses/BSD-2-Clause)
+
 
 **[English](https://github.com/MasterHiei/easy_date_time/blob/main/README.md)** | **[中文](https://github.com/MasterHiei/easy_date_time/blob/main/README_zh.md)**
 
@@ -14,24 +17,33 @@ IANA タイムゾーンを完全にサポートし、Dart 標準の `DateTime` �
 
 ## なぜ easy_date_time なのか？
 
-Dart 標準の `DateTime` や既存のライブラリは、複雑なタイムゾーン処理においていくつかの制限がありました。
+Dart の `DateTime` は UTC とローカル時間のみをサポートします。本ライブラリは完全な IANA タイムゾーンサポートを追加し、真のドロップイン・リプレースメントとして機能します。
 
-| ソリューション | 特徴 | 本ライブラリのアプローチ |
-|----------------|------|------------------|
-| **DateTime** | オフセット解析時に UTC へ暗黙変換 | 元の時間値を保持 |
-| **timezone** | `getLocation()` の手動呼び出しが必要 | `TimeZones.tokyo` 等の定数を提供 |
-| **intl** | フォーマット出力に特化 | 併用可能 |
-| **jiffy** | 可変オブジェクト設計 | 不変、DateTime インターフェース実装 |
+### 他の日時パッケージとの比較
 
-**比較:**
+| パッケージ | IANA タイムゾーン | 不変 | 主な特徴 |
+|------------|:----------------:|:----:|----------|
+| **DateTime** | ❌ | ✅ | UTC/local のみ |
+| **timezone** | ✅ | ✅ | `getLocation()` の手動呼び出しが必要 |
+| **jiffy** | ❌ | ❌ | 相対時間、60+ ロケール |
+| **easy_date_time** | ✅ | ✅ | `implements DateTime`、解析時間を保持 |
+
+### DateTime vs EasyDateTime
 
 ```dart
-// ❌ DateTime: 暗黙的に UTC/Local へ変換され、オフセットの情報が失われる
+// DateTime: オフセット → UTC（時間が変わる）
 DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2
 
-// ✅ EasyDateTime: 時間とオフセットを正確に保持する
+// EasyDateTime: 時間を保持
 EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10
 ```
+
+| | DateTime | EasyDateTime |
+|---|----------|--------------|
+| **タイムゾーン** | UTC / local | 任意の IANA |
+| **オフセット解析** | UTC に変換 | 時間を保持 |
+| **型** | 基底クラス | `implements DateTime` |
+| **Set/Map での混在** | N/A | ⚠️ 避ける (hashCode が異なるため) |
 
 ---
 
@@ -75,7 +87,7 @@ dt.format('yyyy-MM-dd'); // -> 2025-12-07
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.4.2
+  easy_date_time: ^0.5.0
 ```
 
 **注意**: 正確な計算を行うため、アプリ起動時に**必ず**タイムゾーンデータベースの初期化を行ってください。
@@ -330,6 +342,10 @@ utc.isAtSameMomentAs(local);   // true
 | `==` | 瞬間 + タイムゾーンタイプ（UTC/非 UTC） | 完全一致 |
 | `isAtSameMomentAs()` | 絶対時間のみ | タイムゾーン間比較 |
 | `isBefore()` / `isAfter()` | 時系列順序 | ソート、範囲チェック |
+
+> [!WARNING]
+> **`EasyDateTime` と `DateTime` を同じ `Set` や `Map` で混在させないでください**。
+> `==` はクロスタイプで動作しますが、`hashCode` の実装が異なります。
 
 ### その他の注意点
 

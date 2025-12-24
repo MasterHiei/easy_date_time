@@ -4,9 +4,12 @@
 
 A drop-in replacement for DateTime with full IANA timezone support, intuitive arithmetic, and flexible formatting. **Immutable**, accurate, and developer-friendly.
 
-[![Build Status](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml)
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
+[![Pub Points](https://img.shields.io/pub/points/easy_date_time)](https://pub.dev/packages/easy_date_time/score)
+[![Build Status](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml/badge.svg)](https://github.com/MasterHiei/easy_date_time/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/MasterHiei/easy_date_time/branch/main/graph/badge.svg)](https://codecov.io/gh/MasterHiei/easy_date_time)
+[![License](https://img.shields.io/badge/license-BSD--2--Clause-blue.svg)](https://opensource.org/licenses/BSD-2-Clause)
+
 
 **[中文](https://github.com/MasterHiei/easy_date_time/blob/main/README_zh.md)** | **[日本語](https://github.com/MasterHiei/easy_date_time/blob/main/README_ja.md)**
 
@@ -14,24 +17,33 @@ A drop-in replacement for DateTime with full IANA timezone support, intuitive ar
 
 ## Why easy_date_time?
 
-Dart's built-in `DateTime` and existing libraries often face limitations when handling complex timezone scenarios:
+Dart's `DateTime` only supports UTC and local time. This package adds full IANA timezone support as a true drop-in replacement.
 
-| Solution | Behavior | This Library |
-|----------|----------|--------------|
-| **DateTime** | Implicitly converts parsed offset to UTC | Preserves original time values |
-| **timezone** | Requires manual `getLocation()` calls | Provides constants like `TimeZones.tokyo` |
-| **intl** | Focused on formatting output | Compatible for combined use |
-| **jiffy** | Mutable object design | Immutable, implements DateTime interface |
+### Comparison with Other DateTime Packages
 
-**Comparison:**
+| Package | IANA Timezone | Immutable | Key Feature |
+|---------|:-------------:|:---------:|-------------|
+| **DateTime** | ❌ | ✅ | UTC/local only |
+| **timezone** | ✅ | ✅ | Requires manual `getLocation()` |
+| **jiffy** | ❌ | ❌ | Relative time, 60+ locales |
+| **easy_date_time** | ✅ | ✅ | `implements DateTime`, preserves parsed hour |
+
+### DateTime vs EasyDateTime
 
 ```dart
-// ❌ Native DateTime: Implicitly converts to UTC/Local, losing the original offset context.
-DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2 (Changed to UTC hour)
+// DateTime: offset → UTC (hour changes)
+DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2
 
-// ✅ EasyDateTime: Preserves the exact parsed hour and offset.
-EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10 (Preserved)
+// EasyDateTime: hour preserved
+EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10
 ```
+
+| | DateTime | EasyDateTime |
+|---|----------|--------------|
+| **Timezone** | UTC / local | Any IANA |
+| **Parse offset** | Converts to UTC | Preserves hour |
+| **Type** | Base class | `implements DateTime` |
+| **Mix in Set/Map** | N/A | ⚠️ Avoid (hashCode differs) |
 
 ---
 
@@ -75,10 +87,10 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.4.2
+  easy_date_time: ^0.5.0
 ```
 
-**Note**: You **must** initialize the timezone database before using the library.
+**Note**: You **must** initialize the timezone database before using this package.
 
 ```dart
 void main() {
@@ -144,7 +156,7 @@ final current = EasyDateTime.getDefaultLocation();
 EasyDateTime.clearDefaultLocation();
 
 // Get the effective default location (user-set or system local)
-final effective = EasyDateTime.effectiveDefaultLocation;  // or effectiveDefaultLocation
+final effective = EasyDateTime.effectiveDefaultLocation;
 ```
 
 ---
@@ -344,6 +356,10 @@ utc.isAtSameMomentAs(local);   // true
 | `==` | Moment + timezone type (UTC/non-UTC) | Exact equality |
 | `isAtSameMomentAs()` | Absolute instant only | Cross-timezone comparison |
 | `isBefore()` / `isAfter()` | Chronological order | Sorting, range checks |
+
+> [!WARNING]
+> **Avoid mixing `EasyDateTime` and `DateTime`** in the same `Set` or `Map`.
+> While `==` works across types, `hashCode` implementations differ.
 
 ### Other Notes
 

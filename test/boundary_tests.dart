@@ -14,21 +14,22 @@ void main() {
 
   group('Boundary Value Tests', () {
     group('Year boundaries', () {
-      test('minimum year (year 1)', () {
+      test('year 1 is correctly constructed and accessible', () {
         final dt = EasyDateTime.utc(1, 1, 1);
         expect(dt.year, 1);
         expect(dt.month, 1);
         expect(dt.day, 1);
       });
 
-      test('maximum reasonable year (9999)', () {
+      test('year 9999 is correctly constructed and accessible', () {
         final dt = EasyDateTime.utc(9999, 12, 31);
         expect(dt.year, 9999);
         expect(dt.month, 12);
         expect(dt.day, 31);
       });
 
-      test('year transition (2025 -> 2026)', () {
+      test('adding 1 microsecond at year-end correctly transitions to new year',
+          () {
         final last2025 = EasyDateTime.utc(2025, 12, 31, 23, 59, 59, 999, 999);
         final first2026 = last2025 + const Duration(microseconds: 1);
 
@@ -40,14 +41,15 @@ void main() {
         expect(first2026.second, 0);
       });
 
-      test('pre-1970 epoch (negative timestamp)', () {
+      test('dates before 1970 epoch produce negative millisecondsSinceEpoch',
+          () {
         // 1969-12-31 23:59:59 UTC = -1 second from epoch
         final preEpoch = EasyDateTime.utc(1969, 12, 31, 23, 59, 59);
         expect(preEpoch.year, 1969);
         expect(preEpoch.millisecondsSinceEpoch, lessThan(0));
       });
 
-      test('pre-1970 arithmetic across epoch boundary', () {
+      test('subtracting duration across epoch boundary works correctly', () {
         final afterEpoch = EasyDateTime.utc(1970, 1, 1, 0, 0, 1);
         final beforeEpoch = afterEpoch - const Duration(seconds: 2);
 
@@ -59,7 +61,7 @@ void main() {
         expect(beforeEpoch.second, 59);
       });
 
-      test('pre-1970 comparison works correctly', () {
+      test('comparison operators work correctly for pre-1970 dates', () {
         final y1960 = EasyDateTime.utc(1960, 6, 15);
         final y1965 = EasyDateTime.utc(1965, 6, 15);
         final y1970 = EasyDateTime.utc(1970, 6, 15);
@@ -491,6 +493,83 @@ void main() {
         // Some rare timezones have DST at midnight
         final dt = EasyDateTime(2025, 3, 30, 0, 30, 0, 0, 0, TimeZones.london);
         expect(dt.format('hh:mm a'), '12:30 AM');
+      });
+    });
+
+    group('Precision and correctness', () {
+      test('UTC roundtrip preserves microsecond precision', () {
+        final now = EasyDateTime.now();
+        final utc = now.toUtc();
+        final back = utc.inLocation(now.location);
+
+        expect(back.microsecondsSinceEpoch, equals(now.microsecondsSinceEpoch));
+        expect(back.isAtSameMomentAs(now), isTrue);
+      });
+
+      test('DST gap time (02:30) is adjusted forward during Spring Forward',
+          () {
+        // New York Spring Forward 2025: March 9, 02:00 -> 03:00
+        // Creating a time in the gap: 02:30
+        final ny = getLocation('America/New_York');
+        final gapTime = EasyDateTime(2025, 3, 9, 2, 30, 0, 0, 0, ny);
+
+        // Verify strict hour containment or adjustment behavior
+        expect(gapTime.hour, isNot(2), reason: 'Should not exist in hour 2');
+
+        // New York Fall Back 2025: Nov 2, 02:00 -> 01:00
+        // Overlap: 01:30 happens twice.
+        final overlapTime = EasyDateTime(2025, 11, 2, 1, 30, 0, 0, 0, ny);
+        expect(overlapTime.hour, equals(1));
+        expect(overlapTime.minute, equals(30));
+      });
+
+      test('copyWithClamped handles Feb 29 to non-leap year correctly', () {
+        final leapDay = EasyDateTime(2024, 2, 29, 12, 0);
+        final nextYear = leapDay.copyWith(year: 2025);
+
+        // Default copyWith overflows -> March 1
+        expect(nextYear.month, 3);
+        expect(nextYear.day, 1);
+
+        final clamped = leapDay.copyWithClamped(year: 2025);
+        expect(clamped.month, 2);
+        expect(clamped.day, 28);
+      });
+    });
+
+    group('Parsing edge cases', () {
+      test('parsing Feb 30 overflows to Mar 2 (DateTime behavior)', () {
+        // Dart DateTime.parse parses 2025-02-30 as 2025-03-02
+        final dt = EasyDateTime.parse('2025-02-30');
+        expect(dt.month, equals(3));
+        expect(dt.day, equals(2));
+      });
+
+      test('tryParse handles very long input efficiently (DoS protection)', () {
+        final hugeString = '2025-01-01${' ' * 10000}';
+        final start = DateTime.now();
+        final result = EasyDateTime.tryParse(hugeString);
+        final elapsed = DateTime.now().difference(start);
+
+        expect(elapsed.inMilliseconds, lessThan(100),
+            reason: 'Parsing huge string took too long');
+        expect(result, isNotNull,
+            reason: 'DateTime.parse handles trailing spaces');
+      });
+
+      test('format() handles unclosed quotes and empty patterns correctly', () {
+        final dt = EasyDateTime(2025, 1, 1, 12, 0, 0);
+        // Unclosed quote
+        final unclosed = dt.format("'Hello world");
+        expect(unclosed, equals('Hello world')); // WYSIWYG
+
+        // Empty quotes
+        final empty = dt.format("''");
+        expect(empty, equals(''));
+
+        // Quote with token inside
+        final quotedToken = dt.format("'yyyy'");
+        expect(quotedToken, equals('yyyy'));
       });
     });
   });
