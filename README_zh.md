@@ -87,7 +87,7 @@ dt.format('yyyy-MM-dd'); // -> 2025-12-07
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.4.2
+  easy_date_time: ^0.5.0
 ```
 
 **注意**：为了确保时区计算准确，**必须**在应用启动前初始化时区数据库：
