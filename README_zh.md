@@ -21,12 +21,28 @@ Dart 的 `DateTime` 仅支持 UTC 和本地时区。本库添加完整 IANA 时�
 
 ### 与其他日期时间包对比
 
-| 库 | IANA 时区 | 不可变 | 核心特点 |
-|----|:---------:|:------:|----------|
-| **DateTime** | ❌ | ✅ | 仅 UTC/local |
-| **timezone** | ✅ | ✅ | 需手动调用 `getLocation()` |
-| **jiffy** | ❌ | ❌ | 相对时间、60+ 语言 |
-| **easy_date_time** | ✅ | ✅ | `implements DateTime`，保留解析时间 |
+| 功能 | `DateTime` | `timezone` | `easy_date_time` |
+|------|:----------:|:----------:|:----------------:|
+| **IANA 时区** | ❌ | ✅ | ✅ |
+| **不可变性** | ✅ | ✅ | ✅ |
+| **API 接口** | 原生 | `extends DateTime` | `implements DateTime` |
+| **时区查找** | N/A | 手动 (`getLocation`) | 常量 / 自动缓存 |
+
+### API 设计对比
+
+**`timezone` 包:**
+```dart
+import 'package:timezone/timezone.dart' as tz;
+// 需要手动查找时区对象
+final detroit = tz.getLocation('America/Detroit');
+final now = tz.TZDateTime.now(detroit);
+```
+
+**`easy_date_time`:**
+```dart
+// 使用静态常量或缓存查找
+final now = EasyDateTime.now(location: TimeZones.detroit);
+```
 
 ### DateTime vs EasyDateTime
 
@@ -38,12 +54,12 @@ DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2
 EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10
 ```
 
-| | DateTime | EasyDateTime |
+| 特性 | DateTime | EasyDateTime |
 |---|----------|--------------|
-| **时区** | UTC / local | 任意 IANA |
-| **解析偏移** | 转换为 UTC | 保留小时 |
-| **类型** | 基类 | `implements DateTime` |
-| **Set/Map 混用** | N/A | ⚠️ 避免 (hashCode 不同) |
+| **时区支持** | UTC / 系统本地 | IANA 数据库 |
+| **解析行为** | **归一化** (转为 UTC) | **保持** (保留偏移/小时) |
+| **类型关系** | 基类 | `implements DateTime` |
+| **混合使用** | N/A | ⚠️ `hashCode`不同 (避免混用) |
 
 ---
 
@@ -87,7 +103,7 @@ dt.format('yyyy-MM-dd'); // -> 2025-12-07
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.5.0
+  easy_date_time: ^0.5.1
 ```
 
 **注意**：为了确保时区计算准确，**必须**在应用启动前初始化时区数据库：

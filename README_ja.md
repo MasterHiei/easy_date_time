@@ -21,12 +21,28 @@ Dart の `DateTime` は UTC とローカル時間のみをサポートします�
 
 ### 他の日時パッケージとの比較
 
-| パッケージ | IANA タイムゾーン | 不変 | 主な特徴 |
-|------------|:----------------:|:----:|----------|
-| **DateTime** | ❌ | ✅ | UTC/local のみ |
-| **timezone** | ✅ | ✅ | `getLocation()` の手動呼び出しが必要 |
-| **jiffy** | ❌ | ❌ | 相対時間、60+ ロケール |
-| **easy_date_time** | ✅ | ✅ | `implements DateTime`、解析時間を保持 |
+| 機能 | `DateTime` | `timezone` | `easy_date_time` |
+|------|:----------:|:----------:|:----------------:|
+| **IANA タイムゾーン** | ❌ | ✅ | ✅ |
+| **不変性 (Immutable)** | ✅ | ✅ | ✅ |
+| **API インターフェース** | 標準 | `extends DateTime` | `implements DateTime` |
+| **タイムゾーン検索** | N/A | 手動 (`getLocation`) | 定数 / 自動キャッシュ |
+
+### API 設計の比較
+
+**`timezone` パッケージ:**
+```dart
+import 'package:timezone/timezone.dart' as tz;
+// 手動で location オブジェクトを取得する必要がある
+final detroit = tz.getLocation('America/Detroit');
+final now = tz.TZDateTime.now(detroit);
+```
+
+**`easy_date_time`:**
+```dart
+// 静的定数またはキャッシュされた検索を使用
+final now = EasyDateTime.now(location: TimeZones.detroit);
+```
 
 ### DateTime vs EasyDateTime
 
@@ -38,12 +54,12 @@ DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2
 EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10
 ```
 
-| | DateTime | EasyDateTime |
+| 機能 | DateTime | EasyDateTime |
 |---|----------|--------------|
-| **タイムゾーン** | UTC / local | 任意の IANA |
-| **オフセット解析** | UTC に変換 | 時間を保持 |
-| **型** | 基底クラス | `implements DateTime` |
-| **Set/Map での混在** | N/A | ⚠️ 避ける (hashCode が異なるため) |
+| **タイムゾーン対応** | UTC / システムローカル | IANA データベース |
+| **解析時の挙動** | **正規化** (UTCへ変換) | **保持** (オフセット/時間を維持) |
+| **型関係** | 基底クラス | `implements DateTime` |
+| **混在利用** | N/A | ⚠️ `hashCode` が異なる |
 
 ---
 
@@ -87,7 +103,7 @@ dt.format('yyyy-MM-dd'); // -> 2025-12-07
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.5.0
+  easy_date_time: ^0.5.1
 ```
 
 **注意**: 正確な計算を行うため、アプリ起動時に**必ず**タイムゾーンデータベースの初期化を行ってください。
