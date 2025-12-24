@@ -21,12 +21,28 @@ Dart's `DateTime` only supports UTC and local time. This package adds full IANA 
 
 ### Comparison with Other DateTime Packages
 
-| Package | IANA Timezone | Immutable | Key Feature |
-|---------|:-------------:|:---------:|-------------|
-| **DateTime** | ❌ | ✅ | UTC/local only |
-| **timezone** | ✅ | ✅ | Requires manual `getLocation()` |
-| **jiffy** | ❌ | ❌ | Relative time, 60+ locales |
-| **easy_date_time** | ✅ | ✅ | `implements DateTime`, preserves parsed hour |
+| Feature | `DateTime` | `timezone` | `easy_date_time` |
+|---------|:----------:|:----------:|:----------------:|
+| **IANA Timezones** | ❌ | ✅ | ✅ |
+| **Immutability** | ✅ | ✅ | ✅ |
+| **API Interface** | Native | `extends DateTime` | `implements DateTime` |
+| **Location Lookup** | N/A | Manual (`getLocation`) | Constants / Auto-cache |
+
+### API Design Comparison
+
+**`timezone` package:**
+```dart
+import 'package:timezone/timezone.dart' as tz;
+// Requires explicit location lookup
+final detroit = tz.getLocation('America/Detroit');
+final now = tz.TZDateTime.now(detroit);
+```
+
+**`easy_date_time`:**
+```dart
+// Uses static constants or cached lookups
+final now = EasyDateTime.now(location: TimeZones.detroit);
+```
 
 ### DateTime vs EasyDateTime
 
@@ -38,12 +54,12 @@ DateTime.parse('2025-12-07T10:30:00+08:00').hour      // → 2
 EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10
 ```
 
-| | DateTime | EasyDateTime |
+| Feature | DateTime | EasyDateTime |
 |---|----------|--------------|
-| **Timezone** | UTC / local | Any IANA |
-| **Parse offset** | Converts to UTC | Preserves hour |
-| **Type** | Base class | `implements DateTime` |
-| **Mix in Set/Map** | N/A | ⚠️ Avoid (hashCode differs) |
+| **Timezone Support** | UTC / System Local | IANA Database |
+| **Parsing Behavior** | **Normalization** (converts to UTC) | **Preservation** (keeps offset/hour) |
+| **Type Relation** | Base Class | `implements DateTime` |
+| **Mixed Use** | N/A | ⚠️ `hashCode` differs |
 
 ---
 
