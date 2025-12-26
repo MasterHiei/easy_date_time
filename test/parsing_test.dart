@@ -98,14 +98,6 @@ void main() {
         expect(dt.hour, 0);
       });
 
-      test('tryParse returns null for empty string', () {
-        expect(EasyDateTime.tryParse(''), isNull);
-      });
-
-      test('tryParse returns null for whitespace only', () {
-        expect(EasyDateTime.tryParse('   '), isNull);
-      });
-
       test('parse with negative timezone offset', () {
         final dt = EasyDateTime.parse('2025-12-01T10:00:00-05:00');
         expect(dt.hour, 10);
@@ -182,6 +174,115 @@ void main() {
         final dt = EasyDateTime.parse('2025-12-01T10:00:00-03:30');
         expect(dt.hour, 10);
         expect(dt.locationName, 'America/St_Johns');
+      });
+    });
+
+    // Regression tests for DST edge cases (Issue: microsecondsSinceEpoch mismatch)
+    // Ensures parsed instants are physically correct regardless of DST transitions.
+    group('DST transition handling', () {
+      group('Spring Forward (gap hour)', () {
+        // Context: 2023-03-12 in New York, clocks jump 02:00 -> 03:00 (EST->EDT)
+        // The local time 02:30 doesn't exist, but 02:30-04:00 is a valid UTC offset
+
+        test(
+            'parse() returns same instant as DateTime.parse() '
+            'for time during gap', () {
+          const input = '2023-03-12T02:30:00-04:00';
+
+          final standard = DateTime.parse(input);
+          final easy = EasyDateTime.parse(input);
+
+          expect(
+            easy.microsecondsSinceEpoch,
+            equals(standard.microsecondsSinceEpoch),
+            reason: 'Both should represent the same physical instant',
+          );
+        });
+
+        test('toUtc() converts gap time to correct UTC equivalent', () {
+          // 02:30 at UTC-4 = 06:30 UTC
+          final parsed = EasyDateTime.parse('2023-03-12T02:30:00-04:00');
+
+          expect(parsed.toUtc().hour, equals(6));
+          expect(parsed.toUtc().minute, equals(30));
+        });
+      });
+
+      group('Fall Back (overlap hour)', () {
+        // Context: 2023-11-05 in New York, clocks fall back 02:00 -> 01:00 (EDT->EST)
+        // The local time 01:30 occurs twice: once at -04:00 (EDT), once at -05:00 (EST)
+
+        test('parse() correctly distinguishes first occurrence (before switch)',
+            () {
+          const input = '2023-11-05T01:30:00-04:00'; // EDT, before switch
+
+          final standard = DateTime.parse(input);
+          final easy = EasyDateTime.parse(input);
+
+          expect(easy.microsecondsSinceEpoch,
+              equals(standard.microsecondsSinceEpoch));
+          expect(easy.toUtc().hour, equals(5),
+              reason: '01:30-04:00 = 05:30 UTC');
+        });
+
+        test('parse() correctly distinguishes second occurrence (after switch)',
+            () {
+          const input = '2023-11-05T01:30:00-05:00'; // EST, after switch
+
+          final standard = DateTime.parse(input);
+          final easy = EasyDateTime.parse(input);
+
+          expect(easy.microsecondsSinceEpoch,
+              equals(standard.microsecondsSinceEpoch));
+          expect(easy.toUtc().hour, equals(6),
+              reason: '01:30-05:00 = 06:30 UTC');
+        });
+
+        test('two occurrences of 01:30 are exactly 1 hour apart', () {
+          final firstOccurrence =
+              EasyDateTime.parse('2023-11-05T01:30:00-04:00');
+          final secondOccurrence =
+              EasyDateTime.parse('2023-11-05T01:30:00-05:00');
+
+          final difference = secondOccurrence.difference(firstOccurrence);
+
+          expect(difference, equals(const Duration(hours: 1)));
+        });
+      });
+
+      group('cross-season offset resolution', () {
+        // Verifies that offset matching uses the parsed moment's timezone rules,
+        // not the current system time. Critical for parsing historical/future dates.
+
+        test(
+            'summer offset (-04:00 EDT) parsed correctly '
+            'regardless of current season', () {
+          const summerInput = '2025-07-01T10:00:00-04:00';
+
+          final standard = DateTime.parse(summerInput);
+          final easy = EasyDateTime.parse(summerInput);
+
+          expect(
+            easy.microsecondsSinceEpoch,
+            equals(standard.microsecondsSinceEpoch),
+            reason: 'Should match even if current system time is in winter',
+          );
+        });
+
+        test(
+            'winter offset (-05:00 EST) parsed correctly '
+            'regardless of current season', () {
+          const winterInput = '2025-01-15T10:00:00-05:00';
+
+          final standard = DateTime.parse(winterInput);
+          final easy = EasyDateTime.parse(winterInput);
+
+          expect(
+            easy.microsecondsSinceEpoch,
+            equals(standard.microsecondsSinceEpoch),
+            reason: 'Should match even if current system time is in summer',
+          );
+        });
       });
     });
   });

@@ -437,35 +437,24 @@ class EasyDateTime implements DateTime {
       final offsetInfo = _extractTimezoneOffset(trimmed);
 
       if (offsetInfo != null) {
-        // String has explicit offset - preserve original time values
-        final originalTime = _extractOriginalTimeComponents(trimmed);
-        if (originalTime != null) {
-          // Find matching IANA timezone for this offset
-          final matchingLocation = _findLocationForOffset(offsetInfo);
+        // Find matching timezone for this offset at the parsed moment
+        final matchingLocation = _findLocationForOffset(
+          offsetInfo,
+          utcMs: dt.millisecondsSinceEpoch,
+        );
 
-          if (matchingLocation != null) {
-            return EasyDateTime._(TZDateTime(
-              matchingLocation,
-              originalTime.year,
-              originalTime.month,
-              originalTime.day,
-              originalTime.hour,
-              originalTime.minute,
-              originalTime.second,
-              originalTime.millisecond,
-              originalTime.microsecond,
-            ));
-          }
-
-          // No matching timezone found - throw exception
-          // This indicates invalid or corrupted data with a non-standard offset
-          final offsetStr = _formatOffset(offsetInfo);
-          throw InvalidTimeZoneException(
-            timeZoneId: offsetStr,
-            message: 'No IANA timezone found for offset $offsetStr. '
-                'Valid timezone offsets are defined in the IANA database.',
-          );
+        if (matchingLocation != null) {
+          // Project the parsed moment to the matching timezone
+          return EasyDateTime._(TZDateTime.from(dt.toUtc(), matchingLocation));
         }
+
+        // No matching timezone found - throw exception
+        final offsetStr = _formatOffset(offsetInfo);
+        throw InvalidTimeZoneException(
+          timeZoneId: offsetStr,
+          message: 'No IANA timezone found for offset $offsetStr. '
+              'Valid timezone offsets are defined in the IANA database.',
+        );
       }
 
       // UTC indicator (Z)
@@ -607,7 +596,7 @@ class EasyDateTime implements DateTime {
 
   /// Whether this datetime is in UTC.
   @override
-  bool get isUtc => _tzDateTime.isUtc;
+  bool get isUtc => _tzDateTime.isUtc || location.name == 'UTC';
 
   /// The timezone offset from UTC.
   @override

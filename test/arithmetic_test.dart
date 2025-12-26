@@ -1,11 +1,13 @@
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
-import 'package:timezone/data/latest.dart' as tz;
 
 void main() {
   setUpAll(() {
-    tz.initializeTimeZones();
     EasyDateTime.initializeTimeZone();
+  });
+
+  tearDown(() {
+    EasyDateTime.clearDefaultLocation();
   });
 
   group('EasyDateTime Arithmetic', () {
@@ -107,18 +109,17 @@ void main() {
         expect(dt1 == dt2, false);
       });
 
-      test('operator == matches hashCode consistency', () {
+      test('operator == returns true for identical UTC instances', () {
         final dt1 = EasyDateTime.utc(2025, 12, 1, 10, 30);
         final dt2 = EasyDateTime.utc(2025, 12, 1, 10, 30);
         expect(dt1 == dt2, isTrue);
+        expect(dt1.hashCode, dt2.hashCode);
       });
 
-      test(
-          'operator == ignores location differences if isUtc matches (standard equality)',
-          () {
-        final shanghai = EasyDateTime.parse('2025-12-01T10:30:00+08:00');
-        final copy = EasyDateTime.parse('2025-12-01T10:30:00+08:00');
-        expect(shanghai == copy, isTrue);
+      test('operator == returns true for identical parsed instances', () {
+        final parsed1 = EasyDateTime.parse('2025-12-01T10:30:00+08:00');
+        final parsed2 = EasyDateTime.parse('2025-12-01T10:30:00+08:00');
+        expect(parsed1 == parsed2, isTrue);
       });
 
       test('operator == returns false for different moments', () {
