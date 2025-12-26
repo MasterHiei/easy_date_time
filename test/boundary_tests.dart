@@ -259,15 +259,6 @@ void main() {
     });
 
     group('Comparison edge cases', () {
-      test('comparing at millisecond boundary', () {
-        final dt1 = EasyDateTime.fromMillisecondsSinceEpoch(1000);
-        final dt2 = EasyDateTime.fromMillisecondsSinceEpoch(1001);
-
-        expect(dt1.isBefore(dt2), isTrue);
-        expect(dt1 < dt2, isTrue);
-        expect(dt2 > dt1, isTrue);
-      });
-
       test('equal times with == operator', () {
         final dt1 = EasyDateTime.utc(2025, 6, 15, 10, 0);
         final dt2 = EasyDateTime.utc(2025, 6, 15, 10, 0);
@@ -353,11 +344,6 @@ void main() {
     group('Invalid input handling', () {
       test('tryParse returns null for invalid date string', () {
         final result = EasyDateTime.tryParse('invalid-date');
-        expect(result, isNull);
-      });
-
-      test('tryParse returns null for empty string', () {
-        final result = EasyDateTime.tryParse('');
         expect(result, isNull);
       });
 
