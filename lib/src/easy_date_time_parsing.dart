@@ -7,14 +7,6 @@ part of 'easy_date_time.dart';
 /// Pattern for timezone offset: +HH:MM, -HH:MM, +HHMM, -HHMM at end of string.
 final _timezoneOffsetPattern = RegExp(r'([+-])(\d{2}):?(\d{2})$');
 
-/// Pattern to strip timezone suffix from ISO 8601 strings.
-final _timezoneSuffixPattern = RegExp(r'[+-]\d{2}:?\d{2}$');
-
-/// Pattern for ISO 8601 datetime: YYYY-MM-DDTHH:MM:SS.sss or YYYY-MM-DD HH:MM:SS.sss.
-final _iso8601Pattern = RegExp(
-  r'^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?',
-);
-
 /// Extracts timezone offset from an ISO 8601 string.
 /// Returns the offset as Duration, or null if no offset found.
 Duration? _extractTimezoneOffset(String input) {
@@ -38,47 +30,6 @@ String _formatOffset(Duration offset) {
   final minutes = absMinutes % 60;
 
   return '$sign${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
-}
-
-/// Extracts original time components from an ISO 8601 string,
-/// before any timezone conversion.
-({
-  int year,
-  int month,
-  int day,
-  int hour,
-  int minute,
-  int second,
-  int millisecond,
-  int microsecond
-})? _extractOriginalTimeComponents(String input) {
-  if (input.length > 100) return null;
-  // Remove timezone suffix for parsing
-  final withoutTz = input.replaceAll(_timezoneSuffixPattern, '');
-
-  // Match ISO 8601 datetime components
-  final match = _iso8601Pattern.firstMatch(withoutTz);
-
-  if (match == null) {
-    return null;
-  }
-
-  // Parse fractional seconds
-  final fractionStr = match.group(7) ?? '0';
-  final fraction = fractionStr.padRight(6, '0');
-  final millisecond = int.parse(fraction.substring(0, 3));
-  final microsecond = int.parse(fraction.substring(3, 6));
-
-  return (
-    year: int.parse(match.group(1)!),
-    month: int.parse(match.group(2)!),
-    day: int.parse(match.group(3)!),
-    hour: int.parse(match.group(4)!),
-    minute: int.parse(match.group(5)!),
-    second: int.parse(match.group(6)!),
-    millisecond: millisecond,
-    microsecond: microsecond,
-  );
 }
 
 /// Common timezone mappings for efficiency (most used offsets).
@@ -130,38 +81,45 @@ const _commonOffsetMappings = <int, String>{
 /// Maps offset in minutes -> Location.
 final _offsetLocationCache = <int, Location?>{};
 
-/// Finds an IANA timezone that matches the given UTC offset.
+/// Finds an IANA timezone matching the given UTC offset at a specific moment.
 ///
-/// Returns null if no matching timezone is found or if timezone
-/// database is not initialized.
-Location? _findLocationForOffset(Duration offset) {
-  if (!init.internalIsTimeZoneInitialized) {
-    return null;
-  }
+/// [utcMs] is the UTC timestamp (milliseconds since epoch) for verification.
+/// Returns `null` if no match found or timezone DB is not initialized.
+Location? _findLocationForOffset(Duration offset, {required int utcMs}) {
+  if (!init.internalIsTimeZoneInitialized) return null;
 
   final offsetMinutes = offset.inMinutes;
-  // Check cache first
+  final offsetMs = offset.inMilliseconds;
+
+  // Helper to verify a location uses this offset at the target time
+  bool matchesOffset(Location loc) => loc.timeZone(utcMs).offset == offsetMs;
+
+  // 1. Check cache (must re-verify due to DST variations)
   if (_offsetLocationCache.containsKey(offsetMinutes)) {
-    return _offsetLocationCache[offsetMinutes];
+    final cached = _offsetLocationCache[offsetMinutes]!;
+    if (matchesOffset(cached)) return cached;
   }
 
+  // 2. Try common offset mappings
   final mappedName = _commonOffsetMappings[offsetMinutes];
   if (mappedName != null) {
     try {
       final loc = getLocation(mappedName);
-      _offsetLocationCache[offsetMinutes] = loc;
+      if (matchesOffset(loc)) {
+        _offsetLocationCache[offsetMinutes] = loc;
 
-      return loc;
+        return loc;
+      }
     } catch (_) {
-      // Continue to fallback
+      // Location not found, continue to fallback
     }
   }
 
-  // Fallback: search all locations (more expensive)
+  // 3. Fallback: search all locations (O(n), expensive)
   try {
     for (final name in timeZoneDatabase.locations.keys) {
       final loc = getLocation(name);
-      if (loc.currentTimeZone.offset == offset.inMilliseconds) {
+      if (matchesOffset(loc)) {
         _offsetLocationCache[offsetMinutes] = loc;
 
         return loc;
