@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2025-12-27
+
+### Fixed
+- `EasyDateTime.parse()`: Correct DST offset resolution for gap/overlap times.
+
 ## [0.5.1] - 2025-12-25
 
 ### Documentation
@@ -17,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 - Updated `operator ==` and `hashCode` documentation to clarify behavior and warn about mixed-type usage.
+
+### Contributors
+- Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#19](https://github.com/MasterHiei/easy_date_time/pull/19)).
 
 ## [0.4.2] - 2025-12-22
 
@@ -59,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `fromMicrosecondsSinceEpoch()`: Added `isUtc` parameter for `DateTime` API compatibility.
 
 ### Contributors
-Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#16](https://github.com/MasterHiei/easy_date_time/pull/16)).
+- Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#16](https://github.com/MasterHiei/easy_date_time/pull/16)).
 
 ## [0.3.7] - 2025-12-16
 
@@ -69,7 +77,7 @@ Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#16](h
 - `EasyDateTimeFormatter.clearCache()`: Clears cached formatters.
 
 ### Contributors
-Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#13](https://github.com/MasterHiei/easy_date_time/pull/13)).
+- Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#13](https://github.com/MasterHiei/easy_date_time/pull/13)).
 
 ## [0.3.6] - 2025-12-14
 
@@ -77,7 +85,7 @@ Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#13](h
 - `fromMillisecondsSinceEpoch()`: Added `isUtc` parameter for `DateTime` compatibility.
 
 ### Contributors
-Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#11](https://github.com/MasterHiei/easy_date_time/pull/11)).
+- Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#11](https://github.com/MasterHiei/easy_date_time/pull/11)).
 
 ## [0.3.5] - 2025-12-13
 
@@ -116,7 +124,7 @@ Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#11](h
 - Fixed undefined `isTimeZoneInitialized` reference in parsing module.
 
 ### Contributors
-Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#7](https://github.com/MasterHiei/easy_date_time/pull/7)).
+- Thanks to [@timmaffett](https://github.com/timmaffett) for this release ([#7](https://github.com/MasterHiei/easy_date_time/pull/7)).
 
 ## [0.3.2] - 2025-12-11
 
