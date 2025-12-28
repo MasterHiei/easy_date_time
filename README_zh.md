@@ -201,6 +201,24 @@ final tomorrow = now + 1.days;
 final later = now + 2.hours + 30.minutes;
 ```
 
+### 日历天运算 (DST-safe)
+
+对于需要保持时间不变的日期操作（在夏令时切换时尤为重要）：
+
+```dart
+final dt = EasyDateTime(2025, 3, 9, 0, 0, location: newYork); // 夏令时切换日
+
+dt.addCalendarDays(1);       // 2025-03-10 00:00 ✓ (时间不变)
+dt.add(Duration(days: 1));   // 2025-03-10 01:00   (24小时后，时间偏移)
+```
+
+`tomorrow` 和 `yesterday` 同样使用日历天语义：
+
+```dart
+dt.tomorrow;   // 等价于 addCalendarDays(1)
+dt.yesterday;  // 等价于 subtractCalendarDays(1)
+```
+
 ### 月份溢出处理
 自动处理月份大小时的日期截断逻辑：
 

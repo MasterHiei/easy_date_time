@@ -34,6 +34,17 @@ void main() {
   print('');
 
   // --------------------------------------------------------
+  // Calendar Day Arithmetic (DST-safe)
+  // --------------------------------------------------------
+  print('Calendar Day Arithmetic (DST-safe):');
+  final calendarDemo = EasyDateTime(2025, 3, 1, 12, 30);
+  print('  Original:              $calendarDemo');
+  print('  addCalendarDays(10):   ${calendarDemo.addCalendarDays(10)}');
+  print('  subtractCalendarDays(5): ${calendarDemo.subtractCalendarDays(5)}');
+  print('  (Preserves time of day across DST boundaries)');
+  print('');
+
+  // --------------------------------------------------------
   // Day boundaries
   // --------------------------------------------------------
   print('Day boundaries:');

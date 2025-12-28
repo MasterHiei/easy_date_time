@@ -218,6 +218,24 @@ final tomorrow = now + 1.days;
 final later = now + 2.hours + 30.minutes;
 ```
 
+### Calendar Day Arithmetic (DST-safe)
+
+For day-based operations that should preserve time of day (important for DST transitions):
+
+```dart
+final dt = EasyDateTime(2025, 3, 9, 0, 0, location: newYork); // DST transition day
+
+dt.addCalendarDays(1);       // 2025-03-10 00:00 ✓ (same time)
+dt.add(Duration(days: 1));   // 2025-03-10 01:00   (24h later, time shifted)
+```
+
+The `tomorrow` and `yesterday` getters also use calendar day semantics:
+
+```dart
+dt.tomorrow;   // Equivalent to addCalendarDays(1)
+dt.yesterday;  // Equivalent to subtractCalendarDays(1)
+```
+
 ### Handling Month Overflow
 
 `EasyDateTime` provides safe handling for month overflows:
