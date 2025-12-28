@@ -360,6 +360,118 @@ void main() {
         expect(dt.format('hh:mm a'), '12:30 AM');
       });
     });
+
+    group('Calendar day arithmetic across DST', () {
+      test(
+          'tomorrow preserves local time across Spring Forward '
+          '(NY 2025-03-09 00:00 → 2025-03-10 00:00)', () {
+        final ny = getLocation('America/New_York');
+        final dt = EasyDateTime(2025, 3, 9, 0, 0, 0, 0, 0, ny);
+        final result = dt.tomorrow;
+
+        expect(result.day, 10);
+        expect(result.hour, 0);
+        expect(result.minute, 0);
+      });
+
+      test(
+          'tomorrow preserves local time across Fall Back '
+          '(NY 2025-11-02 00:00 → 2025-11-03 00:00)', () {
+        final ny = getLocation('America/New_York');
+        final dt = EasyDateTime(2025, 11, 2, 0, 0, 0, 0, 0, ny);
+        final result = dt.tomorrow;
+
+        expect(result.day, 3);
+        expect(result.hour, 0);
+        expect(result.minute, 0);
+      });
+
+      test(
+          'yesterday preserves local time across Spring Forward '
+          '(NY 2025-03-10 00:00 → 2025-03-09 00:00)', () {
+        final ny = getLocation('America/New_York');
+        final dt = EasyDateTime(2025, 3, 10, 0, 0, 0, 0, 0, ny);
+        final result = dt.yesterday;
+
+        expect(result.day, 9);
+        expect(result.hour, 0);
+        expect(result.minute, 0);
+      });
+
+      test(
+          'yesterday preserves local time across Fall Back '
+          '(NY 2025-11-03 00:00 → 2025-11-02 00:00)', () {
+        final ny = getLocation('America/New_York');
+        final dt = EasyDateTime(2025, 11, 3, 0, 0, 0, 0, 0, ny);
+        final result = dt.yesterday;
+
+        expect(result.day, 2);
+        expect(result.hour, 0);
+        expect(result.minute, 0);
+      });
+
+      test(
+          'addCalendarDays preserves local time across Spring Forward '
+          '(NY 2025-03-08 12:30 +2 days → 2025-03-10 12:30)', () {
+        final ny = getLocation('America/New_York');
+        final dt = EasyDateTime(2025, 3, 8, 12, 30, 0, 0, 0, ny);
+        final result = dt.addCalendarDays(2);
+
+        expect(result.day, 10);
+        expect(result.hour, 12);
+        expect(result.minute, 30);
+      });
+
+      test(
+          'subtractCalendarDays preserves local time across Fall Back '
+          '(NY 2025-11-03 12:30 -1 day → 2025-11-02 12:30)', () {
+        final ny = getLocation('America/New_York');
+        final dt = EasyDateTime(2025, 11, 3, 12, 30, 0, 0, 0, ny);
+        final result = dt.subtractCalendarDays(1);
+
+        expect(result.day, 2);
+        expect(result.hour, 12);
+        expect(result.minute, 30);
+      });
+
+      test(
+          'add(Duration) differs from addCalendarDays on Spring Forward day '
+          '(physical vs calendar day semantics)', () {
+        final ny = getLocation('America/New_York');
+        final dt = EasyDateTime(2025, 3, 9, 0, 0, 0, 0, 0, ny);
+
+        final physical = dt.add(const Duration(days: 1));
+        final calendar = dt.addCalendarDays(1);
+
+        // Physical: adds 24 hours → lands at 01:00 (DST offset)
+        expect(physical.hour, 1);
+
+        // Calendar: preserves local time → stays at 00:00
+        expect(calendar.hour, 0);
+
+        // Both should be on March 10
+        expect(physical.day, 10);
+        expect(calendar.day, 10);
+      });
+
+      test(
+          'add(Duration) differs from addCalendarDays on Fall Back day '
+          '(physical vs calendar day semantics)', () {
+        final ny = getLocation('America/New_York');
+        final dt = EasyDateTime(2025, 11, 2, 0, 0, 0, 0, 0, ny);
+
+        final physical = dt.add(const Duration(days: 1));
+        final calendar = dt.addCalendarDays(1);
+
+        // Physical: adds 24 hours → lands at 23:00 same day (25-hour day)
+        expect(physical.day, 2);
+        expect(physical.hour, 23);
+
+        // Calendar: preserves local time → next day at 00:00
+        expect(calendar.day, 3);
+        expect(calendar.hour, 0);
+      });
+    });
   });
 
   // ════════════════════════════════════════════════════════════════════════════

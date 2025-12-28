@@ -121,6 +121,69 @@ void main() {
       });
     });
 
+    group('addCalendarDays / subtractCalendarDays', () {
+      test('addCalendarDays(1) advances to next calendar day', () {
+        final dt = EasyDateTime(2025, 6, 15, 14, 30);
+        final result = dt.addCalendarDays(1);
+
+        expect(result.day, 16);
+        expect(result.hour, 14);
+        expect(result.minute, 30);
+      });
+
+      test('subtractCalendarDays(1) returns previous calendar day', () {
+        final dt = EasyDateTime(2025, 6, 15, 14, 30);
+        final result = dt.subtractCalendarDays(1);
+
+        expect(result.day, 14);
+        expect(result.hour, 14);
+        expect(result.minute, 30);
+      });
+
+      test('addCalendarDays handles month overflow', () {
+        final dt = EasyDateTime(2025, 1, 31, 12, 0);
+        final result = dt.addCalendarDays(1);
+
+        expect(result.month, 2);
+        expect(result.day, 1);
+        expect(result.hour, 12);
+      });
+
+      test('subtractCalendarDays handles month underflow', () {
+        final dt = EasyDateTime(2025, 2, 1, 12, 0);
+        final result = dt.subtractCalendarDays(1);
+
+        expect(result.month, 1);
+        expect(result.day, 31);
+        expect(result.hour, 12);
+      });
+
+      test('addCalendarDays handles year overflow', () {
+        final dt = EasyDateTime(2025, 12, 31, 23, 59);
+        final result = dt.addCalendarDays(1);
+
+        expect(result.year, 2026);
+        expect(result.month, 1);
+        expect(result.day, 1);
+      });
+
+      test('addCalendarDays with negative value subtracts days', () {
+        final dt = EasyDateTime(2025, 6, 15);
+        final result = dt.addCalendarDays(-3);
+
+        expect(result.day, 12);
+      });
+
+      test('addCalendarDays preserves timezone', () {
+        final dt =
+            EasyDateTime(2025, 6, 15, 10, 0, 0, 0, 0, TimeZones.shanghai);
+        final result = dt.addCalendarDays(5);
+
+        expect(result.locationName, 'Asia/Shanghai');
+        expect(result.day, 20);
+      });
+    });
+
     group('tomorrow / yesterday', () {
       test('tomorrow adds one day', () {
         final dt = EasyDateTime(2025, 12, 15, 10, 30);

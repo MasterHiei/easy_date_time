@@ -103,7 +103,7 @@ dt.format('yyyy-MM-dd'); // -> 2025-12-07
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.5.2
+  easy_date_time: ^0.6.0
 ```
 
 **注意**: 正確な計算を行うため、アプリ起動時に**必ず**タイムゾーンデータベースの初期化を行ってください。
@@ -202,6 +202,24 @@ print(tokyo.isAtSameMomentAs(newYork)); // true: 絶対時間は同じです
 final now = EasyDateTime.now();
 final tomorrow = now + 1.days;
 final later = now + 2.hours + 30.minutes;
+```
+
+### カレンダー日演算 (DST-safe)
+
+時刻を維持したまま日付を操作する場合（DST 切り替え時に重要）：
+
+```dart
+final dt = EasyDateTime(2025, 3, 9, 0, 0, location: newYork); // DST 切り替え日
+
+dt.addCalendarDays(1);       // 2025-03-10 00:00 ✓ (同じ時刻)
+dt.add(Duration(days: 1));   // 2025-03-10 01:00   (24時間後、時刻がずれる)
+```
+
+`tomorrow` と `yesterday` もカレンダー日セマンティクスを使用します：
+
+```dart
+dt.tomorrow;   // addCalendarDays(1) と同等
+dt.yesterday;  // subtractCalendarDays(1) と同等
 ```
 
 ### 月末のオーバーフロー処理
