@@ -103,7 +103,7 @@ dt.format('yyyy-MM-dd'); // -> 2025-12-07
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.6.0
+  easy_date_time: ^0.6.1
 ```
 
 **注意**：为了确保时区计算准确，**必须**在应用启动前初始化时区数据库：
@@ -160,35 +160,25 @@ final now = EasyDateTime.now(); // 此时为 Asia/Shanghai 时间
 
 ---
 
-## 保持原始时间语义
+## 时区处理
 
-即使解析带偏移量的字符串，EasyDateTime 也会完整保留原始数值与时区信息：
+解析时，EasyDateTime 完整保留原始时间值与时区信息：
 
 ```dart
 final dt = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
 
-print(dt.hour);          // 10
+print(dt.hour);          // 10 (保留原值，不转换为 UTC)
 print(dt.locationName);  // Asia/Shanghai
 ```
 
-如需转换，请显式调用转换方法：
-
-```dart
-final ny = dt.inLocation(TimeZones.newYork); // 转换为纽约时间
-final utc = dt.toUtc(); // 转换为 UTC
-```
-
----
-
-## 时区转换示例
-
-比较不同时区的同一瞬间：
+### 时区转换
 
 ```dart
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
 final newYork = tokyo.inLocation(TimeZones.newYork);
+final utc = tokyo.toUtc();
 
-print(tokyo.isAtSameMomentAs(newYork)); // true：表示绝对时间（Instant）相同
+tokyo.isAtSameMomentAs(newYork);  // true：表示相同的绝对时刻
 ```
 
 ---
@@ -381,6 +371,18 @@ utc.isAtSameMomentAs(local);   // true
 
 * 只有有效的 IANA 时区偏移才能被正确解析，非标准偏移将抛出异常。
 * 请务必调用 `EasyDateTime.initializeTimeZone()` 进行初始化。
+
+### DateTime 行为
+
+EasyDateTime 继承了 Dart `DateTime` 的某些行为：
+
+**无效日期自动进位**：构造无效日期时会自动进位到下一个有效日期：
+```dart
+EasyDateTime(2025, 2, 30);  // → 2025-03-02 (2月没有30日)
+EasyDateTime(2025, 2, 29);  // → 2025-03-01 (2025年非闰年)
+```
+
+> 关于夏令时感知的日期运算，请参阅[日历天运算](#日历天运算-dst-safe)。
 
 ### 安全解析
 
