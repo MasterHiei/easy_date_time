@@ -163,35 +163,25 @@ final now = EasyDateTime.now(); // Asia/Shanghai として扱われます
 
 ---
 
-## 時間情報の保持
+## タイムゾーン処理
 
-オフセット付きの文字列を解析しても、`EasyDateTime` は解析された時間と場所をそのまま保持します。
+解析時、`EasyDateTime` は時間と場所の情報をそのまま保持します：
 
 ```dart
 final dt = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
 
-print(dt.hour);          // 10
+print(dt.hour);          // 10 (UTC に変換されずそのまま保持)
 print(dt.locationName);  // Asia/Shanghai
 ```
 
-変換が必要な場合は、明示的にメソッドを呼び出してください。
-
-```dart
-final ny = dt.inLocation(TimeZones.newYork);
-final utc = dt.toUtc();
-```
-
----
-
-## タイムゾーン変換
-
-異なるタイムゾーン間での「同じ瞬間」の比較：
+### タイムゾーン変換
 
 ```dart
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
 final newYork = tokyo.inLocation(TimeZones.newYork);
+final utc = tokyo.toUtc();
 
-print(tokyo.isAtSameMomentAs(newYork)); // true: 絶対時間は同じです
+tokyo.isAtSameMomentAs(newYork);  // true: 絶対時間は同じ
 ```
 
 ---
@@ -385,6 +375,18 @@ utc.isAtSameMomentAs(local);   // true
 
 * 有効な IANA タイムゾーンオフセットのみがサポートされます。非標準のオフセットはエラーとなります。
 * 使用前に `EasyDateTime.initializeTimeZone()` の呼び出しが必要です。
+
+### DateTime の挙動
+
+EasyDateTime は Dart の `DateTime` から特定の挙動を継承しています：
+
+**無効な日付のロールオーバー**：無効な日付を構築すると、次の有効な日付に自動的にロールオーバーします：
+```dart
+EasyDateTime(2025, 2, 30);  // → 2025-03-02 (2月30日は存在しない)
+EasyDateTime(2025, 2, 29);  // → 2025-03-01 (2025年はうるう年ではない)
+```
+
+> DST 対応の日付演算については、[カレンダー日演算](#カレンダー日演算-dst-safe)を参照してください。
 
 ### 安全な解析
 

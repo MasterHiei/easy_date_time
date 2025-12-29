@@ -177,35 +177,25 @@ final effective = EasyDateTime.effectiveDefaultLocation;
 
 ---
 
-## Preserving Time Semantics
+## Timezone Handling
 
-`EasyDateTime` preserves both the literal time and the timezone location, even when parsing strings with offsets:
+`EasyDateTime` preserves both the literal time and the timezone location when parsing:
 
 ```dart
 final dt = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
 
-print(dt.hour);          // 10
+print(dt.hour);          // 10 (preserved, not converted to UTC)
 print(dt.locationName);  // Asia/Shanghai
 ```
 
-Use explicit methods to convert timezones:
-
-```dart
-final ny = dt.inLocation(TimeZones.newYork);
-final utc = dt.toUtc();
-```
-
----
-
-## Timezone Conversion
-
-Comparing the same instant across different timezones:
+### Converting Between Timezones
 
 ```dart
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
 final newYork = tokyo.inLocation(TimeZones.newYork);
+final utc = tokyo.toUtc();
 
-print(tokyo.isAtSameMomentAs(newYork));  // true: Represents the same absolute instant
+tokyo.isAtSameMomentAs(newYork);  // true: Same absolute instant
 ```
 
 ---
@@ -399,6 +389,18 @@ utc.isAtSameMomentAs(local);   // true
 
 * Only valid IANA timezone offsets are supported; non-standard offsets will throw an error.
 * `EasyDateTime.initializeTimeZone()` must be called before use.
+
+### DateTime Behavior
+
+EasyDateTime inherits certain behaviors from Dart's `DateTime`:
+
+**Invalid Date Rollover**: Constructing an invalid date automatically rolls over to the next valid date:
+```dart
+EasyDateTime(2025, 2, 30);  // → 2025-03-02 (Feb 30 doesn't exist)
+EasyDateTime(2025, 2, 29);  // → 2025-03-01 (2025 is not a leap year)
+```
+
+> For DST-aware day arithmetic, see [Calendar Day Arithmetic](#calendar-day-arithmetic-dst-safe).
 
 ### Parsing User Input
 
