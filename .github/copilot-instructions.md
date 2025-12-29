@@ -42,17 +42,20 @@ All code must pass: `dart analyze --fatal-infos`
 
 ```
 lib/
-├── easy_date_time.dart          # Public API exports only
-└── src/                         # Internal implementation
-    ├── easy_date_time.dart      # Core class
+├── easy_date_time.dart              # Public API exports only
+└── src/                             # Internal implementation
+    ├── easy_date_time.dart          # Core class (part files below)
+    ├── easy_date_time_formatting.dart   # Formatting logic (part of core)
+    ├── easy_date_time_parsing.dart      # Parsing logic (part of core)
+    ├── easy_date_time_utilities.dart    # Date utilities (part of core)
     ├── easy_date_time_config.dart
     ├── easy_date_time_init.dart
-    ├── date_time_unit.dart
-    ├── exceptions/
-    ├── extensions/
-    │   ├── date_time_extension.dart
-    │   └── duration_extension.dart
-    └── timezones.dart
+    ├── date_time_unit.dart          # DateTimeUnit enum
+    ├── timezones.dart               # TimeZones constants
+    ├── exceptions/                  # Custom exceptions
+    └── extensions/                  # Extension methods
+        ├── date_time_extension.dart
+        └── duration_extension.dart
 ```
 
 **Module Guidelines**:
@@ -90,7 +93,7 @@ lib/
 
 | Constraint | Description |
 |------------|-------------|
-| **Syntax Match** | Same naming: `1.days`, `2.hours`, `30.minutes` |
+| **Syntax Match** | Same naming: `weeks`, `days`, `hours`, `minutes`, `seconds`, `milliseconds`, `microseconds` |
 | **Conflict Handling** | Document `hide DurationExtension` solution |
 | **No Duplication** | Don't add features already in time package (`fromNow`, `ago`, `delay`) |
 
@@ -217,9 +220,29 @@ DateFormat.yMMMMd('ja').format(dt);  // '2025年12月20日'
    - Use `tryParse()` for user input or untrusted sources
    - Only valid IANA timezone offsets are supported
 
+   **Exception Quick Reference:**
+
+   | Exception | Thrown By | Trigger |
+   |-----------|-----------|---------|
+   | `TimeZoneNotInitializedException` | All constructors | `initializeTimeZone()` not called |
+   | `InvalidDateFormatException` | `parse()` | Invalid date string format |
+   | `InvalidTimeZoneException` | `parse()` | Offset not in IANA database |
+   | `LocationNotFoundException` | `getLocation()` | Invalid IANA timezone name |
+
 3. **No Hidden Global State**
    - Default location is explicit (`setDefaultLocation()` / `clearDefaultLocation()`)
    - All instances are immutable
+
+4. **Invalid Date Rollover Behavior**
+
+   EasyDateTime inherits Dart's DateTime behavior—invalid dates roll over automatically:
+   ```dart
+   EasyDateTime(2025, 0, 1)   // → 2024-12-01 (month 0 = previous Dec)
+   EasyDateTime(2025, 13, 1)  // → 2026-01-01 (month 13 = next Jan)
+   EasyDateTime(2025, 2, 30)  // → 2025-03-02 (Feb 30 overflows)
+   ```
+   ⚠️ **Note**: Invalid parameters do NOT throw exceptions—they roll over silently.
+
 
 ### Code Quality Baseline
 
