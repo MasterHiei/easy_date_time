@@ -103,7 +103,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.6.0
+  easy_date_time: ^0.6.1
 ```
 
 **Note**: You **must** initialize the timezone database before using this package.
