@@ -66,7 +66,7 @@ extension EasyDateTimeUtilities on EasyDateTime {
   /// final monthEnd = dt.endOfMonth;  // 2025-02-28 23:59:59.999999
   /// ```
   EasyDateTime get endOfMonth {
-    // Get the first day of next month, then subtract 1 day
+    // Get the first day of next month, then subtract 1 microsecond
     final nextMonth = month == 12 ? 1 : month + 1;
     final nextYear = month == 12 ? year + 1 : year;
     final firstOfNextMonth =
@@ -159,6 +159,74 @@ extension EasyDateTimeUtilities on EasyDateTime {
   /// Returns `true` if this date is yesterday (ignoring time).
   bool get isYesterday =>
       _isSameDay(EasyDateTime.now(location: location).yesterday);
+
+  // ============================================================
+  // Year-Based Calculations
+  // ============================================================
+
+  /// Returns the day of year (1-366) for this date.
+  ///
+  /// January 1st is day 1, December 31st is day 365 (or 366 in leap years).
+  ///
+  /// ```dart
+  /// EasyDateTime(2025, 1, 1).dayOfYear;   // 1
+  /// EasyDateTime(2025, 12, 31).dayOfYear; // 365
+  /// EasyDateTime(2024, 12, 31).dayOfYear; // 366 (leap year)
+  /// ```
+  int get dayOfYear {
+    final firstDayOfYear = EasyDateTime(year, 1, 1, 0, 0, 0, 0, 0, location);
+
+    return dateOnly.difference(firstDayOfYear).inDays + 1;
+  }
+
+  /// Returns the ISO 8601 week number (1-53) for this date.
+  ///
+  /// Week 1 is the week containing the first Thursday of the year
+  /// (equivalently, the week containing January 4th).
+  /// Monday is considered the first day of the week.
+  ///
+  /// Note: Dates near year boundaries may belong to the previous
+  /// or next year's week numbering.
+  ///
+  /// ```dart
+  /// EasyDateTime(2025, 1, 1).weekOfYear;   // 1
+  /// EasyDateTime(2024, 12, 30).weekOfYear; // 1 (belongs to 2025 W1)
+  /// EasyDateTime(2020, 12, 31).weekOfYear; // 53
+  /// ```
+  int get weekOfYear {
+    // ISO 8601: Week 1 contains the first Thursday of the year
+    // (equivalently, contains January 4th)
+    final jan4 = EasyDateTime(year, 1, 4, 0, 0, 0, 0, 0, location);
+    final jan4Weekday = jan4.weekday; // 1=Mon, 7=Sun
+
+    // Find Monday of week 1
+    final week1Monday = jan4.dateOnly.subtract(Duration(days: jan4Weekday - 1));
+
+    // Days from week 1 Monday to this date
+    final daysFromWeek1 = dateOnly.difference(week1Monday).inDays;
+
+    if (daysFromWeek1 < 0) {
+      // This date is before week 1 of current year
+      // It belongs to the last week of the previous year
+      return EasyDateTime(year - 1, 12, 31, 0, 0, 0, 0, 0, location).weekOfYear;
+    }
+
+    final weekNumber = (daysFromWeek1 ~/ 7) + 1;
+
+    if (weekNumber > 52) {
+      // Check if this belongs to week 1 of next year
+      final nextYearJan4 =
+          EasyDateTime(year + 1, 1, 4, 0, 0, 0, 0, 0, location);
+      final nextYearWeek1Monday = nextYearJan4.dateOnly.subtract(
+        Duration(days: nextYearJan4.weekday - 1),
+      );
+      if (!dateOnly.isBefore(nextYearWeek1Monday)) {
+        return 1;
+      }
+    }
+
+    return weekNumber;
+  }
 
   /// Checks if this date has the same year, month, and day as [other].
   bool _isSameDay(EasyDateTime other) =>
