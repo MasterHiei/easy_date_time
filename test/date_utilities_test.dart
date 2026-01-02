@@ -525,5 +525,86 @@ void main() {
         expect(end.weekday, DateTime.sunday);
       });
     });
+
+    group('dayOfYear', () {
+      test('returns 1 for January 1st', () {
+        expect(EasyDateTime(2025, 1, 1).dayOfYear, 1);
+      });
+
+      test('returns 365 for December 31st in non-leap year', () {
+        expect(EasyDateTime(2025, 12, 31).dayOfYear, 365);
+      });
+
+      test('returns 366 for December 31st in leap year', () {
+        expect(EasyDateTime(2024, 12, 31).dayOfYear, 366);
+      });
+
+      test('handles mid-year dates correctly', () {
+        // June 15, 2025:
+        // Jan=31, Feb=28, Mar=31, Apr=30, May=31, Jun 1-15=15
+        // Total: 31+28+31+30+31+15 = 166
+        expect(EasyDateTime(2025, 6, 15).dayOfYear, 166);
+      });
+
+      test('handles February 29th in leap year', () {
+        expect(EasyDateTime(2024, 2, 29).dayOfYear, 60);
+      });
+
+      test('handles March 1st difference between leap and non-leap', () {
+        // March 1st in leap year: 31 (Jan) + 29 (Feb) + 1 = 61
+        expect(EasyDateTime(2024, 3, 1).dayOfYear, 61);
+        // March 1st in non-leap year: 31 (Jan) + 28 (Feb) + 1 = 60
+        expect(EasyDateTime(2025, 3, 1).dayOfYear, 60);
+      });
+
+      test('preserves timezone', () {
+        final dt = EasyDateTime(2025, 6, 15, 10, 0, 0, 0, 0, TimeZones.tokyo);
+        expect(dt.dayOfYear, 166);
+      });
+    });
+
+    group('weekOfYear (ISO 8601)', () {
+      test('returns 1 for dates in first week', () {
+        // 2025-01-01 is Wednesday, week 1 starts 2024-12-30 (Mon)
+        expect(EasyDateTime(2025, 1, 1).weekOfYear, 1);
+        expect(EasyDateTime(2025, 1, 5).weekOfYear, 1);
+      });
+
+      test('returns correct week for mid-year dates', () {
+        // 2025-06-15 is Sunday, calculate expected week
+        expect(EasyDateTime(2025, 6, 15).weekOfYear, 24);
+      });
+
+      test('handles year boundary - date belongs to next year week 1', () {
+        // 2024-12-30 is Monday, this is week 1 of 2025
+        expect(EasyDateTime(2024, 12, 30).weekOfYear, 1);
+        expect(EasyDateTime(2024, 12, 31).weekOfYear, 1);
+      });
+
+      test('handles year boundary - date belongs to previous year last week',
+          () {
+        // 2021-01-01 is Friday. Week 53 of 2020 ends on 2021-01-03 (Sun)
+        expect(EasyDateTime(2021, 1, 1).weekOfYear, 53);
+        expect(EasyDateTime(2021, 1, 3).weekOfYear, 53);
+        expect(
+            EasyDateTime(2021, 1, 4).weekOfYear, 1); // Monday, week 1 of 2021
+      });
+
+      test('handles week 53 in years with 53 weeks', () {
+        // 2020 has 53 weeks (starts on Wednesday, leap year)
+        expect(EasyDateTime(2020, 12, 28).weekOfYear, 53);
+        expect(EasyDateTime(2020, 12, 31).weekOfYear, 53);
+      });
+
+      test('returns 52 for last week in years with 52 weeks', () {
+        // 2019 has 52 weeks
+        expect(EasyDateTime(2019, 12, 29).weekOfYear, 52);
+      });
+
+      test('preserves timezone', () {
+        final dt = EasyDateTime(2025, 6, 15, 10, 0, 0, 0, 0, TimeZones.newYork);
+        expect(dt.weekOfYear, 24);
+      });
+    });
   });
 }
