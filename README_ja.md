@@ -2,7 +2,7 @@
 
 **Dart 向けタイムゾーン対応日時ライブラリ**
 
-IANA タイムゾーンを完全にサポートし、Dart 標準の `DateTime` だけでは難しいタイムゾーン処理を直感的に扱えます。**不変(Immutable)** であり、意図しない UTC 変換を行わず、解析された日時情報を正確に保持します。
+IANA タイムゾーンデータベースを完全にサポートし、Dart 標準の `DateTime` だけでは難しいタイムゾーン処理を直感的に扱えます。**不変（Immutable）** であり、意図しない UTC 変換を行わず、解析された日時情報を正確に保持します。
 
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
 [![Pub Points](https://img.shields.io/pub/points/easy_date_time)](https://pub.dev/packages/easy_date_time/score)
@@ -17,7 +17,7 @@ IANA タイムゾーンを完全にサポートし、Dart 標準の `DateTime` �
 
 ## なぜ easy_date_time なのか？
 
-Dart の `DateTime` は UTC とローカル時間のみをサポートします。本ライブラリは完全な IANA タイムゾーンサポートを追加し、真のドロップイン・リプレースメントとして機能します。
+Dart の `DateTime` は UTC とローカル時間のみをサポートします。本ライブラリは完全な IANA タイムゾーンサポートを追加し、`DateTime` の直接的な代替として機能します。
 
 ### 他の日時パッケージとの比較
 
@@ -71,26 +71,26 @@ EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
 ```
 
-### 🕒 解析値をそのまま保持
-暗黙的な UTC 変換なし。解析された値を正確に保持。
+### 🕒 無損失な解析
+暗黙的な UTC 変換なし。解析された日時値とタイムゾーン情報を正確に保持。
 ```dart
 EasyDateTime.parse('2025-12-07T10:00+08:00').hour // -> 10
 ```
 
-### ➕ 直感的な演算
-直感的な日付計算構文。
+### ➕ 直感的な日時演算
+直感的な日付時間計算構文。
 ```dart
 final later = now + 2.hours + 30.minutes;
 ```
 
-### 🧱 安全な計算
-月のオーバーフローをインテリジェントに処理。
+### 🧱 安全な日付計算
+月のオーバーフローなどの境界ケースを自動的に処理。
 ```dart
 jan31.copyWithClamped(month: 2); // -> 2月28日
 ```
 
-### 📝 柔軟なフォーマット
-パフォーマンスに最適化されたフォーマット。
+### 📝 柔軟な日時フォーマット
+カスタムパターンとプリコンパイルによる最適化をサポート。
 ```dart
 dt.format('yyyy-MM-dd'); // -> 2025-12-07
 ```
@@ -194,7 +194,7 @@ final tomorrow = now + 1.days;
 final later = now + 2.hours + 30.minutes;
 ```
 
-### カレンダー日演算 (DST-safe)
+### カレンダー日演算（サマータイム対応）
 
 時刻を維持したまま日付を操作する場合（DST 切り替え時に重要）：
 
@@ -205,7 +205,7 @@ dt.addCalendarDays(1);       // 2025-03-10 00:00 ✓ (同じ時刻)
 dt.add(Duration(days: 1));   // 2025-03-10 01:00   (24時間後、時刻がずれる)
 ```
 
-`tomorrow` と `yesterday` もカレンダー日セマンティクスを使用します：
+`tomorrow` と `yesterday` もカレンダー日の考え方を使用します：
 
 ```dart
 dt.tomorrow;   // addCalendarDays(1) と同等
@@ -295,6 +295,38 @@ dt.format(DateTimeFormats.time12Hour);   // '02:30 PM'
 dt.format(DateTimeFormats.time24Hour);   // '14:30'
 dt.format(DateTimeFormats.rfc2822);      // 'Mon, 01 Dec 2025 14:30:45 +0800'
 ```
+
+### 日付プロパティ
+
+よく使う日付の判定・計算プロパティ：
+
+```dart
+final dt = EasyDateTime(2024, 6, 15);
+
+// 年間関連
+dt.dayOfYear;    // 167（年間の通算日）
+dt.weekOfYear;   // 24（年間の週番号、ISO 8601 準拠）
+dt.quarter;      // 2（四半期）
+dt.isLeapYear;   // true（うるう年かどうか）
+
+// 月間関連
+dt.daysInMonth;  // 30（当月の日数）
+
+// 週末判定
+final saturday = EasyDateTime(2025, 1, 4);
+saturday.isWeekend;  // true（週末かどうか）
+saturday.isWeekday;  // false（平日かどうか）
+```
+
+| プロパティ | 説明 | 値の範囲 |
+|------------|------|----------|
+| `dayOfYear` | 年間の通算日 | 1-366 |
+| `weekOfYear` | 年間の週番号（ISO 8601） | 1-53 |
+| `quarter` | 四半期 | 1-4 |
+| `daysInMonth` | 当月の日数 | 28/29/30/31 |
+| `isLeapYear` | うるう年かどうか | true/false |
+| `isWeekend` | 週末かどうか（土曜・日曜） | true/false |
+| `isWeekday` | 平日かどうか（月曜〜金曜） | true/false |
 
 ### パターントークン
 
@@ -386,7 +418,7 @@ EasyDateTime(2025, 2, 30);  // → 2025-03-02 (2月30日は存在しない)
 EasyDateTime(2025, 2, 29);  // → 2025-03-01 (2025年はうるう年ではない)
 ```
 
-> DST 対応の日付演算については、[カレンダー日演算](#カレンダー日演算-dst-safe)を参照してください。
+> DST 対応の日付演算については、[カレンダー日演算](#カレンダー日演算サマータイム対応)を参照してください。
 
 ### 安全な解析
 

@@ -1,8 +1,8 @@
 # easy_date_time
 
-**Dart 时区感知日期库：精准支持 IANA 时区，提供直观的日期运算与灵活的格式化能力**
+**Dart 时区感知日期时间库：全面支持 IANA 时区，提供直观的日期时间运算与灵活的格式化能力**
 
-基于 IANA 数据库，提供精准的全球时区支持。**不可变**、算术直观且格式化灵活。解决原生 `DateTime` 隐式转换 UTC/本地时间导致的语义丢失问题，让跨时区开发精准可控。
+基于 IANA 时区数据库，提供精准的全球时区支持。**不可变（Immutable）**、日期时间运算直观且格式化灵活。解决原生 `DateTime` 隐式转换 UTC/本地时间导致的语义丢失问题，让跨时区开发精准可控。
 
 [![pub package](https://img.shields.io/pub/v/easy_date_time.svg)](https://pub.dev/packages/easy_date_time)
 [![Pub Points](https://img.shields.io/pub/points/easy_date_time)](https://pub.dev/packages/easy_date_time/score)
@@ -17,14 +17,14 @@
 
 ## 为什么选择 easy_date_time？
 
-Dart 的 `DateTime` 仅支持 UTC 和本地时区。本库添加完整 IANA 时区支持，作为真正的替代方案。
+Dart 的 `DateTime` 仅支持 UTC 和本地时区。本库添加完整的 IANA 时区支持，可作为 `DateTime` 的直接替代方案。
 
 ### 与其他日期时间包对比
 
 | 功能 | `DateTime` | `timezone` | `easy_date_time` |
 |------|:----------:|:----------:|:----------------:|
 | **IANA 时区** | ❌ | ✅ | ✅ |
-| **不可变性** | ✅ | ✅ | ✅ |
+| **不可变性（Immutable）** | ✅ | ✅ | ✅ |
 | **API 接口** | 原生 | `extends DateTime` | `implements DateTime` |
 | **时区查找** | N/A | 手动 (`getLocation`) | 常量 / 自动缓存 |
 
@@ -59,37 +59,37 @@ EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // → 10
 | **时区支持** | UTC / 系统本地 | IANA 数据库 |
 | **解析行为** | **归一化** (转为 UTC) | **保持** (保留偏移/小时) |
 | **类型关系** | 基类 | `implements DateTime` |
-| **混合使用** | N/A | ⚠️ `hashCode`不同 (避免混用) |
+| **混合使用** | N/A | ⚠️ `hashCode` 不同，避免混用 |
 
 ---
 
 ## 主要特性
 
-### 🌍 全量 IANA 时区支持
+### 🌍 完整的 IANA 时区支持
 支持所有标准 IANA 时区常量或自定义字符串。
 ```dart
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
 ```
 
-### 🕒 精准无损解析
-拒绝隐式转换。完整保留解析时的数值与时区。
+### 🕒 无损解析
+拒绝隐式转换，完整保留解析时的日期时间值与时区信息。
 ```dart
 EasyDateTime.parse('2025-12-07T10:00+08:00').hour // -> 10
 ```
 
-### ➕ 自然语言运算
+### ➕ 直观的日期时间运算
 符合直觉的时间计算语法。
 ```dart
 final later = now + 2.hours + 30.minutes;
 ```
 
-### 🧱 智能安全计算
+### 🧱 安全的日期计算
 自动处理月份溢出等边界情况。
 ```dart
 jan31.copyWithClamped(month: 2); // -> 2月28日
 ```
 
-### 📝 高性能灵活格式化
+### 📝 灵活的日期时间格式化
 支持自定义模式与预编译优化。
 ```dart
 dt.format('yyyy-MM-dd'); // -> 2025-12-07
@@ -191,7 +191,7 @@ final tomorrow = now + 1.days;
 final later = now + 2.hours + 30.minutes;
 ```
 
-### 日历天运算 (DST-safe)
+### 日历天运算（夏令时安全）
 
 对于需要保持时间不变的日期操作（在夏令时切换时尤为重要）：
 
@@ -292,6 +292,38 @@ dt.format(DateTimeFormats.time24Hour);   // '14:30'
 dt.format(DateTimeFormats.rfc2822);      // 'Mon, 01 Dec 2025 14:30:45 +0800'
 ```
 
+### 日期属性
+
+常用的日期判断与计算属性：
+
+```dart
+final dt = EasyDateTime(2024, 6, 15);
+
+// 年度相关
+dt.dayOfYear;    // 167（一年中的第几天）
+dt.weekOfYear;   // 24（一年中的第几周，遵循 ISO 8601）
+dt.quarter;      // 2（第几季度）
+dt.isLeapYear;   // true（是否为闰年）
+
+// 月份相关
+dt.daysInMonth;  // 30（当月共有多少天）
+
+// 周末判断
+final saturday = EasyDateTime(2025, 1, 4);
+saturday.isWeekend;  // true（是否为周末）
+saturday.isWeekday;  // false（是否为工作日）
+```
+
+| 属性 | 说明 | 取值范围 |
+|------|------|----------|
+| `dayOfYear` | 一年中的第几天 | 1-366 |
+| `weekOfYear` | 一年中的第几周（ISO 8601） | 1-53 |
+| `quarter` | 第几季度 | 1-4 |
+| `daysInMonth` | 当月天数 | 28/29/30/31 |
+| `isLeapYear` | 是否为闰年 | true/false |
+| `isWeekend` | 是否为周末（周六、周日） | true/false |
+| `isWeekday` | 是否为工作日（周一至周五） | true/false |
+
 ### 格式符号表
 
 | 符号 | 说明 | 示例 |
@@ -306,7 +338,7 @@ dt.format(DateTimeFormats.rfc2822);      // 'Mon, 01 Dec 2025 14:30:45 +0800'
 | `mm`/`m` | 分钟（补零/不补零） | 05, 5 |
 | `ss`/`s` | 秒（补零/不补零） | 05, 5 |
 | `SSS` | 毫秒 | 123 |
-| `a` | 上午/下午标识 | AM, PM |
+| `a` | 上午/下午 | AM, PM |
 | `xxxxx` | 带冒号的时区偏移 | +08:00, -05:00 |
 | `xxxx` | 时区偏移 | +0800, -0500 |
 | `xx` | 短时区偏移 | +08, -05 |
@@ -382,7 +414,7 @@ EasyDateTime(2025, 2, 30);  // → 2025-03-02 (2月没有30日)
 EasyDateTime(2025, 2, 29);  // → 2025-03-01 (2025年非闰年)
 ```
 
-> 关于夏令时感知的日期运算，请参阅[日历天运算](#日历天运算-dst-safe)。
+> 关于夏令时感知的日期运算，请参阅[日历天运算](#日历天运算夏令时安全)。
 
 ### 安全解析
 

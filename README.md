@@ -255,6 +255,38 @@ dt.endOf(DateTimeUnit.month);   // 2025-06-30 23:59:59.999999
 
 > Week boundaries follow ISO 8601 (Monday = first day of week).
 
+### Date Properties
+
+Convenient properties for common date calculations:
+
+```dart
+final dt = EasyDateTime(2024, 6, 15);
+
+// Year-based calculations
+dt.dayOfYear;    // 167 (day 167 of the year)
+dt.weekOfYear;   // 24 (ISO 8601 week number)
+dt.quarter;      // 2 (Q2: Apr-Jun)
+dt.isLeapYear;   // true
+
+// Month info
+dt.daysInMonth;  // 30 (June has 30 days)
+
+// Weekend/weekday checks
+final saturday = EasyDateTime(2025, 1, 4);
+saturday.isWeekend;  // true
+saturday.isWeekday;  // false
+```
+
+| Property | Description | Example |
+|----------|-------------|---------|
+| `dayOfYear` | Day of year (1-366) | 167 |
+| `weekOfYear` | ISO 8601 week number (1-53) | 24 |
+| `quarter` | Quarter of year (1-4) | 1, 2, 3, 4 |
+| `daysInMonth` | Days in current month | 28, 29, 30, 31 |
+| `isLeapYear` | Whether year is a leap year | true/false |
+| `isWeekend` | Saturday or Sunday | true/false |
+| `isWeekday` | Monday through Friday | true/false |
+
 ---
 
 ## Date Formatting
