@@ -6,6 +6,10 @@ part of 'easy_date_time.dart';
 
 /// Extension providing date utility methods for [EasyDateTime].
 extension EasyDateTimeUtilities on EasyDateTime {
+  // ============================================================
+  // Day Operations
+  // ============================================================
+
   /// Returns a new [EasyDateTime] with time set to 00:00:00.000.
   ///
   /// Useful for date-only comparisons or getting the start of a day.
@@ -41,6 +45,10 @@ extension EasyDateTimeUtilities on EasyDateTime {
         millisecond: 999,
         microsecond: 999,
       );
+
+  // ============================================================
+  // Month Operations
+  // ============================================================
 
   /// Returns the first day of the current month at 00:00:00.
   ///
@@ -161,7 +169,7 @@ extension EasyDateTimeUtilities on EasyDateTime {
       _isSameDay(EasyDateTime.now(location: location).yesterday);
 
   // ============================================================
-  // Year-Based Calculations
+  // Date Properties
   // ============================================================
 
   /// Returns the day of year (1-366) for this date.
@@ -228,9 +236,71 @@ extension EasyDateTimeUtilities on EasyDateTime {
     return weekNumber;
   }
 
+  /// Returns the number of days in the current month.
+  ///
+  /// Correctly handles February in leap years.
+  ///
+  /// ```dart
+  /// EasyDateTime(2025, 1, 15).daysInMonth;  // 31
+  /// EasyDateTime(2025, 2, 15).daysInMonth;  // 28
+  /// EasyDateTime(2024, 2, 15).daysInMonth;  // 29 (leap year)
+  /// EasyDateTime(2025, 4, 15).daysInMonth;  // 30
+  /// ```
+  int get daysInMonth => DateTime(year, month + 1, 0).day;
+
+  /// Returns `true` if the current year is a leap year.
+  ///
+  /// A year is a leap year if:
+  /// - It is divisible by 4, AND
+  /// - It is NOT divisible by 100, OR it is divisible by 400.
+  ///
+  /// ```dart
+  /// EasyDateTime(2024, 6, 15).isLeapYear;  // true
+  /// EasyDateTime(2025, 6, 15).isLeapYear;  // false
+  /// EasyDateTime(2000, 6, 15).isLeapYear;  // true  (divisible by 400)
+  /// EasyDateTime(1900, 6, 15).isLeapYear;  // false (divisible by 100)
+  /// ```
+  bool get isLeapYear => year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+
+  /// Returns `true` if this date is a weekend day (Saturday or Sunday).
+  ///
+  /// ```dart
+  /// EasyDateTime(2025, 1, 4).isWeekend;  // true  (Saturday)
+  /// EasyDateTime(2025, 1, 5).isWeekend;  // true  (Sunday)
+  /// EasyDateTime(2025, 1, 6).isWeekend;  // false (Monday)
+  /// ```
+  bool get isWeekend => weekday >= DateTime.saturday;
+
+  /// Returns `true` if this date is a weekday (Monday through Friday).
+  ///
+  /// ```dart
+  /// EasyDateTime(2025, 1, 6).isWeekday;  // true  (Monday)
+  /// EasyDateTime(2025, 1, 4).isWeekday;  // false (Saturday)
+  /// ```
+  bool get isWeekday => weekday < DateTime.saturday;
+
+  /// Returns the quarter of the year (1-4).
+  ///
+  /// - Q1: January - March (months 1-3)
+  /// - Q2: April - June (months 4-6)
+  /// - Q3: July - September (months 7-9)
+  /// - Q4: October - December (months 10-12)
+  ///
+  /// ```dart
+  /// EasyDateTime(2025, 1, 15).quarter;   // 1
+  /// EasyDateTime(2025, 4, 15).quarter;   // 2
+  /// EasyDateTime(2025, 7, 15).quarter;   // 3
+  /// EasyDateTime(2025, 10, 15).quarter;  // 4
+  /// ```
+  int get quarter => (month - 1) ~/ 3 + 1;
+
   /// Checks if this date has the same year, month, and day as [other].
   bool _isSameDay(EasyDateTime other) =>
       year == other.year && month == other.month && day == other.day;
+
+  // ============================================================
+  // String Conversion
+  // ============================================================
 
   /// Returns a date-only string in YYYY-MM-DD format.
   ///

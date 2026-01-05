@@ -606,5 +606,225 @@ void main() {
         expect(dt.weekOfYear, 24);
       });
     });
+
+    group('daysInMonth', () {
+      test('returns 31 for months with 31 days', () {
+        // January, March, May, July, August, October, December
+        expect(EasyDateTime(2025, 1, 15).daysInMonth, 31);
+        expect(EasyDateTime(2025, 3, 15).daysInMonth, 31);
+        expect(EasyDateTime(2025, 5, 15).daysInMonth, 31);
+        expect(EasyDateTime(2025, 7, 15).daysInMonth, 31);
+        expect(EasyDateTime(2025, 8, 15).daysInMonth, 31);
+        expect(EasyDateTime(2025, 10, 15).daysInMonth, 31);
+        expect(EasyDateTime(2025, 12, 15).daysInMonth, 31);
+      });
+
+      test('returns 30 for months with 30 days', () {
+        // April, June, September, November
+        expect(EasyDateTime(2025, 4, 15).daysInMonth, 30);
+        expect(EasyDateTime(2025, 6, 15).daysInMonth, 30);
+        expect(EasyDateTime(2025, 9, 15).daysInMonth, 30);
+        expect(EasyDateTime(2025, 11, 15).daysInMonth, 30);
+      });
+
+      test('returns 28 for February in common years', () {
+        expect(EasyDateTime(2025, 2, 15).daysInMonth, 28);
+        expect(EasyDateTime(2023, 2, 15).daysInMonth, 28);
+        expect(EasyDateTime(2100, 2, 15).daysInMonth, 28); // Century non-leap
+      });
+
+      test('returns 29 for February in leap years', () {
+        expect(EasyDateTime(2024, 2, 15).daysInMonth, 29);
+        expect(EasyDateTime(2000, 2, 15).daysInMonth, 29); // Century leap
+        expect(EasyDateTime(2400, 2, 15).daysInMonth, 29); // Century leap
+      });
+
+      test('returns correct value when called on first day of month', () {
+        expect(EasyDateTime(2025, 2, 1).daysInMonth, 28);
+        expect(EasyDateTime(2024, 2, 1).daysInMonth, 29);
+      });
+
+      test('returns correct value when called on last day of month', () {
+        expect(EasyDateTime(2025, 1, 31).daysInMonth, 31);
+        expect(EasyDateTime(2025, 2, 28).daysInMonth, 28);
+        expect(EasyDateTime(2024, 2, 29).daysInMonth, 29);
+      });
+
+      test('preserves timezone', () {
+        final dt =
+            EasyDateTime(2025, 2, 15, 10, 0, 0, 0, 0, TimeZones.shanghai);
+        expect(dt.daysInMonth, 28);
+      });
+    });
+
+    group('isLeapYear', () {
+      test('returns true for years divisible by 4', () {
+        expect(EasyDateTime(2024, 6, 15).isLeapYear, isTrue);
+        expect(EasyDateTime(2028, 6, 15).isLeapYear, isTrue);
+        expect(EasyDateTime(2032, 6, 15).isLeapYear, isTrue);
+      });
+
+      test('returns false for years not divisible by 4', () {
+        expect(EasyDateTime(2025, 6, 15).isLeapYear, isFalse);
+        expect(EasyDateTime(2023, 6, 15).isLeapYear, isFalse);
+        expect(EasyDateTime(2021, 6, 15).isLeapYear, isFalse);
+      });
+
+      test('returns false for century years not divisible by 400', () {
+        expect(EasyDateTime(1900, 6, 15).isLeapYear, isFalse);
+        expect(EasyDateTime(2100, 6, 15).isLeapYear, isFalse);
+        expect(EasyDateTime(2200, 6, 15).isLeapYear, isFalse);
+        expect(EasyDateTime(2300, 6, 15).isLeapYear, isFalse);
+      });
+
+      test('returns true for century years divisible by 400', () {
+        expect(EasyDateTime(1600, 6, 15).isLeapYear, isTrue);
+        expect(EasyDateTime(2000, 6, 15).isLeapYear, isTrue);
+        expect(EasyDateTime(2400, 6, 15).isLeapYear, isTrue);
+      });
+
+      test('returns correct value regardless of month or day', () {
+        // Same year, different dates should return same result
+        expect(EasyDateTime(2024, 1, 1).isLeapYear, isTrue);
+        expect(EasyDateTime(2024, 12, 31).isLeapYear, isTrue);
+        expect(EasyDateTime(2025, 1, 1).isLeapYear, isFalse);
+        expect(EasyDateTime(2025, 12, 31).isLeapYear, isFalse);
+      });
+
+      test('preserves timezone', () {
+        final dt = EasyDateTime(2024, 6, 15, 10, 0, 0, 0, 0, TimeZones.tokyo);
+        expect(dt.isLeapYear, isTrue);
+      });
+    });
+
+    group('isWeekend', () {
+      test('returns true for Saturday', () {
+        expect(EasyDateTime(2025, 1, 4).isWeekend, isTrue); // Saturday
+        expect(EasyDateTime(2025, 1, 11).isWeekend, isTrue); // Saturday
+      });
+
+      test('returns true for Sunday', () {
+        expect(EasyDateTime(2025, 1, 5).isWeekend, isTrue); // Sunday
+        expect(EasyDateTime(2025, 1, 12).isWeekend, isTrue); // Sunday
+      });
+
+      test('returns false for weekdays', () {
+        expect(EasyDateTime(2025, 1, 6).isWeekend, isFalse); // Monday
+        expect(EasyDateTime(2025, 1, 7).isWeekend, isFalse); // Tuesday
+        expect(EasyDateTime(2025, 1, 8).isWeekend, isFalse); // Wednesday
+        expect(EasyDateTime(2025, 1, 9).isWeekend, isFalse); // Thursday
+        expect(EasyDateTime(2025, 1, 10).isWeekend, isFalse); // Friday
+      });
+
+      test('returns correct value at day boundaries', () {
+        // Start of Saturday
+        expect(
+          EasyDateTime(2025, 1, 4, 0, 0, 0, 0, 0).isWeekend,
+          isTrue,
+        );
+        // End of Friday
+        expect(
+          EasyDateTime(2025, 1, 3, 23, 59, 59, 999, 999).isWeekend,
+          isFalse,
+        );
+      });
+
+      test('preserves timezone', () {
+        final dt = EasyDateTime(2025, 1, 4, 10, 0, 0, 0, 0, TimeZones.newYork);
+        expect(dt.isWeekend, isTrue);
+      });
+    });
+
+    group('isWeekday', () {
+      test('returns true for Monday through Friday', () {
+        expect(EasyDateTime(2025, 1, 6).isWeekday, isTrue); // Monday
+        expect(EasyDateTime(2025, 1, 7).isWeekday, isTrue); // Tuesday
+        expect(EasyDateTime(2025, 1, 8).isWeekday, isTrue); // Wednesday
+        expect(EasyDateTime(2025, 1, 9).isWeekday, isTrue); // Thursday
+        expect(EasyDateTime(2025, 1, 10).isWeekday, isTrue); // Friday
+      });
+
+      test('returns false for Saturday', () {
+        expect(EasyDateTime(2025, 1, 4).isWeekday, isFalse);
+        expect(EasyDateTime(2025, 1, 11).isWeekday, isFalse);
+      });
+
+      test('returns false for Sunday', () {
+        expect(EasyDateTime(2025, 1, 5).isWeekday, isFalse);
+        expect(EasyDateTime(2025, 1, 12).isWeekday, isFalse);
+      });
+
+      test('isWeekend and isWeekday are mutually exclusive', () {
+        // Test a complete week (2025-01-06 Mon to 2025-01-12 Sun)
+        for (var day = 6; day <= 12; day++) {
+          final dt = EasyDateTime(2025, 1, day);
+          expect(
+            dt.isWeekend != dt.isWeekday,
+            isTrue,
+            reason:
+                'Jan $day: isWeekend=${dt.isWeekend}, isWeekday=${dt.isWeekday}',
+          );
+        }
+      });
+
+      test('preserves timezone', () {
+        final dt = EasyDateTime(2025, 1, 6, 10, 0, 0, 0, 0, TimeZones.shanghai);
+        expect(dt.isWeekday, isTrue);
+      });
+    });
+
+    group('quarter', () {
+      test('returns 1 for January, February, March', () {
+        expect(EasyDateTime(2025, 1, 1).quarter, 1);
+        expect(EasyDateTime(2025, 1, 31).quarter, 1);
+        expect(EasyDateTime(2025, 2, 15).quarter, 1);
+        expect(EasyDateTime(2025, 3, 31).quarter, 1);
+      });
+
+      test('returns 2 for April, May, June', () {
+        expect(EasyDateTime(2025, 4, 1).quarter, 2);
+        expect(EasyDateTime(2025, 5, 15).quarter, 2);
+        expect(EasyDateTime(2025, 6, 30).quarter, 2);
+      });
+
+      test('returns 3 for July, August, September', () {
+        expect(EasyDateTime(2025, 7, 1).quarter, 3);
+        expect(EasyDateTime(2025, 8, 15).quarter, 3);
+        expect(EasyDateTime(2025, 9, 30).quarter, 3);
+      });
+
+      test('returns 4 for October, November, December', () {
+        expect(EasyDateTime(2025, 10, 1).quarter, 4);
+        expect(EasyDateTime(2025, 11, 15).quarter, 4);
+        expect(EasyDateTime(2025, 12, 31).quarter, 4);
+      });
+
+      test('handles quarter boundaries correctly', () {
+        // Q1/Q2 boundary
+        expect(EasyDateTime(2025, 3, 31, 23, 59, 59).quarter, 1);
+        expect(EasyDateTime(2025, 4, 1, 0, 0, 0).quarter, 2);
+        // Q2/Q3 boundary
+        expect(EasyDateTime(2025, 6, 30, 23, 59, 59).quarter, 2);
+        expect(EasyDateTime(2025, 7, 1, 0, 0, 0).quarter, 3);
+        // Q3/Q4 boundary
+        expect(EasyDateTime(2025, 9, 30, 23, 59, 59).quarter, 3);
+        expect(EasyDateTime(2025, 10, 1, 0, 0, 0).quarter, 4);
+        // Q4/Q1 boundary (year change)
+        expect(EasyDateTime(2025, 12, 31, 23, 59, 59).quarter, 4);
+        expect(EasyDateTime(2026, 1, 1, 0, 0, 0).quarter, 1);
+      });
+
+      test('returns correct value regardless of day or time', () {
+        // Same month, different times should return same quarter
+        expect(EasyDateTime(2025, 6, 1, 0, 0, 0).quarter, 2);
+        expect(EasyDateTime(2025, 6, 30, 23, 59, 59).quarter, 2);
+      });
+
+      test('preserves timezone', () {
+        final dt =
+            EasyDateTime(2025, 6, 15, 10, 0, 0, 0, 0, TimeZones.shanghai);
+        expect(dt.quarter, 2);
+      });
+    });
   });
 }
