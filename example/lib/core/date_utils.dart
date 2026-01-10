@@ -7,6 +7,8 @@
 /// - Navigation: tomorrow, yesterday, addCalendarDays, subtractCalendarDays
 /// - Boundaries: startOfDay, endOfDay, startOfMonth, endOfMonth, startOf, endOf
 /// - Properties: dayOfYear, weekOfYear, daysInMonth, isLeapYear, isWeekend, isWeekday, quarter
+/// - Time queries: isPast, isFuture, isThisWeek, isThisMonth, isThisYear
+/// - DST detection: isDst
 ///
 /// Run: dart run example/lib/core/date_utils.dart
 library;
@@ -141,4 +143,30 @@ void main() {
   print('  Apr 15 -> Q${EasyDateTime(2025, 4, 15).quarter}');
   print('  Jul 15 -> Q${EasyDateTime(2025, 7, 15).quarter}');
   print('  Oct 15 -> Q${EasyDateTime(2025, 10, 15).quarter}');
+  print('');
+
+  // --------------------------------------------------------
+  // Time Query Properties
+  // --------------------------------------------------------
+  print('Time query properties:');
+  final past = EasyDateTime(2020, 1, 1);
+  final future = EasyDateTime(2030, 1, 1);
+  print('  2020-01-01 isPast:   ${past.isPast}');
+  print('  2030-01-01 isFuture: ${future.isFuture}');
+  print('  now isThisWeek:      ${now.isThisWeek}');
+  print('  now isThisMonth:     ${now.isThisMonth}');
+  print('  now isThisYear:      ${now.isThisYear}');
+  print('');
+
+  // --------------------------------------------------------
+  // DST Detection
+  // --------------------------------------------------------
+  print('DST detection:');
+  final nySummer = EasyDateTime(2025, 7, 15, 12, 0, 0, 0, 0, TimeZones.newYork);
+  final nyWinter = EasyDateTime(2025, 1, 15, 12, 0, 0, 0, 0, TimeZones.newYork);
+  final shanghai =
+      EasyDateTime(2025, 7, 15, 12, 0, 0, 0, 0, TimeZones.shanghai);
+  print('  New York Summer (Jul): isDst=${nySummer.isDst}');
+  print('  New York Winter (Jan): isDst=${nyWinter.isDst}');
+  print('  Shanghai (no DST):     isDst=${shanghai.isDst}');
 }

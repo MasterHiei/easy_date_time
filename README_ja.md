@@ -103,7 +103,7 @@ dt.format('yyyy-MM-dd'); // -> 2025-12-07
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.8.0
+  easy_date_time: ^0.9.0
 ```
 
 **注意**: 正確な計算を行うため、アプリ起動時に**必ず**タイムゾーンデータベースの初期化を行ってください。
@@ -300,7 +300,7 @@ dt.format(DateTimeFormats.rfc2822);      // 'Mon, 01 Dec 2025 14:30:45 +0800'
 
 よく使う日付の判定・計算プロパティ：
 
-```dart
+~~~dart
 final dt = EasyDateTime(2024, 6, 15);
 
 // 年間関連
@@ -316,7 +316,21 @@ dt.daysInMonth;  // 30（当月の日数）
 final saturday = EasyDateTime(2025, 1, 4);
 saturday.isWeekend;  // true（週末かどうか）
 saturday.isWeekday;  // false（平日かどうか）
-```
+
+// 時間クエリ
+final past = EasyDateTime(2020, 1, 1);
+past.isPast;       // true（過去かどうか）
+past.isFuture;     // false（未来かどうか）
+
+final now = EasyDateTime.now();
+now.isThisWeek;    // true（今週かどうか）
+now.isThisMonth;   // true（今月かどうか）
+now.isThisYear;    // true（今年かどうか）
+
+// サマータイム検出
+final nyJuly = EasyDateTime(2025, 7, 15, location: TimeZones.newYork);
+nyJuly.isDst;      // true（サマータイム適用中）
+~~~
 
 | プロパティ | 説明 | 値の範囲 |
 |------------|------|----------|
@@ -327,6 +341,12 @@ saturday.isWeekday;  // false（平日かどうか）
 | `isLeapYear` | うるう年かどうか | true/false |
 | `isWeekend` | 週末かどうか（土曜・日曜） | true/false |
 | `isWeekday` | 平日かどうか（月曜〜金曜） | true/false |
+| `isPast` | 過去かどうか | true/false |
+| `isFuture` | 未来かどうか | true/false |
+| `isThisWeek` | 今週かどうか | true/false |
+| `isThisMonth` | 今月かどうか | true/false |
+| `isThisYear` | 今年かどうか | true/false |
+| `isDst` | サマータイム適用中かどうか | true/false |
 
 ### パターントークン
 

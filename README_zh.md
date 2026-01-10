@@ -103,7 +103,7 @@ dt.format('yyyy-MM-dd'); // -> 2025-12-07
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.8.0
+  easy_date_time: ^0.9.0
 ```
 
 **注意**：为了确保时区计算准确，**必须**在应用启动前初始化时区数据库：
@@ -296,7 +296,7 @@ dt.format(DateTimeFormats.rfc2822);      // 'Mon, 01 Dec 2025 14:30:45 +0800'
 
 常用的日期判断与计算属性：
 
-```dart
+~~~dart
 final dt = EasyDateTime(2024, 6, 15);
 
 // 年度相关
@@ -312,7 +312,21 @@ dt.daysInMonth;  // 30（当月共有多少天）
 final saturday = EasyDateTime(2025, 1, 4);
 saturday.isWeekend;  // true（是否为周末）
 saturday.isWeekday;  // false（是否为工作日）
-```
+
+// 时间查询
+final past = EasyDateTime(2020, 1, 1);
+past.isPast;       // true（是否已过去）
+past.isFuture;     // false（是否在未来）
+
+final now = EasyDateTime.now();
+now.isThisWeek;    // true（是否在本周）
+now.isThisMonth;   // true（是否在本月）
+now.isThisYear;    // true（是否在今年）
+
+// 夏令时检测
+final nyJuly = EasyDateTime(2025, 7, 15, location: TimeZones.newYork);
+nyJuly.isDst;      // true（夏令时生效）
+~~~
 
 | 属性 | 说明 | 取值范围 |
 |------|------|----------|
@@ -323,6 +337,12 @@ saturday.isWeekday;  // false（是否为工作日）
 | `isLeapYear` | 是否为闰年 | true/false |
 | `isWeekend` | 是否为周末（周六、周日） | true/false |
 | `isWeekday` | 是否为工作日（周一至周五） | true/false |
+| `isPast` | 是否已过去 | true/false |
+| `isFuture` | 是否在未来 | true/false |
+| `isThisWeek` | 是否在本周 | true/false |
+| `isThisMonth` | 是否在本月 | true/false |
+| `isThisYear` | 是否在今年 | true/false |
+| `isDst` | 夏令时是否生效 | true/false |
 
 ### 格式符号表
 

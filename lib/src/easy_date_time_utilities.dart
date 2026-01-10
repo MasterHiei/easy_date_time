@@ -294,6 +294,88 @@ extension EasyDateTimeUtilities on EasyDateTime {
   /// ```
   int get quarter => (month - 1) ~/ 3 + 1;
 
+  // ============================================================
+  // Time Query Properties
+  // ============================================================
+
+  /// Returns `true` if this datetime is before the current time.
+  ///
+  /// Compares using the same timezone as this datetime instance to ensure
+  /// consistent behavior across timezones.
+  ///
+  /// ```dart
+  /// final lastYear = EasyDateTime(2024, 1, 1);
+  /// print(lastYear.isPast);  // true
+  ///
+  /// final nextYear = EasyDateTime(2030, 1, 1);
+  /// print(nextYear.isPast);  // false
+  /// ```
+  bool get isPast => isBefore(EasyDateTime.now(location: location));
+
+  /// Returns `true` if this datetime is after the current time.
+  ///
+  /// Compares using the same timezone as this datetime instance to ensure
+  /// consistent behavior across timezones.
+  ///
+  /// ```dart
+  /// final nextYear = EasyDateTime(2030, 1, 1);
+  /// print(nextYear.isFuture);  // true
+  ///
+  /// final lastYear = EasyDateTime(2024, 1, 1);
+  /// print(lastYear.isFuture);  // false
+  /// ```
+  bool get isFuture => isAfter(EasyDateTime.now(location: location));
+
+  /// Returns `true` if this datetime falls within the current week.
+  ///
+  /// Week boundaries follow ISO 8601 (Monday = first day, Sunday = last day).
+  /// Uses the same timezone as this datetime instance.
+  ///
+  /// ```dart
+  /// final now = EasyDateTime.now();
+  /// print(now.isThisWeek);  // true
+  ///
+  /// final lastMonth = EasyDateTime.now().subtractCalendarDays(30);
+  /// print(lastMonth.isThisWeek);  // false
+  /// ```
+  bool get isThisWeek {
+    final now = EasyDateTime.now(location: location);
+    final weekStart = now.startOf(DateTimeUnit.week);
+    final weekEnd = now.endOf(DateTimeUnit.week);
+
+    return !isBefore(weekStart) && !isAfter(weekEnd);
+  }
+
+  /// Returns `true` if this datetime falls within the current month.
+  ///
+  /// Compares year and month values. Uses the same timezone as this datetime.
+  ///
+  /// ```dart
+  /// final now = EasyDateTime.now();
+  /// print(now.isThisMonth);  // true
+  ///
+  /// final lastYear = EasyDateTime(2024, 1, 1);
+  /// print(lastYear.isThisMonth);  // false
+  /// ```
+  bool get isThisMonth {
+    final now = EasyDateTime.now(location: location);
+
+    return year == now.year && month == now.month;
+  }
+
+  /// Returns `true` if this datetime falls within the current year.
+  ///
+  /// Compares only the year value. Uses the same timezone as this datetime.
+  ///
+  /// ```dart
+  /// final now = EasyDateTime.now();
+  /// print(now.isThisYear);  // true
+  ///
+  /// final lastYear = EasyDateTime(2024, 1, 1);
+  /// print(lastYear.isThisYear);  // false
+  /// ```
+  bool get isThisYear => year == EasyDateTime.now(location: location).year;
+
   /// Checks if this date has the same year, month, and day as [other].
   bool _isSameDay(EasyDateTime other) =>
       year == other.year && month == other.month && day == other.day;
