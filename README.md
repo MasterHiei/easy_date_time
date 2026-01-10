@@ -259,7 +259,7 @@ dt.endOf(DateTimeUnit.month);   // 2025-06-30 23:59:59.999999
 
 Convenient properties for common date calculations:
 
-```dart
+~~~dart
 final dt = EasyDateTime(2024, 6, 15);
 
 // Year-based calculations
@@ -275,7 +275,21 @@ dt.daysInMonth;  // 30 (June has 30 days)
 final saturday = EasyDateTime(2025, 1, 4);
 saturday.isWeekend;  // true
 saturday.isWeekday;  // false
-```
+
+// Time-based queries
+final past = EasyDateTime(2020, 1, 1);
+past.isPast;       // true
+past.isFuture;     // false
+
+final now = EasyDateTime.now();
+now.isThisWeek;    // true
+now.isThisMonth;   // true
+now.isThisYear;    // true
+
+// DST detection
+final nyJuly = EasyDateTime(2025, 7, 15, location: TimeZones.newYork);
+nyJuly.isDst;      // true (EDT active)
+~~~
 
 | Property | Description | Example |
 |----------|-------------|---------|
@@ -286,6 +300,12 @@ saturday.isWeekday;  // false
 | `isLeapYear` | Whether year is a leap year | true/false |
 | `isWeekend` | Saturday or Sunday | true/false |
 | `isWeekday` | Monday through Friday | true/false |
+| `isPast` | Before current time | true/false |
+| `isFuture` | After current time | true/false |
+| `isThisWeek` | Within current week | true/false |
+| `isThisMonth` | Within current month | true/false |
+| `isThisYear` | Within current year | true/false |
+| `isDst` | Daylight saving time active | true/false |
 
 ---
 
