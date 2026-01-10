@@ -614,6 +614,27 @@ class EasyDateTime implements DateTime {
   @override
   int get microsecondsSinceEpoch => _tzDateTime.microsecondsSinceEpoch;
 
+  /// Returns `true` if daylight saving time is in effect at this datetime.
+  ///
+  /// This property checks the DST flag of the timezone at this specific moment.
+  /// Returns `false` for locations that do not observe DST (e.g., UTC, most
+  /// of Asia, Africa).
+  ///
+  /// ```dart
+  /// // New York, Summer (EDT = UTC-4, DST active)
+  /// final summer = EasyDateTime(2025, 7, 15, 12, 0, location: TimeZones.newYork);
+  /// print(summer.isDst);  // true
+  ///
+  /// // New York, Winter (EST = UTC-5, no DST)
+  /// final winter = EasyDateTime(2025, 1, 15, 12, 0, location: TimeZones.newYork);
+  /// print(winter.isDst);  // false
+  ///
+  /// // Shanghai (no DST)
+  /// final shanghai = EasyDateTime.now(location: TimeZones.shanghai);
+  /// print(shanghai.isDst);  // false
+  /// ```
+  bool get isDst => _tzDateTime.timeZone.isDst;
+
   // ============================================================
   // Timezone Conversion
   // ============================================================

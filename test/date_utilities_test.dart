@@ -826,5 +826,244 @@ void main() {
         expect(dt.quarter, 2);
       });
     });
+
+    group('isDst', () {
+      test('returns true during summer in DST-observing timezone', () {
+        // New York observes DST: EDT from March to November
+        final summer =
+            EasyDateTime(2025, 7, 15, 12, 0, 0, 0, 0, TimeZones.newYork);
+        expect(summer.isDst, isTrue);
+      });
+
+      test('returns false during winter in DST-observing timezone', () {
+        // New York: EST in winter (no DST)
+        final winter =
+            EasyDateTime(2025, 1, 15, 12, 0, 0, 0, 0, TimeZones.newYork);
+        expect(winter.isDst, isFalse);
+      });
+
+      test('returns false for UTC', () {
+        final utc = EasyDateTime.utc(2025, 7, 15, 12, 0);
+        expect(utc.isDst, isFalse);
+      });
+
+      test('returns false for timezones that do not observe DST', () {
+        // China (Asia/Shanghai) does not observe DST
+        final shanghai =
+            EasyDateTime(2025, 7, 15, 12, 0, 0, 0, 0, TimeZones.shanghai);
+        expect(shanghai.isDst, isFalse);
+
+        // Japan (Asia/Tokyo) does not observe DST
+        final tokyo =
+            EasyDateTime(2025, 7, 15, 12, 0, 0, 0, 0, TimeZones.tokyo);
+        expect(tokyo.isDst, isFalse);
+      });
+
+      test('handles DST transition boundaries correctly', () {
+        // 2025 US DST starts: March 9, 2:00 AM -> 3:00 AM
+        // Just before transition (1:59 AM EST)
+        final beforeDst =
+            EasyDateTime(2025, 3, 9, 1, 59, 0, 0, 0, TimeZones.newYork);
+        expect(beforeDst.isDst, isFalse);
+
+        // After transition (3:00 AM EDT)
+        final afterDst =
+            EasyDateTime(2025, 3, 9, 3, 0, 0, 0, 0, TimeZones.newYork);
+        expect(afterDst.isDst, isTrue);
+
+        // 2025 US DST ends: November 2, 2:00 AM -> 1:00 AM
+        // Just before fall back (still EDT)
+        final beforeFallBack =
+            EasyDateTime(2025, 11, 2, 0, 30, 0, 0, 0, TimeZones.newYork);
+        expect(beforeFallBack.isDst, isTrue);
+
+        // After fall back (EST)
+        final afterFallBack =
+            EasyDateTime(2025, 11, 2, 3, 0, 0, 0, 0, TimeZones.newYork);
+        expect(afterFallBack.isDst, isFalse);
+      });
+    });
+
+    group('isPast', () {
+      test('returns true for dates in the past', () {
+        final pastDate = EasyDateTime(2020, 1, 1);
+        expect(pastDate.isPast, isTrue);
+      });
+
+      test('returns false for dates in the future', () {
+        final futureDate = EasyDateTime(2100, 1, 1);
+        expect(futureDate.isPast, isFalse);
+      });
+
+      test('returns true for historical dates', () {
+        final historical = EasyDateTime(2020, 6, 15);
+        expect(historical.isPast, isTrue);
+      });
+
+      test('maintains timezone context when comparing', () {
+        // A past date in Tokyo should still be past
+        final pastTokyo =
+            EasyDateTime(2020, 1, 1, 12, 0, 0, 0, 0, TimeZones.tokyo);
+        expect(pastTokyo.isPast, isTrue);
+      });
+    });
+
+    group('isFuture', () {
+      test('returns true for dates in the future', () {
+        final futureDate = EasyDateTime(2100, 1, 1);
+        expect(futureDate.isFuture, isTrue);
+      });
+
+      test('returns false for dates in the past', () {
+        final pastDate = EasyDateTime(2020, 1, 1);
+        expect(pastDate.isFuture, isFalse);
+      });
+
+      test('maintains timezone context when comparing', () {
+        // A future date in Shanghai should still be future
+        final futureShanghai =
+            EasyDateTime(2100, 1, 1, 12, 0, 0, 0, 0, TimeZones.shanghai);
+        expect(futureShanghai.isFuture, isTrue);
+      });
+
+      test('isPast and isFuture are mutually exclusive for non-current times',
+          () {
+        final past = EasyDateTime(2020, 1, 1);
+        final future = EasyDateTime(2100, 1, 1);
+
+        expect(past.isPast, isTrue);
+        expect(past.isFuture, isFalse);
+        expect(future.isPast, isFalse);
+        expect(future.isFuture, isTrue);
+      });
+    });
+
+    group('isThisWeek', () {
+      test('returns true for dates within current week', () {
+        final now = EasyDateTime.now();
+        expect(now.isThisWeek, isTrue);
+      });
+
+      test('returns false for dates in previous weeks', () {
+        // 30 days ago is definitely not this week
+        final pastWeek = EasyDateTime.now().subtractCalendarDays(30);
+        expect(pastWeek.isThisWeek, isFalse);
+      });
+
+      test('returns false for dates in future weeks', () {
+        // 30 days from now is definitely not this week
+        final futureWeek = EasyDateTime.now().addCalendarDays(30);
+        expect(futureWeek.isThisWeek, isFalse);
+      });
+
+      test('includes both Monday and Sunday of the week', () {
+        // Fixed reference: 2025-06-18 is Wednesday
+        // Week runs from Monday 2025-06-16 to Sunday 2025-06-22
+        final wednesday = EasyDateTime(2025, 6, 18, 12, 0);
+        final monday = EasyDateTime(2025, 6, 16, 0, 0);
+        final sunday = EasyDateTime(2025, 6, 22, 23, 59);
+        final previousSunday = EasyDateTime(2025, 6, 15, 23, 59);
+        final nextMonday = EasyDateTime(2025, 6, 23, 0, 0);
+
+        // Same week dates (relative to wednesday's week)
+        final weekStart = wednesday.startOf(DateTimeUnit.week);
+        final weekEnd = wednesday.endOf(DateTimeUnit.week);
+
+        // Monday and Sunday are within the week boundaries
+        expect(!monday.isBefore(weekStart) && !monday.isAfter(weekEnd), isTrue);
+        expect(!sunday.isBefore(weekStart) && !sunday.isAfter(weekEnd), isTrue);
+
+        // Previous Sunday and next Monday are outside
+        expect(previousSunday.isBefore(weekStart), isTrue);
+        expect(nextMonday.isAfter(weekEnd), isTrue);
+      });
+
+      test('maintains timezone context', () {
+        final now = EasyDateTime.now(location: TimeZones.tokyo);
+        expect(now.isThisWeek, isTrue);
+      });
+    });
+
+    group('isThisMonth', () {
+      test('returns true for dates within current month', () {
+        final now = EasyDateTime.now();
+        expect(now.isThisMonth, isTrue);
+      });
+
+      test('returns true for first day of current month', () {
+        final now = EasyDateTime.now();
+        final firstOfMonth = EasyDateTime(now.year, now.month, 1);
+        expect(firstOfMonth.isThisMonth, isTrue);
+      });
+
+      test('returns true for last day of current month', () {
+        final now = EasyDateTime.now();
+        final lastOfMonth = now.endOfMonth.dateOnly;
+        expect(lastOfMonth.isThisMonth, isTrue);
+      });
+
+      test('returns false for previous month', () {
+        final now = EasyDateTime.now();
+        final previousMonth = now.month == 1
+            ? EasyDateTime(now.year - 1, 12, 15)
+            : EasyDateTime(now.year, now.month - 1, 15);
+        expect(previousMonth.isThisMonth, isFalse);
+      });
+
+      test('returns false for next month', () {
+        final now = EasyDateTime.now();
+        final nextMonth = now.month == 12
+            ? EasyDateTime(now.year + 1, 1, 15)
+            : EasyDateTime(now.year, now.month + 1, 15);
+        expect(nextMonth.isThisMonth, isFalse);
+      });
+
+      test('returns false for same month in different year', () {
+        final now = EasyDateTime.now();
+        final sameMonthLastYear = EasyDateTime(now.year - 1, now.month, 15);
+        expect(sameMonthLastYear.isThisMonth, isFalse);
+      });
+
+      test('maintains timezone context', () {
+        final now = EasyDateTime.now(location: TimeZones.newYork);
+        expect(now.isThisMonth, isTrue);
+      });
+    });
+
+    group('isThisYear', () {
+      test('returns true for dates within current year', () {
+        final now = EasyDateTime.now();
+        expect(now.isThisYear, isTrue);
+      });
+
+      test('returns true for first day of current year', () {
+        final now = EasyDateTime.now();
+        final firstOfYear = EasyDateTime(now.year, 1, 1);
+        expect(firstOfYear.isThisYear, isTrue);
+      });
+
+      test('returns true for last day of current year', () {
+        final now = EasyDateTime.now();
+        final lastOfYear = EasyDateTime(now.year, 12, 31);
+        expect(lastOfYear.isThisYear, isTrue);
+      });
+
+      test('returns false for previous year', () {
+        final now = EasyDateTime.now();
+        final previousYear = EasyDateTime(now.year - 1, 6, 15);
+        expect(previousYear.isThisYear, isFalse);
+      });
+
+      test('returns false for next year', () {
+        final now = EasyDateTime.now();
+        final nextYear = EasyDateTime(now.year + 1, 6, 15);
+        expect(nextYear.isThisYear, isFalse);
+      });
+
+      test('maintains timezone context', () {
+        final now = EasyDateTime.now(location: TimeZones.shanghai);
+        expect(now.isThisYear, isTrue);
+      });
+    });
   });
 }
