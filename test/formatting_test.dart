@@ -98,8 +98,17 @@ void main() {
 
       test('Timezone tokens (x series, X)', () {
         // Using +09:00 (Tokyo) for predictable testing
-        final tokyo =
-            EasyDateTime(2025, 1, 1, 0, 0, 0, 0, 0, getLocation('Asia/Tokyo'));
+        final tokyo = EasyDateTime(
+          2025,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          getLocation('Asia/Tokyo'),
+        );
 
         expect(tokyo.format('xxxxx'), '+09:00');
         expect(tokyo.format('xxxx'), '+0900');
@@ -111,7 +120,16 @@ void main() {
         expect(utc.format('xxxxx'), '+00:00');
 
         final mumbai = EasyDateTime(
-            2025, 1, 1, 0, 0, 0, 0, 0, getLocation('Asia/Kolkata'));
+          2025,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          getLocation('Asia/Kolkata'),
+        );
         expect(mumbai.format('xx'), '+0530'); // Special case for minutes
       });
     });
@@ -127,8 +145,10 @@ void main() {
         expect(dt.format('yyyy-MM-dd'), '2025-12-01');
         expect(dt.format('HH:mm:ss'), '14:30:45');
         expect(dt.format('yyyy-MM-dd HH:mm:ss'), '2025-12-01 14:30:45');
-        expect(dt.format('yyyy-MM-dd\'T\'HH:mm:ss.SSS'),
-            '2025-12-01T14:30:45.123');
+        expect(
+          dt.format('yyyy-MM-dd\'T\'HH:mm:ss.SSS'),
+          '2025-12-01T14:30:45.123',
+        );
       });
 
       test('Regional formats', () {
@@ -143,8 +163,10 @@ void main() {
         expect(dt.format("yyyy-MM-dd 'at' HH:mm"), '2025-12-01 at 14:30');
         expect(dt.format("'T'"), 'T'); // Single character escape
         expect(dt.format("''"), ''); // Empty quotes
-        expect(dt.format("'Unclosed quotes"),
-            'Unclosed quotes'); // WYSIWYG behavior
+        expect(
+          dt.format("'Unclosed quotes"),
+          'Unclosed quotes',
+        ); // WYSIWYG behavior
       });
 
       test('Literal pass-through', () {
@@ -175,14 +197,18 @@ void main() {
       test('Named constructors', () {
         expect(EasyDateTimeFormatter.isoDate().format(dt), '2025-12-15');
         expect(EasyDateTimeFormatter.isoTime().format(dt), '14:30:45');
-        expect(EasyDateTimeFormatter.isoDateTime().format(dt),
-            '2025-12-15T14:30:45');
+        expect(
+          EasyDateTimeFormatter.isoDateTime().format(dt),
+          '2025-12-15T14:30:45',
+        );
         expect(EasyDateTimeFormatter.time12Hour().format(dt), '02:30 PM');
         expect(EasyDateTimeFormatter.time24Hour().format(dt), '14:30');
 
         final rfcDt = EasyDateTime.utc(2025, 12, 15, 14, 30, 45);
-        expect(EasyDateTimeFormatter.rfc2822().format(rfcDt),
-            'Mon, 15 Dec 2025 14:30:45 +0000');
+        expect(
+          EasyDateTimeFormatter.rfc2822().format(rfcDt),
+          'Mon, 15 Dec 2025 14:30:45 +0000',
+        );
       });
 
       test('Instance caching', () {
@@ -235,13 +261,53 @@ void main() {
 
       test('Timezone specific formatting equality', () {
         final shanghai = EasyDateTime(
-            2025, 12, 1, 10, 0, 0, 0, 0, getLocation('Asia/Shanghai'));
+          2025,
+          12,
+          1,
+          10,
+          0,
+          0,
+          0,
+          0,
+          getLocation('Asia/Shanghai'),
+        );
         final newYork = EasyDateTime(
-            2025, 12, 1, 10, 0, 0, 0, 0, getLocation('America/New_York'));
+          2025,
+          12,
+          1,
+          10,
+          0,
+          0,
+          0,
+          0,
+          getLocation('America/New_York'),
+        );
 
         // format() outputs the LOCAL components, so they should look identical
         // even though they represent different absolute moments
         expect(shanghai.format('HH:mm'), newYork.format('HH:mm'));
+      });
+    });
+
+    group('toDateString / toTimeString', () {
+      test('toDateString formats correctly', () {
+        final dt = EasyDateTime(2025, 12, 1, 14, 30, 45);
+        expect(dt.toDateString(), '2025-12-01');
+      });
+
+      test('toDateString pads single digits', () {
+        final dt = EasyDateTime(2025, 1, 5);
+        expect(dt.toDateString(), '2025-01-05');
+      });
+
+      test('toTimeString formats correctly', () {
+        final dt = EasyDateTime(2025, 12, 1, 14, 30, 45);
+        expect(dt.toTimeString(), '14:30:45');
+      });
+
+      test('toTimeString pads single digits', () {
+        final dt = EasyDateTime(2025, 12, 1, 9, 5, 3);
+        expect(dt.toTimeString(), '09:05:03');
       });
     });
   });

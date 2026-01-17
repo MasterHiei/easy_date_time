@@ -12,10 +12,10 @@ A drop-in DateTime replacement with IANA timezone support. Preserves original ti
 
 ~~~dart
 // DateTime converts to UTC, changing the hour
-DateTime.parse('2025-12-07T10:30:00+08:00').hour   // 2
+DateTime.parse('2026-01-18T10:30:00+08:00').hour   // 2
 
 // EasyDateTime keeps the original hour
-EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour  // 10
+EasyDateTime.parse('2026-01-18T10:30:00+08:00').hour  // 10
 ~~~
 
 ## Install
@@ -26,7 +26,7 @@ Add to your `pubspec.yaml`:
 
 ~~~yaml
 dependencies:
-  easy_date_time: ^0.9.1
+  easy_date_time: ^0.10.0
 ~~~
 
 ### Initialization
@@ -46,7 +46,7 @@ Create and parse datetime with timezone:
 
 ~~~dart
 final now = EasyDateTime.now(location: TimeZones.tokyo);
-final parsed = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
+final parsed = EasyDateTime.parse('2026-01-18T10:30:00+08:00');
 
 print(parsed.hour);         // 10
 print(parsed.locationName); // Asia/Shanghai
@@ -62,7 +62,7 @@ final later = now + 2.hours + 30.minutes;
 Format with pattern strings:
 
 ~~~dart
-// 2025-12-07 10:30
+// 2026-01-18 10:30
 print(dt.format('yyyy-MM-dd HH:mm'));
 ~~~
 
@@ -164,7 +164,7 @@ Timezone:
 Use `format()` with pattern strings:
 
 ~~~dart
-dt.format('yyyy-MM-dd');    // 2025-12-07
+dt.format('yyyy-MM-dd');    // 2026-01-18
 dt.format('HH:mm:ss');      // 14:30:45
 dt.format('hh:mm a');       // 02:30 PM
 ~~~
@@ -172,9 +172,9 @@ dt.format('hh:mm a');       // 02:30 PM
 Predefined format constants:
 
 ~~~dart
-dt.format(DateTimeFormats.isoDate);      // 2025-12-07
-dt.format(DateTimeFormats.isoDateTime);  // 2025-12-07T14:30:45
-dt.format(DateTimeFormats.rfc2822);      // Mon, 07 Dec 2025 14:30:45 +0800
+dt.format(DateTimeFormats.isoDate);      // 2026-01-18
+dt.format(DateTimeFormats.isoDateTime);  // 2026-01-18T14:30:45
+dt.format(DateTimeFormats.rfc2822);      // Sun, 18 Jan 2026 14:30:45 +0800
 ~~~
 
 For performance in loops, pre-compile the pattern:
@@ -248,7 +248,7 @@ class Event with _$Event {
 
 ~~~dart
 final utc = EasyDateTime.utc(2025, 1, 1, 0, 0);
-final local = EasyDateTime.parse('2025-01-01T08:00:00+08:00');
+final local = EasyDateTime.parse('2026-01-18T08:00:00+08:00');
 
 utc == local;                  // false — different timezone type
 utc.isAtSameMomentAs(local);   // true — same instant

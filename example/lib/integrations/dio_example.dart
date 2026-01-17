@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, public_member_api_docs
 
 /// Dio HTTP Client Example
 ///
@@ -12,6 +12,7 @@
 library;
 
 import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:easy_date_time/easy_date_time.dart';
 
@@ -44,11 +45,11 @@ class ApiEvent {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'start_time': startTime.toIso8601String(),
-        'end_time': endTime?.toIso8601String(),
-      };
+    'id': id,
+    'title': title,
+    'start_time': startTime.toIso8601String(),
+    'end_time': endTime?.toIso8601String(),
+  };
 }
 
 // ============================================================

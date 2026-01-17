@@ -18,13 +18,8 @@ extension EasyDateTimeUtilities on EasyDateTime {
   /// final now = EasyDateTime.now();  // 2025-12-01 14:30:00
   /// final date = now.dateOnly;       // 2025-12-01 00:00:00
   /// ```
-  EasyDateTime get dateOnly => copyWith(
-        hour: 0,
-        minute: 0,
-        second: 0,
-        millisecond: 0,
-        microsecond: 0,
-      );
+  EasyDateTime get dateOnly =>
+      copyWith(hour: 0, minute: 0, second: 0, millisecond: 0, microsecond: 0);
 
   /// Alias for [dateOnly]. Returns start of the day (00:00:00.000).
   ///
@@ -39,12 +34,12 @@ extension EasyDateTimeUtilities on EasyDateTime {
   /// final dayEnd = EasyDateTime.now().endOfDay;
   /// ```
   EasyDateTime get endOfDay => copyWith(
-        hour: 23,
-        minute: 59,
-        second: 59,
-        millisecond: 999,
-        microsecond: 999,
-      );
+    hour: 23,
+    minute: 59,
+    second: 59,
+    millisecond: 999,
+    microsecond: 999,
+  );
 
   // ============================================================
   // Month Operations
@@ -57,13 +52,13 @@ extension EasyDateTimeUtilities on EasyDateTime {
   /// final monthStart = dt.startOfMonth;  // 2025-12-01 00:00:00
   /// ```
   EasyDateTime get startOfMonth => copyWith(
-        day: 1,
-        hour: 0,
-        minute: 0,
-        second: 0,
-        millisecond: 0,
-        microsecond: 0,
-      );
+    day: 1,
+    hour: 0,
+    minute: 0,
+    second: 0,
+    millisecond: 0,
+    microsecond: 0,
+  );
 
   /// Returns the last day of the current month at 23:59:59.999999.
   ///
@@ -77,8 +72,17 @@ extension EasyDateTimeUtilities on EasyDateTime {
     // Get the first day of next month, then subtract 1 microsecond
     final nextMonth = month == 12 ? 1 : month + 1;
     final nextYear = month == 12 ? year + 1 : year;
-    final firstOfNextMonth =
-        EasyDateTime(nextYear, nextMonth, 1, 0, 0, 0, 0, 0, location);
+    final firstOfNextMonth = EasyDateTime(
+      nextYear,
+      nextMonth,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      location,
+    );
 
     return firstOfNextMonth.subtract(const Duration(microseconds: 1));
   }
@@ -223,8 +227,17 @@ extension EasyDateTimeUtilities on EasyDateTime {
 
     if (weekNumber > 52) {
       // Check if this belongs to week 1 of next year
-      final nextYearJan4 =
-          EasyDateTime(year + 1, 1, 4, 0, 0, 0, 0, 0, location);
+      final nextYearJan4 = EasyDateTime(
+        year + 1,
+        1,
+        4,
+        0,
+        0,
+        0,
+        0,
+        0,
+        location,
+      );
       final nextYearWeek1Monday = nextYearJan4.dateOnly.subtract(
         Duration(days: nextYearJan4.weekday - 1),
       );

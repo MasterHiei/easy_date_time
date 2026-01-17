@@ -1,6 +1,6 @@
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
-import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart';
 
 // Will be set in setUpAll after timezone initialization
@@ -21,19 +21,21 @@ void main() {
 
   group('EasyDateTime Core', () {
     group('Constructors', () {
-      test('EasyDateTime(y, m, d...) uses default location (local if unset)',
-          () {
-        final dt = EasyDateTime(2025, 12, 1, 10, 30, 45);
+      test(
+        'EasyDateTime(y, m, d...) uses default location (local if unset)',
+        () {
+          final dt = EasyDateTime(2025, 12, 1, 10, 30, 45);
 
-        expect(dt.year, 2025);
-        expect(dt.month, 12);
-        expect(dt.day, 1);
-        expect(dt.hour, 10);
-        expect(dt.minute, 30);
-        expect(dt.second, 45);
-        // Default is local timezone
-        expect(dt.location, localTimeZone);
-      });
+          expect(dt.year, 2025);
+          expect(dt.month, 12);
+          expect(dt.day, 1);
+          expect(dt.hour, 10);
+          expect(dt.minute, 30);
+          expect(dt.second, 45);
+          // Default is local timezone
+          expect(dt.location, localTimeZone);
+        },
+      );
 
       test('EasyDateTime(..., location: loc) uses specified timezone', () {
         final tokyo = getLocation('Asia/Tokyo');
@@ -43,8 +45,8 @@ void main() {
       });
 
       test('now() captures current time in default location', () {
-        // Note: We don't test the day here because EasyDateTime.now() depends on
-        // the timezone library's initialization, which can be affected by global state
+        // EasyDateTime.now() depends on the timezone library's initialization,
+        // which can be affected by global state.
         final dt = EasyDateTime.now();
 
         // Verify that year, month, and date components exist and are reasonable
@@ -55,13 +57,15 @@ void main() {
         expect(dt.day, lessThanOrEqualTo(31));
       });
 
-      test('now(location: loc) captures current time in specified timezone',
-          () {
-        final tokyo = getLocation('Asia/Tokyo');
-        final dt = EasyDateTime.now(location: tokyo);
+      test(
+        'now(location: loc) captures current time in specified timezone',
+        () {
+          final tokyo = getLocation('Asia/Tokyo');
+          final dt = EasyDateTime.now(location: tokyo);
 
-        expect(dt.locationName, 'Asia/Tokyo');
-      });
+          expect(dt.locationName, 'Asia/Tokyo');
+        },
+      );
 
       test('utc() creates UTC instance', () {
         final dt = EasyDateTime.utc(2025, 6, 15, 12, 0);
@@ -112,49 +116,64 @@ void main() {
         expect(dt.day, 1);
       });
 
-      test('fromMillisecondsSinceEpoch(..., isUtc: true) returns UTC instance',
-          () {
-        final timestamp =
-            DateTime.utc(2025, 6, 15, 12, 0).millisecondsSinceEpoch;
-        final dt = EasyDateTime.fromMillisecondsSinceEpoch(
-          timestamp,
-          isUtc: true,
-        );
+      test(
+        'fromMillisecondsSinceEpoch(..., isUtc: true) returns UTC instance',
+        () {
+          final timestamp = DateTime.utc(
+            2025,
+            6,
+            15,
+            12,
+            0,
+          ).millisecondsSinceEpoch;
+          final dt = EasyDateTime.fromMillisecondsSinceEpoch(
+            timestamp,
+            isUtc: true,
+          );
 
-        expect(dt.locationName, 'UTC');
-        expect(dt.year, 2025);
-        expect(dt.month, 6);
-        expect(dt.day, 15);
-        expect(dt.hour, 12);
-      });
+          expect(dt.locationName, 'UTC');
+          expect(dt.year, 2025);
+          expect(dt.month, 6);
+          expect(dt.day, 15);
+          expect(dt.hour, 12);
+        },
+      );
 
       test(
-          'fromMillisecondsSinceEpoch() converts timestamp to specified location',
-          () {
-        final timestamp =
-            DateTime.utc(2025, 6, 15, 12, 0).millisecondsSinceEpoch;
-        final tokyo = getLocation('Asia/Tokyo');
-        final dt = EasyDateTime.fromMillisecondsSinceEpoch(
-          timestamp,
-          location: tokyo,
-        );
+        'fromMillisecondsSinceEpoch() converts timestamp to specified location',
+        () {
+          final timestamp = DateTime.utc(
+            2025,
+            6,
+            15,
+            12,
+            0,
+          ).millisecondsSinceEpoch;
+          final tokyo = getLocation('Asia/Tokyo');
+          final dt = EasyDateTime.fromMillisecondsSinceEpoch(
+            timestamp,
+            location: tokyo,
+          );
 
-        expect(dt.locationName, 'Asia/Tokyo');
-        // UTC 12:00 = Tokyo 21:00 (UTC+9)
-        expect(dt.hour, 21);
-      });
+          expect(dt.locationName, 'Asia/Tokyo');
+          // UTC 12:00 = Tokyo 21:00 (UTC+9)
+          expect(dt.hour, 21);
+        },
+      );
 
-      test('fromMillisecondsSinceEpoch() throws if isUtc and location both set',
-          () {
-        expect(
-          () => EasyDateTime.fromMillisecondsSinceEpoch(
-            1000,
-            isUtc: true,
-            location: TimeZones.tokyo,
-          ),
-          throwsArgumentError,
-        );
-      });
+      test(
+        'fromMillisecondsSinceEpoch() throws if isUtc and location both set',
+        () {
+          expect(
+            () => EasyDateTime.fromMillisecondsSinceEpoch(
+              1000,
+              isUtc: true,
+              location: TimeZones.tokyo,
+            ),
+            throwsArgumentError,
+          );
+        },
+      );
 
       test('fromSecondsSinceEpoch() creates from seconds timestamp', () {
         // 2025-01-01 00:00:00 UTC = 1735689600 seconds
@@ -170,19 +189,26 @@ void main() {
         expect(dt.second, 0);
       });
 
-      test('fromMicrosecondsSinceEpoch creates from microseconds timestamp',
-          () {
-        final timestamp = DateTime.utc(2025, 1, 1).microsecondsSinceEpoch;
-        final dt = EasyDateTime.fromMicrosecondsSinceEpoch(timestamp);
+      test(
+        'fromMicrosecondsSinceEpoch creates from microseconds timestamp',
+        () {
+          final timestamp = DateTime.utc(2025, 1, 1).microsecondsSinceEpoch;
+          final dt = EasyDateTime.fromMicrosecondsSinceEpoch(timestamp);
 
-        expect(dt.year, 2025);
-        expect(dt.month, 1);
-        expect(dt.day, 1);
-      });
+          expect(dt.year, 2025);
+          expect(dt.month, 1);
+          expect(dt.day, 1);
+        },
+      );
 
       test('fromMicrosecondsSinceEpoch with explicit location', () {
-        final timestamp =
-            DateTime.utc(2025, 6, 15, 12, 0).microsecondsSinceEpoch;
+        final timestamp = DateTime.utc(
+          2025,
+          6,
+          15,
+          12,
+          0,
+        ).microsecondsSinceEpoch;
         final tokyo = getLocation('Asia/Tokyo');
         final dt = EasyDateTime.fromMicrosecondsSinceEpoch(
           timestamp,
@@ -194,8 +220,13 @@ void main() {
       });
 
       test('fromMicrosecondsSinceEpoch() with isUtc=true returns UTC', () {
-        final timestamp =
-            DateTime.utc(2025, 6, 15, 12, 0).microsecondsSinceEpoch;
+        final timestamp = DateTime.utc(
+          2025,
+          6,
+          15,
+          12,
+          0,
+        ).microsecondsSinceEpoch;
         final dt = EasyDateTime.fromMicrosecondsSinceEpoch(
           timestamp,
           isUtc: true,
@@ -209,17 +240,18 @@ void main() {
       });
 
       test(
-          'fromMicrosecondsSinceEpoch() throws when isUtc and location both set',
-          () {
-        expect(
-          () => EasyDateTime.fromMicrosecondsSinceEpoch(
-            1000,
-            isUtc: true,
-            location: TimeZones.tokyo,
-          ),
-          throwsArgumentError,
-        );
-      });
+        'fromMicrosecondsSinceEpoch() throws when isUtc and location both set',
+        () {
+          expect(
+            () => EasyDateTime.fromMicrosecondsSinceEpoch(
+              1000,
+              isUtc: true,
+              location: TimeZones.tokyo,
+            ),
+            throwsArgumentError,
+          );
+        },
+      );
 
       test('fromSecondsSinceEpoch() with isUtc=true returns UTC', () {
         // 2025-06-15 12:00:00 UTC
@@ -234,17 +266,19 @@ void main() {
         expect(dt.hour, 12);
       });
 
-      test('fromSecondsSinceEpoch() throws when isUtc and location both set',
-          () {
-        expect(
-          () => EasyDateTime.fromSecondsSinceEpoch(
-            1000,
-            isUtc: true,
-            location: TimeZones.tokyo,
-          ),
-          throwsArgumentError,
-        );
-      });
+      test(
+        'fromSecondsSinceEpoch() throws when isUtc and location both set',
+        () {
+          expect(
+            () => EasyDateTime.fromSecondsSinceEpoch(
+              1000,
+              isUtc: true,
+              location: TimeZones.tokyo,
+            ),
+            throwsArgumentError,
+          );
+        },
+      );
     });
 
     group('Global Default Timezone', () {
@@ -305,13 +339,14 @@ void main() {
       });
 
       test(
-          'timeZoneName returns non-empty string identifier (e.g., EST, GMT-5)',
-          () {
-        final dt = EasyDateTime.now(location: TimeZones.newYork);
-        // EST or EDT depending on time, but just checking it returns a string
-        expect(dt.timeZoneName, isNotEmpty);
-        expect(dt.timeZoneName, anyOf('EST', 'EDT', 'GMT-5', 'GMT-4'));
-      });
+        'timeZoneName returns non-empty string identifier (e.g., EST, GMT-5)',
+        () {
+          final dt = EasyDateTime.now(location: TimeZones.newYork);
+          // EST or EDT depending on time, but just checking it returns a string
+          expect(dt.timeZoneName, isNotEmpty);
+          expect(dt.timeZoneName, anyOf('EST', 'EDT', 'GMT-5', 'GMT-4'));
+        },
+      );
 
       test('hashCode returns same value for equal objects', () {
         final dt1 = EasyDateTime.utc(2025, 12, 1, 10, 30);
@@ -445,6 +480,79 @@ void main() {
           expect(feb.millisecond, 123);
           expect(feb.microsecond, 456);
         });
+      });
+
+      test('toString() returns string representation', () {
+        final dt = EasyDateTime.utc(2025, 12, 1, 10, 30);
+        expect(dt.toString(), contains('2025'));
+      });
+    });
+
+    group('Default value behavior', () {
+      test('now() uses local timezone when no location specified', () {
+        final now = EasyDateTime.now();
+        expect(now, isNotNull);
+        expect(now.location, isNotNull);
+      });
+
+      test(
+        'fromDateTime() uses default timezone when location not provided',
+        () {
+          final dt = EasyDateTime.fromDateTime(DateTime.now());
+          expect(dt, isNotNull);
+          expect(dt.location, isNotNull);
+        },
+      );
+
+      test('inLocation() always returns a valid EasyDateTime', () {
+        final tokyo = EasyDateTime.now(location: getLocation('Asia/Tokyo'));
+        final london = tokyo.inLocation(getLocation('Europe/London'));
+        expect(london, isNotNull);
+        expect(london.location.name, equals('Europe/London'));
+      });
+
+      test(
+        'isAtSameMomentAs() correctly compares times across different timezones',
+        () {
+          final tokyo = EasyDateTime(
+            2025,
+            6,
+            15,
+            20,
+            0,
+            0,
+            0,
+            0,
+            getLocation('Asia/Tokyo'),
+          );
+          final london = tokyo.inLocation(getLocation('Europe/London'));
+
+          expect(tokyo.isAtSameMomentAs(london), isTrue);
+        },
+      );
+    });
+
+    group('Immutability', () {
+      test('modifying returned date does not affect original', () {
+        final original = EasyDateTime(2025, 1, 1, 10, 30);
+        final modified = original + Duration(days: 1);
+
+        expect(original.day, equals(1));
+        expect(modified.day, equals(2));
+      });
+
+      test('arithmetic operations return new instances', () {
+        final dt1 = EasyDateTime(2025, 1, 1);
+        final dt2 = dt1 + Duration(days: 1);
+
+        expect(identical(dt1, dt2), isFalse);
+      });
+
+      test('timezone conversion returns new instance', () {
+        final tokyo = EasyDateTime.now(location: getLocation('Asia/Tokyo'));
+        final london = tokyo.inLocation(getLocation('Europe/London'));
+
+        expect(identical(tokyo, london), isFalse);
       });
     });
   });

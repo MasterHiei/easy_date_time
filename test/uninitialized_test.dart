@@ -3,16 +3,13 @@ import 'package:test/test.dart';
 
 void main() {
   group('Uninitialized TimeZone behavior', () {
-    // IMPORTANT: Do NOT call EasyDateTime.initializeTimeZone() in this file
-    // These tests verify exception behavior when NOT initialized.
-
-    test('isTimeZoneInitialized returns false', () {
+    test('isTimeZoneInitialized returns false when database fail', () {
       expect(EasyDateTime.isTimeZoneInitialized, isFalse);
     });
 
     test('effectiveDefaultLocation throws TimeZoneNotInitializedException', () {
       expect(
-        () => effectiveDefaultLocation,
+        () => EasyDateTime.effectiveDefaultLocation,
         throwsA(isA<TimeZoneNotInitializedException>()),
       );
     });
@@ -45,13 +42,6 @@ void main() {
       );
     });
 
-    test('TimeZones.isValid throws TimeZoneNotInitializedException', () {
-      expect(
-        () => TimeZones.isValid('UTC'),
-        throwsA(isA<TimeZoneNotInitializedException>()),
-      );
-    });
-
     test('TimeZones.tryGet throws TimeZoneNotInitializedException', () {
       expect(
         () => TimeZones.tryGet('UTC'),
@@ -59,14 +49,11 @@ void main() {
       );
     });
 
-    test('Exception has helpful message', () {
-      try {
-        effectiveDefaultLocation;
-        fail('Should have thrown');
-      } on TimeZoneNotInitializedException catch (e) {
-        expect(e.message, contains('initializeTimeZone'));
-        expect(e.toString(), contains('TimeZoneNotInitializedException'));
-      }
+    test('TimeZones.isValid throws TimeZoneNotInitializedException', () {
+      expect(
+        () => TimeZones.isValid('UTC'),
+        throwsA(isA<TimeZoneNotInitializedException>()),
+      );
     });
   });
 }

@@ -58,9 +58,11 @@ void main() {
   // --------------------------------------------------------
   print('Escaped literal text:');
   print(
-      "  format(\"yyyy-MM-dd'T'HH:mm:ss\"): ${dt.format("yyyy-MM-dd'T'HH:mm:ss")}");
+    "  format(\"yyyy-MM-dd'T'HH:mm:ss\"): ${dt.format("yyyy-MM-dd'T'HH:mm:ss")}",
+  );
   print(
-      "  format(\"'Date:' yyyy-MM-dd\"):    ${dt.format("'Date:' yyyy-MM-dd")}");
+    "  format(\"'Date:' yyyy-MM-dd\"):    ${dt.format("'Date:' yyyy-MM-dd")}",
+  );
   print("  format('yyyy年MM月dd日'):         ${dt.format('yyyy年MM月dd日')}");
   print('');
 

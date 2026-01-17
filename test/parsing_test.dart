@@ -1,288 +1,394 @@
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
-import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/data/latest_all.dart' as tz;
 
 void main() {
   setUpAll(() {
     tz.initializeTimeZones();
   });
 
-  group('EasyDateTime Parsing Robustness', () {
-    test('tryParse() parses standard ISO 8601 strings', () {
-      expect(EasyDateTime.tryParse('2025-12-01T10:30:00Z'), isNotNull);
-      expect(EasyDateTime.tryParse('2025-12-01T10:30:00+09:00'), isNotNull);
-      expect(EasyDateTime.tryParse('2025-12-01'), isNotNull);
-    });
+  group('EasyDateTime Parsing', () {
+    group('tryParse', () {
+      test('should return instance for valid ISO 8601 strings', () {
+        // Arrange & Act & Assert
+        expect(EasyDateTime.tryParse('2025-12-01T10:30:00Z'), isNotNull);
+        expect(EasyDateTime.tryParse('2025-12-01T10:30:00+09:00'), isNotNull);
+        expect(EasyDateTime.tryParse('2025-12-01'), isNotNull);
+      });
 
-    test('tryParse() parses fallback formats (Slash, Dash, Dot)', () {
-      // Slash
-      expect(EasyDateTime.tryParse('2025/12/01'), isNotNull,
-          reason: 'Slash date');
-      expect(EasyDateTime.tryParse('2025/12/01 10:30:00'), isNotNull,
-          reason: 'Slash date space time');
-
-      // Dash with space
-      expect(EasyDateTime.tryParse('2025-12-01 10:30:00'), isNotNull,
-          reason: 'Dash date space time');
-
-      // Dot
-      expect(EasyDateTime.tryParse('2025.12.01'), isNotNull,
-          reason: 'Dot date');
-      expect(EasyDateTime.tryParse('2025.12.01 10:30:00'), isNotNull,
-          reason: 'Dot date space time');
-    });
-
-    test('tryParse() rejects extremely long inputs (ReDoS protection)', () {
-      final longString = '2025-12-01${' ' * 1000}10:00';
-      // Should return null quickly and not crash/hang
-      expect(EasyDateTime.tryParse(longString), isNull);
-
-      final veryLongGarbage = 'a' * 200;
-      expect(EasyDateTime.tryParse(veryLongGarbage), isNull);
-    });
-
-    test('tryParse() returns null for invalid components', () {
-      // Month 13
-      expect(EasyDateTime.tryParse('2025/13/01'), isNull);
-      // Day 32
-      expect(EasyDateTime.tryParse('2025/12/32'), isNull);
-      // Garbage year
-      expect(EasyDateTime.tryParse('202A/12/01'), isNull);
-    });
-
-    test('tryParse handles T prefix in time part correctly', () {
-      // Allow time part with T even in fallback if regex matches
-      // Though "2025/12/01T10:30:00" might be matched by generic regex logic
-      expect(EasyDateTime.tryParse('2025/12/01T10:30:00'), isNotNull);
-    });
-
-    test('tryParse is robust against leading/trailing whitespace', () {
-      expect(EasyDateTime.tryParse('  2025-12-01T10:00:00Z  '), isNotNull);
-      expect(EasyDateTime.tryParse('  2025/12/01  '), isNotNull);
-    });
-
-    test('parse correctly handles uncommon timezone offsets', () {
-      // Nepal time +5:45 - should find matching timezone
-      final nepal = EasyDateTime.parse('2025-12-01T10:00:00+05:45');
-      expect(nepal.hour, 10); // Original hour preserved
-      expect(nepal.locationName, 'Asia/Kathmandu');
-    });
-
-    test('parse throws InvalidTimeZoneException for non-standard offset', () {
-      // +05:17 is not a valid IANA timezone offset
-      expect(
-        () => EasyDateTime.parse('2025-12-01T10:00:00+05:17'),
-        throwsA(isA<InvalidTimeZoneException>()),
+      test(
+        'should return instance for fallback formats (Slash, Dash, Dot)',
+        () {
+          // Arrange & Act & Assert
+          expect(EasyDateTime.tryParse('2025/12/01'), isNotNull);
+          expect(EasyDateTime.tryParse('2025/12/01 10:30:00'), isNotNull);
+          expect(EasyDateTime.tryParse('2025-12-01 10:30:00'), isNotNull);
+          expect(EasyDateTime.tryParse('2025.12.01'), isNotNull);
+          expect(EasyDateTime.tryParse('2025.12.01 10:30:00'), isNotNull);
+        },
       );
-    });
 
-    test('tryParse returns null for non-standard offset', () {
-      // tryParse should gracefully return null instead of throwing
-      final result = EasyDateTime.tryParse('2025-12-01T10:00:00+05:17');
-      expect(result, isNull);
-    });
+      test('should return null for excessively long inputs', () {
+        // Arrange
+        final longString = '2025-12-01${' ' * 1000}10:00';
+        final veryLongInvalid = 'a' * 200;
 
-    test('parse handles DST offsets correctly', () {
-      // EDT (Eastern Daylight Time) is -04:00
-      final edt = EasyDateTime.parse('2025-07-01T10:00:00-04:00');
-      expect(edt.hour, 10); // Original hour preserved
-      // Should match America/New_York which uses EDT in summer
-      expect(edt.locationName, 'America/New_York');
-    });
-    group('Edge cases (migrated from core_coverage)', () {
-      test('parse date with time and offset', () {
-        final dt = EasyDateTime.parse('2025-12-01T00:00:00+08:00');
-        expect(dt.year, 2025);
-        expect(dt.month, 12);
-        expect(dt.day, 1);
-        expect(dt.hour, 0);
+        // Act & Assert
+        expect(EasyDateTime.tryParse(longString), isNull);
+        expect(EasyDateTime.tryParse(veryLongInvalid), isNull);
       });
 
-      test('parse with negative timezone offset', () {
-        final dt = EasyDateTime.parse('2025-12-01T10:00:00-05:00');
-        expect(dt.hour, 10);
-        expect(dt.locationName, 'America/New_York');
+      test('should return null for invalid date components', () {
+        // Arrange & Act & Assert
+        expect(EasyDateTime.tryParse('2025/13/01'), isNull); // Month 13
+        expect(EasyDateTime.tryParse('2025/12/32'), isNull); // Day 32
+        expect(EasyDateTime.tryParse('202A/12/01'), isNull); // Invalid year
       });
 
-      test('parse handles fractional seconds', () {
-        final dt = EasyDateTime.parse('2025-12-01T10:30:45.123456Z');
-        expect(dt.millisecond, 123);
-        expect(dt.microsecond, 456);
+      test('should handle T prefix in time part within fallback formats', () {
+        // Arrange & Act & Assert
+        expect(EasyDateTime.tryParse('2025/12/01T10:30:00'), isNotNull);
       });
 
-      test('parse with explicit location converts timezone', () {
-        final dt = EasyDateTime.parse(
-          '2025-12-01T10:00:00Z',
-          location: TimeZones.tokyo,
-        );
-        expect(dt.hour, 19); // 10:00 UTC = 19:00 Tokyo
-        expect(dt.locationName, 'Asia/Tokyo');
+      test('should ignore leading and trailing whitespace', () {
+        // Arrange & Act & Assert
+        expect(EasyDateTime.tryParse('  2025-12-01T10:00:00Z  '), isNotNull);
+        expect(EasyDateTime.tryParse('  2025/12/01  '), isNotNull);
       });
 
-      test('parse with location for offset string', () {
-        final dt = EasyDateTime.parse(
-          '2025-12-01T10:00:00+08:00',
-          location: TimeZones.newYork,
-        );
-        // Should convert: 10:00+08:00 = 02:00 UTC = 21:00 prev day NY
-        expect(dt.locationName, 'America/New_York');
-      });
-
-      test('parse date-only with offset triggers different path', () {
-        // Date-only format without time but with default timezone
-        final dt = EasyDateTime.parse('2025-12-01');
-        expect(dt.year, 2025);
-        expect(dt.month, 12);
-        expect(dt.day, 1);
-        expect(dt.hour, 0);
-      });
-
-      test('tryParse handles invalid format gracefully', () {
+      test('should return null for completely invalid inputs', () {
+        // Arrange & Act & Assert
+        expect(EasyDateTime.tryParse(''), isNull);
+        expect(EasyDateTime.tryParse('   '), isNull);
         expect(EasyDateTime.tryParse('not-a-date'), isNull);
-        expect(EasyDateTime.tryParse('invalid-date-format'), isNull);
+        expect(EasyDateTime.tryParse('🎄'), isNull);
+        expect(EasyDateTime.tryParse('null'), isNull);
       });
     });
 
-    group('Timezone offset parsing covers various offsets (migrated)', () {
-      test('parses +00:00 offset as UTC', () {
-        final dt = EasyDateTime.parse('2025-12-01T10:00:00+00:00');
-        expect(dt.locationName, 'UTC');
+    group('parse', () {
+      test('should handle uncommon timezone offsets', () {
+        // Arrange
+        const input = '2025-12-01T10:00:00+05:45'; // Nepal
+
+        // Act
+        final result = EasyDateTime.parse(input);
+
+        // Assert
+        expect(result.hour, 10);
+        expect(result.locationName, 'Asia/Kathmandu');
       });
 
-      test('parses +01:00 offset', () {
-        final dt = EasyDateTime.parse('2025-12-01T10:00:00+01:00');
-        expect(dt.hour, 10);
-      });
+      test(
+        'should throw InvalidTimeZoneException for non-standard offsets',
+        () {
+          // Arrange
+          const input = '2025-12-01T10:00:00+05:17';
 
-      test('parses +05:00 offset', () {
-        final dt = EasyDateTime.parse('2025-12-01T10:00:00+05:00');
-        expect(dt.hour, 10);
-      });
-
-      test('parses +09:00 offset as Tokyo', () {
-        final dt = EasyDateTime.parse('2025-12-01T10:00:00+09:00');
-        expect(dt.locationName, 'Asia/Tokyo');
-      });
-
-      test('parses +09:30 offset as Adelaide', () {
-        final dt = EasyDateTime.parse('2025-12-01T10:00:00+09:30');
-        expect(dt.hour, 10);
-      });
-
-      test('parses -03:30 offset (St. Johns) triggers fallback lookup', () {
-        // -03:30 is not in _commonOffsetMappings, so this hits the fallback loop
-        final dt = EasyDateTime.parse('2025-12-01T10:00:00-03:30');
-        expect(dt.hour, 10);
-        expect(dt.locationName, 'America/St_Johns');
-      });
-    });
-
-    // Regression tests for DST edge cases (Issue: microsecondsSinceEpoch mismatch)
-    // Ensures parsed instants are physically correct regardless of DST transitions.
-    group('DST transition handling', () {
-      group('Spring Forward (gap hour)', () {
-        // Context: 2023-03-12 in New York, clocks jump 02:00 -> 03:00 (EST->EDT)
-        // The local time 02:30 doesn't exist, but 02:30-04:00 is a valid UTC offset
-
-        test(
-            'parse() returns same instant as DateTime.parse() '
-            'for time during gap', () {
-          const input = '2023-03-12T02:30:00-04:00';
-
-          final standard = DateTime.parse(input);
-          final easy = EasyDateTime.parse(input);
-
+          // Act & Assert
           expect(
-            easy.microsecondsSinceEpoch,
-            equals(standard.microsecondsSinceEpoch),
-            reason: 'Both should represent the same physical instant',
+            () => EasyDateTime.parse(input),
+            throwsA(isA<InvalidTimeZoneException>()),
+          );
+        },
+      );
+
+      test('tryParse should return null for non-standard offsets', () {
+        // Arrange
+        const input = '2025-12-01T10:00:00+05:17';
+
+        // Act
+        final result = EasyDateTime.tryParse(input);
+
+        // Assert
+        expect(result, isNull);
+      });
+
+      test('should handle DST offsets correctly', () {
+        // Arrange
+        const input = '2025-07-01T10:00:00-04:00'; // EDT
+
+        // Act
+        final result = EasyDateTime.parse(input);
+
+        // Assert
+        expect(result.hour, 10);
+        expect(result.locationName, 'America/New_York');
+      });
+
+      group('Offset Variations', () {
+        test('should parse +00:00 as UTC', () {
+          expect(
+            EasyDateTime.parse('2025-12-01T10:00:00+00:00').locationName,
+            'UTC',
           );
         });
 
-        test('toUtc() converts gap time to correct UTC equivalent', () {
-          // 02:30 at UTC-4 = 06:30 UTC
-          final parsed = EasyDateTime.parse('2023-03-12T02:30:00-04:00');
-
-          expect(parsed.toUtc().hour, equals(6));
-          expect(parsed.toUtc().minute, equals(30));
-        });
-      });
-
-      group('Fall Back (overlap hour)', () {
-        // Context: 2023-11-05 in New York, clocks fall back 02:00 -> 01:00 (EDT->EST)
-        // The local time 01:30 occurs twice: once at -04:00 (EDT), once at -05:00 (EST)
-
-        test('parse() correctly distinguishes first occurrence (before switch)',
-            () {
-          const input = '2023-11-05T01:30:00-04:00'; // EDT, before switch
-
-          final standard = DateTime.parse(input);
-          final easy = EasyDateTime.parse(input);
-
-          expect(easy.microsecondsSinceEpoch,
-              equals(standard.microsecondsSinceEpoch));
-          expect(easy.toUtc().hour, equals(5),
-              reason: '01:30-04:00 = 05:30 UTC');
+        test('should parse +01:00', () {
+          expect(EasyDateTime.parse('2025-12-01T10:00:00+01:00').hour, 10);
         });
 
-        test('parse() correctly distinguishes second occurrence (after switch)',
-            () {
-          const input = '2023-11-05T01:30:00-05:00'; // EST, after switch
-
-          final standard = DateTime.parse(input);
-          final easy = EasyDateTime.parse(input);
-
-          expect(easy.microsecondsSinceEpoch,
-              equals(standard.microsecondsSinceEpoch));
-          expect(easy.toUtc().hour, equals(6),
-              reason: '01:30-05:00 = 06:30 UTC');
+        test('should parse +05:00', () {
+          expect(EasyDateTime.parse('2025-12-01T10:00:00+05:00').hour, 10);
         });
 
-        test('two occurrences of 01:30 are exactly 1 hour apart', () {
-          final firstOccurrence =
-              EasyDateTime.parse('2023-11-05T01:30:00-04:00');
-          final secondOccurrence =
-              EasyDateTime.parse('2023-11-05T01:30:00-05:00');
-
-          final difference = secondOccurrence.difference(firstOccurrence);
-
-          expect(difference, equals(const Duration(hours: 1)));
+        test('should parse +09:00 as Tokyo', () {
+          expect(
+            EasyDateTime.parse('2025-12-01T10:00:00+09:00').locationName,
+            'Asia/Tokyo',
+          );
         });
-      });
 
-      group('cross-season offset resolution', () {
-        // Verifies that offset matching uses the parsed moment's timezone rules,
-        // not the current system time. Critical for parsing historical/future dates.
+        test('should parse +09:30 as Adelaide', () {
+          expect(EasyDateTime.parse('2025-12-01T10:00:00+09:30').hour, 10);
+        });
 
         test(
-            'summer offset (-04:00 EDT) parsed correctly '
-            'regardless of current season', () {
+          'should fallback lookup for offsets not in common mapping (-03:30)',
+          () {
+            final dt = EasyDateTime.parse('2025-12-01T10:00:00-03:30');
+            expect(dt.hour, 10);
+            expect(dt.locationName, 'America/St_Johns');
+          },
+        );
+      });
+
+      group('Input Variations', () {
+        test('should parse date with time and offset', () {
+          final dt = EasyDateTime.parse('2025-12-01T00:00:00+08:00');
+          expect(dt.year, 2025);
+          expect(dt.month, 12);
+          expect(dt.day, 1);
+          expect(dt.hour, 0);
+        });
+
+        test('should parse date with negative timezone offset', () {
+          final dt = EasyDateTime.parse('2025-12-01T10:00:00-05:00');
+          expect(dt.hour, 10);
+          expect(dt.locationName, 'America/New_York');
+        });
+
+        test('should parse with fractional seconds', () {
+          final dt = EasyDateTime.parse('2025-12-01T10:30:45.123456Z');
+          expect(dt.millisecond, 123);
+          expect(dt.microsecond, 456);
+        });
+
+        test('should convert to explicitly provided location', () {
+          final dt = EasyDateTime.parse(
+            '2025-12-01T10:00:00Z',
+            location: TimeZones.tokyo,
+          );
+          // 10:00 UTC = 19:00 Tokyo
+          expect(dt.hour, 19);
+          expect(dt.locationName, 'Asia/Tokyo');
+        });
+
+        test(
+          'should convert offset string to explicitly provided location',
+          () {
+            final dt = EasyDateTime.parse(
+              '2025-12-01T10:00:00+08:00',
+              location: TimeZones.newYork,
+            );
+            // 10:00+08:00 = 02:00 UTC = 21:00 previous day in NY
+            expect(dt.locationName, 'America/New_York');
+          },
+        );
+
+        test('should handle date-only strings', () {
+          final dt = EasyDateTime.parse('2025-12-01');
+          expect(dt.year, 2025);
+          expect(dt.month, 12);
+          expect(dt.day, 1);
+          expect(dt.hour, 0);
+        });
+
+        test('should accept ISO 8601 variants', () {
+          expect(EasyDateTime.parse('2025-12-01').year, 2025);
+          expect(EasyDateTime.parse('2025-12-01T10:30:00').hour, 10);
+          expect(
+            EasyDateTime.parse('2025-12-01T10:30:00Z').locationName,
+            'UTC',
+          );
+          expect(EasyDateTime.parse('2025-12-01T10:30:00+09:00'), isNotNull);
+        });
+
+        test(
+          'should overflow invalid dates consistent with DateTime behavior',
+          () {
+            // 2025-02-30 -> 2025-03-02
+            final dt = EasyDateTime.parse('2025-02-30');
+            expect(dt.month, 3);
+            expect(dt.day, 2);
+          },
+        );
+      });
+
+      group('Validation', () {
+        test('should throw FormatException on invalid inputs', () {
+          expect(
+            () => EasyDateTime.parse('not-a-valid-date-at-all'),
+            throwsFormatException,
+          );
+          expect(() => EasyDateTime.parse(''), throwsFormatException);
+          expect(() => EasyDateTime.parse('   '), throwsFormatException);
+          expect(() => EasyDateTime.parse('🎄🎅🎁'), throwsFormatException);
+        });
+      });
+    });
+
+    group('DST Transition Handling', () {
+      test('should match DateTime.parse result for Spring Forward gap', () {
+        // Arrange
+        // 2023-03-12 02:30 is invalid in local time but valid with offset
+        const input = '2023-03-12T02:30:00-04:00';
+
+        // Act
+        final standard = DateTime.parse(input);
+        final easy = EasyDateTime.parse(input);
+
+        // Assert
+        expect(
+          easy.microsecondsSinceEpoch,
+          equals(standard.microsecondsSinceEpoch),
+        );
+      });
+
+      test('should convert gap time to correct UTC equivalent', () {
+        // Arrange
+        // 02:30 at UTC-4 = 06:30 UTC
+        final parsed = EasyDateTime.parse('2023-03-12T02:30:00-04:00');
+
+        // Act & Assert
+        expect(parsed.toUtc().hour, equals(6));
+        expect(parsed.toUtc().minute, equals(30));
+      });
+
+      test(
+        'should distinguish Fall Back overlap - First Occurrence (Pre-Switch)',
+        () {
+          // Arrange
+          const input = '2023-11-05T01:30:00-04:00'; // EDT
+
+          // Act
+          final standard = DateTime.parse(input);
+          final easy = EasyDateTime.parse(input);
+
+          // Assert
+          expect(
+            easy.microsecondsSinceEpoch,
+            equals(standard.microsecondsSinceEpoch),
+          );
+          expect(easy.toUtc().hour, equals(5)); // 01:30-04:00 = 05:30 UTC
+        },
+      );
+
+      test(
+        'should distinguish Fall Back overlap - Second Occurrence (Post-Switch)',
+        () {
+          // Arrange
+          const input = '2023-11-05T01:30:00-05:00'; // EST
+
+          // Act
+          final standard = DateTime.parse(input);
+          final easy = EasyDateTime.parse(input);
+
+          // Assert
+          expect(
+            easy.microsecondsSinceEpoch,
+            equals(standard.microsecondsSinceEpoch),
+          );
+          expect(easy.toUtc().hour, equals(6)); // 01:30-05:00 = 06:30 UTC
+        },
+      );
+
+      test(
+        'should correctly calculate duration between repeated overlap hours',
+        () {
+          // Arrange
+          final firstOccurrence = EasyDateTime.parse(
+            '2023-11-05T01:30:00-04:00',
+          );
+          final secondOccurrence = EasyDateTime.parse(
+            '2023-11-05T01:30:00-05:00',
+          );
+
+          // Act
+          final difference = secondOccurrence.difference(firstOccurrence);
+
+          // Assert
+          expect(difference, equals(const Duration(hours: 1)));
+        },
+      );
+
+      test(
+        'should parse correctly crossing seasons (Summer offset in Winter)',
+        () {
+          // Arrange
           const summerInput = '2025-07-01T10:00:00-04:00';
 
+          // Act
           final standard = DateTime.parse(summerInput);
           final easy = EasyDateTime.parse(summerInput);
 
+          // Assert
           expect(
             easy.microsecondsSinceEpoch,
             equals(standard.microsecondsSinceEpoch),
-            reason: 'Should match even if current system time is in winter',
           );
-        });
+        },
+      );
 
-        test(
-            'winter offset (-05:00 EST) parsed correctly '
-            'regardless of current season', () {
+      test(
+        'should parse correctly crossing seasons (Winter offset in Summer)',
+        () {
+          // Arrange
           const winterInput = '2025-01-15T10:00:00-05:00';
 
+          // Act
           final standard = DateTime.parse(winterInput);
           final easy = EasyDateTime.parse(winterInput);
 
+          // Assert
           expect(
             easy.microsecondsSinceEpoch,
             equals(standard.microsecondsSinceEpoch),
-            reason: 'Should match even if current system time is in summer',
           );
-        });
+        },
+      );
+    });
+
+    group('Performance Metrics', () {
+      test(
+        'should parse ISO 8601 strings efficiently (<500ms for 1000 iter)',
+        () {
+          // Arrange
+          final stopwatch = Stopwatch()..start();
+
+          // Act
+          for (int i = 0; i < 1000; i++) {
+            EasyDateTime.parse('2025-12-01T10:30:00Z');
+          }
+          stopwatch.stop();
+
+          // Assert
+          expect(stopwatch.elapsedMilliseconds, lessThan(500));
+        },
+      );
+
+      test('tryParse should fail very long strings efficiently (<100ms)', () {
+        // Arrange
+        final input = '2025-01-01${' ' * 10000}';
+        final start = DateTime.now();
+
+        // Act
+        final result = EasyDateTime.tryParse(input);
+        final elapsed = DateTime.now().difference(start);
+
+        // Assert
+        expect(result, isNotNull);
+        expect(elapsed.inMilliseconds, lessThan(100));
       });
     });
   });

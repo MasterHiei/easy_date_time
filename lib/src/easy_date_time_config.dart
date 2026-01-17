@@ -34,8 +34,6 @@ Location get effectiveDefaultLocation {
 // ============================================================
 // Internal API for EasyDateTime static methods
 // ============================================================
-// These functions are used by EasyDateTime's static methods to avoid
-// triggering deprecation warnings internally.
 
 /// Internal: Sets the global default location.
 void internalSetDefaultLocation(Location? location) {

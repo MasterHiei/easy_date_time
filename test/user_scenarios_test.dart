@@ -172,17 +172,7 @@ void main() {
 
     test('converts to UTC for API requests', () {
       // User: sends UTC time to backend regardless of local timezone
-      final tokyo = EasyDateTime(
-        2025,
-        12,
-        7,
-        21,
-        0,
-        0,
-        0,
-        0,
-        TimeZones.tokyo,
-      );
+      final tokyo = EasyDateTime(2025, 12, 7, 21, 0, 0, 0, 0, TimeZones.tokyo);
       final utc = tokyo.toUtc();
 
       expect(utc.hour, 12); // Tokyo 21:00 = UTC 12:00

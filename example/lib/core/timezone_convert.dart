@@ -17,8 +17,17 @@ void main() {
   // inLocation() - Convert to specific timezone
   // --------------------------------------------------------
   print('inLocation():');
-  final shanghai =
-      EasyDateTime(2025, 12, 7, 20, 0, 0, 0, 0, TimeZones.shanghai);
+  final shanghai = EasyDateTime(
+    2025,
+    12,
+    7,
+    20,
+    0,
+    0,
+    0,
+    0,
+    TimeZones.shanghai,
+  );
   final tokyo = shanghai.inLocation(TimeZones.tokyo);
   final newYork = shanghai.inLocation(TimeZones.newYork);
   final london = shanghai.inLocation(TimeZones.london);
@@ -50,11 +59,14 @@ void main() {
   // --------------------------------------------------------
   print('Same moment verification:');
   print(
-      '  shanghai.isAtSameMomentAs(tokyo):   ${shanghai.isAtSameMomentAs(tokyo)}');
+    '  shanghai.isAtSameMomentAs(tokyo):   ${shanghai.isAtSameMomentAs(tokyo)}',
+  );
   print(
-      '  shanghai.isAtSameMomentAs(newYork): ${shanghai.isAtSameMomentAs(newYork)}');
+    '  shanghai.isAtSameMomentAs(newYork): ${shanghai.isAtSameMomentAs(newYork)}',
+  );
   print(
-      '  shanghai.isAtSameMomentAs(utc):     ${shanghai.isAtSameMomentAs(utc)}');
+    '  shanghai.isAtSameMomentAs(utc):     ${shanghai.isAtSameMomentAs(utc)}',
+  );
   print('');
 
   // --------------------------------------------------------

@@ -20,10 +20,7 @@ class InvalidTimeZoneException implements Exception {
   final String message;
 
   /// Creates a new [InvalidTimeZoneException].
-  InvalidTimeZoneException({
-    required this.timeZoneId,
-    required this.message,
-  });
+  InvalidTimeZoneException({required this.timeZoneId, required this.message});
 
   @override
   String toString() => 'InvalidTimeZoneException: "$timeZoneId" - $message';

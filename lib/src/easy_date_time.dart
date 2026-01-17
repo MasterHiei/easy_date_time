@@ -123,16 +123,16 @@ class EasyDateTime implements DateTime {
     int microsecond = 0,
     Location? location,
   ]) : _tzDateTime = TZDateTime(
-          location ?? config.effectiveDefaultLocation,
-          year,
-          month,
-          day,
-          hour,
-          minute,
-          second,
-          millisecond,
-          microsecond,
-        );
+         location ?? config.effectiveDefaultLocation,
+         year,
+         month,
+         day,
+         hour,
+         minute,
+         second,
+         millisecond,
+         microsecond,
+       );
 
   /// Creates an [EasyDateTime] from an existing [TZDateTime].
   EasyDateTime._(this._tzDateTime);
@@ -157,7 +157,8 @@ class EasyDateTime implements DateTime {
   /// ```
   factory EasyDateTime.now({Location? location}) {
     return EasyDateTime._(
-        TZDateTime.now(location ?? config.effectiveDefaultLocation));
+      TZDateTime.now(location ?? config.effectiveDefaultLocation),
+    );
   }
 
   /// Creates a UTC [EasyDateTime] representing the current moment.
@@ -194,16 +195,18 @@ class EasyDateTime implements DateTime {
     int millisecond = 0,
     int microsecond = 0,
   ]) {
-    return EasyDateTime._(TZDateTime.utc(
-      year,
-      month,
-      day,
-      hour,
-      minute,
-      second,
-      millisecond,
-      microsecond,
-    ));
+    return EasyDateTime._(
+      TZDateTime.utc(
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        second,
+        millisecond,
+        microsecond,
+      ),
+    );
   }
 
   /// Creates an [EasyDateTime] from a standard [DateTime].
@@ -264,10 +267,7 @@ class EasyDateTime implements DateTime {
     _validateUtcLocation(isUtc, location);
     if (isUtc) {
       return EasyDateTime._(
-        TZDateTime.fromMillisecondsSinceEpoch(
-          getLocation('UTC'),
-          milliseconds,
-        ),
+        TZDateTime.fromMillisecondsSinceEpoch(getLocation('UTC'), milliseconds),
       );
     }
 
@@ -368,10 +368,7 @@ class EasyDateTime implements DateTime {
     _validateUtcLocation(isUtc, location);
     if (isUtc) {
       return EasyDateTime._(
-        TZDateTime.fromMicrosecondsSinceEpoch(
-          getLocation('UTC'),
-          microseconds,
-        ),
+        TZDateTime.fromMicrosecondsSinceEpoch(getLocation('UTC'), microseconds),
       );
     }
 
@@ -452,14 +449,32 @@ class EasyDateTime implements DateTime {
         final offsetStr = _formatOffset(offsetInfo);
         throw InvalidTimeZoneException(
           timeZoneId: offsetStr,
-          message: 'No IANA timezone found for offset $offsetStr. '
+          message:
+              'No IANA timezone found for offset $offsetStr. '
               'Valid timezone offsets are defined in the IANA database.',
         );
       }
 
       // UTC indicator (Z)
       if (trimmed.toUpperCase().endsWith('Z')) {
-        return EasyDateTime._(TZDateTime.utc(
+        return EasyDateTime._(
+          TZDateTime.utc(
+            dt.year,
+            dt.month,
+            dt.day,
+            dt.hour,
+            dt.minute,
+            dt.second,
+            dt.millisecond,
+            dt.microsecond,
+          ),
+        );
+      }
+
+      // No timezone indicator - use effective default location with original values
+      return EasyDateTime._(
+        TZDateTime(
+          config.effectiveDefaultLocation,
           dt.year,
           dt.month,
           dt.day,
@@ -468,21 +483,8 @@ class EasyDateTime implements DateTime {
           dt.second,
           dt.millisecond,
           dt.microsecond,
-        ));
-      }
-
-      // No timezone indicator - use effective default location with original values
-      return EasyDateTime._(TZDateTime(
-        config.effectiveDefaultLocation,
-        dt.year,
-        dt.month,
-        dt.day,
-        dt.hour,
-        dt.minute,
-        dt.second,
-        dt.millisecond,
-        dt.microsecond,
-      ));
+        ),
+      );
     } on FormatException catch (e) {
       throw InvalidDateFormatException(
         source: dateTimeString,
@@ -938,17 +940,62 @@ class EasyDateTime implements DateTime {
   EasyDateTime startOf(DateTimeUnit unit) {
     return switch (unit) {
       DateTimeUnit.year => EasyDateTime(year, 1, 1, 0, 0, 0, 0, 0, location),
-      DateTimeUnit.month =>
-        EasyDateTime(year, month, 1, 0, 0, 0, 0, 0, location),
+      DateTimeUnit.month => EasyDateTime(
+        year,
+        month,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        location,
+      ),
       DateTimeUnit.week => _startOfWeek(),
-      DateTimeUnit.day =>
-        EasyDateTime(year, month, day, 0, 0, 0, 0, 0, location),
-      DateTimeUnit.hour =>
-        EasyDateTime(year, month, day, hour, 0, 0, 0, 0, location),
-      DateTimeUnit.minute =>
-        EasyDateTime(year, month, day, hour, minute, 0, 0, 0, location),
-      DateTimeUnit.second =>
-        EasyDateTime(year, month, day, hour, minute, second, 0, 0, location),
+      DateTimeUnit.day => EasyDateTime(
+        year,
+        month,
+        day,
+        0,
+        0,
+        0,
+        0,
+        0,
+        location,
+      ),
+      DateTimeUnit.hour => EasyDateTime(
+        year,
+        month,
+        day,
+        hour,
+        0,
+        0,
+        0,
+        0,
+        location,
+      ),
+      DateTimeUnit.minute => EasyDateTime(
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        0,
+        0,
+        0,
+        location,
+      ),
+      DateTimeUnit.second => EasyDateTime(
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        second,
+        0,
+        0,
+        location,
+      ),
     };
   }
 
@@ -963,19 +1010,73 @@ class EasyDateTime implements DateTime {
   /// ```
   EasyDateTime endOf(DateTimeUnit unit) {
     return switch (unit) {
-      DateTimeUnit.year =>
-        EasyDateTime(year, 12, 31, 23, 59, 59, 999, 999, location),
-      DateTimeUnit.month =>
-        EasyDateTime(year, month + 1, 0, 23, 59, 59, 999, 999, location),
+      DateTimeUnit.year => EasyDateTime(
+        year,
+        12,
+        31,
+        23,
+        59,
+        59,
+        999,
+        999,
+        location,
+      ),
+      DateTimeUnit.month => EasyDateTime(
+        year,
+        month + 1,
+        0,
+        23,
+        59,
+        59,
+        999,
+        999,
+        location,
+      ),
       DateTimeUnit.week => _endOfWeek(),
-      DateTimeUnit.day =>
-        EasyDateTime(year, month, day, 23, 59, 59, 999, 999, location),
-      DateTimeUnit.hour =>
-        EasyDateTime(year, month, day, hour, 59, 59, 999, 999, location),
-      DateTimeUnit.minute =>
-        EasyDateTime(year, month, day, hour, minute, 59, 999, 999, location),
+      DateTimeUnit.day => EasyDateTime(
+        year,
+        month,
+        day,
+        23,
+        59,
+        59,
+        999,
+        999,
+        location,
+      ),
+      DateTimeUnit.hour => EasyDateTime(
+        year,
+        month,
+        day,
+        hour,
+        59,
+        59,
+        999,
+        999,
+        location,
+      ),
+      DateTimeUnit.minute => EasyDateTime(
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        59,
+        999,
+        999,
+        location,
+      ),
       DateTimeUnit.second => EasyDateTime(
-          year, month, day, hour, minute, second, 999, 999, location),
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        second,
+        999,
+        999,
+        location,
+      ),
     };
   }
 

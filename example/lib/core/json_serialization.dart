@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, public_member_api_docs
 
 /// JSON Serialization Example
 ///
@@ -113,11 +113,11 @@ class Event {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'startTime': startTime.toIso8601String(),
-        'endTime': endTime?.toIso8601String(),
-      };
+    'id': id,
+    'title': title,
+    'startTime': startTime.toIso8601String(),
+    'endTime': endTime?.toIso8601String(),
+  };
 }
 
 class User {
@@ -134,9 +134,9 @@ class User {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'createdAt': createdAt.toIso8601String(),
-        'deletedAt': deletedAt?.toIso8601String(),
-      };
+    'id': id,
+    'name': name,
+    'createdAt': createdAt.toIso8601String(),
+    'deletedAt': deletedAt?.toIso8601String(),
+  };
 }
