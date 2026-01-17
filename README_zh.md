@@ -12,10 +12,10 @@
 
 ~~~dart
 // DateTime 自动转换为 UTC，改变小时值
-DateTime.parse('2025-12-07T10:30:00+08:00').hour // 2
+DateTime.parse('2026-01-18T10:30:00+08:00').hour // 2
 
 // EasyDateTime 保留原值
-EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour // 10
+EasyDateTime.parse('2026-01-18T10:30:00+08:00').hour // 10
 ~~~
 
 ## 开始使用
@@ -26,7 +26,7 @@ EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour // 10
 
 ~~~yaml
 dependencies:
-  easy_date_time: ^0.9.1
+  easy_date_time: ^0.10.0
 ~~~
 
 ### 初始化
@@ -50,7 +50,7 @@ void main() {
 final now = EasyDateTime.now(location: TimeZones.tokyo);
 
 // 解析字符串，保留时区信息
-final parsed = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
+final parsed = EasyDateTime.parse('2026-01-18T10:30:00+08:00');
 
 print(parsed.hour);         // 10
 print(parsed.locationName); // Asia/Shanghai
@@ -67,7 +67,7 @@ final later = now + 2.hours + 30.minutes;
 
 ~~~dart
 const pattern = 'yyyy-MM-dd HH:mm';
-print(dt.format(pattern)); // 2025-12-07 10:30
+print(dt.format(pattern)); // 2026-01-18 10:30
 ~~~
 
 ## 功能特性
@@ -167,7 +167,7 @@ dt.endOf(DateTimeUnit.month);   // 当月最后一天 23:59:59.999999
 使用 `format()` 配合占位符进行格式化。
 
 ~~~dart
-dt.format('yyyy-MM-dd');    // 2025-12-07
+dt.format('yyyy-MM-dd');    // 2026-01-18
 dt.format('HH:mm:ss');      // 14:30:45
 dt.format('hh:mm a');       // 02:30 PM (12小时制)
 ~~~
@@ -175,9 +175,9 @@ dt.format('hh:mm a');       // 02:30 PM (12小时制)
 或使用预定义常量：
 
 ~~~dart
-dt.format(DateTimeFormats.isoDate);      // 2025-12-07
-dt.format(DateTimeFormats.isoDateTime);  // 2025-12-07T14:30:45
-dt.format(DateTimeFormats.rfc2822);      // Mon, 07 Dec 2025 14:30:45 +0800
+dt.format(DateTimeFormats.isoDate);      // 2026-01-18
+dt.format(DateTimeFormats.isoDateTime);  // 2026-01-18T14:30:45
+dt.format(DateTimeFormats.rfc2822);      // Sun, 18 Jan 2026 14:30:45 +0800
 ~~~
 
 > **性能提示**：在循环中使用时，建议预编译 `EasyDateTimeFormatter` 以节约消耗，提升性能。
@@ -252,7 +252,7 @@ class Event with _$Event {
 
 ~~~dart
 final utc = EasyDateTime.utc(2025, 1, 1, 0, 0);
-final local = EasyDateTime.parse('2025-01-01T08:00:00+08:00'); // UTC+8
+final local = EasyDateTime.parse('2026-01-18T08:00:00+08:00'); // UTC+8
 
 // false — 因为时区类型不同 (UTC vs Local)
 print(utc == local);

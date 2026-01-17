@@ -12,10 +12,10 @@ IANA タイムゾーン対応の `DateTime` 代替ライブラリ。解析時に
 
 ~~~dart
 // DateTime: UTC に自動変換され、時差情報が失われる
-DateTime.parse('2025-12-07T10:30:00+08:00').hour // 2
+DateTime.parse('2026-01-18T10:30:00+08:00').hour // 2
 
 // EasyDateTime: 元の値を維持
-EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour // 10
+EasyDateTime.parse('2026-01-18T10:30:00+08:00').hour // 10
 ~~~
 
 ## 導入
@@ -26,7 +26,7 @@ EasyDateTime.parse('2025-12-07T10:30:00+08:00').hour // 10
 
 ~~~yaml
 dependencies:
-  easy_date_time: ^0.9.1
+  easy_date_time: ^0.10.0
 ~~~
 
 ### 初期化
@@ -50,7 +50,7 @@ void main() {
 final now = EasyDateTime.now(location: TimeZones.tokyo);
 
 // 文字列解析（タイムゾーン情報を保持）
-final parsed = EasyDateTime.parse('2025-12-07T10:30:00+08:00');
+final parsed = EasyDateTime.parse('2026-01-18T10:30:00+08:00');
 
 print(parsed.hour);         // 10
 print(parsed.locationName); // Asia/Shanghai
@@ -67,7 +67,7 @@ final later = now + 2.hours + 30.minutes;
 
 ~~~dart
 const pattern = 'yyyy-MM-dd HH:mm';
-print(dt.format(pattern)); // 2025-12-07 10:30
+print(dt.format(pattern)); // 2026-01-18 10:30
 ~~~
 
 ## 機能
@@ -167,7 +167,7 @@ dt.endOf(DateTimeUnit.month);   // 当月末日の 23:59:59.999999
 `format()` とパターン文字：
 
 ~~~dart
-dt.format('yyyy-MM-dd');    // 2025-12-07
+dt.format('yyyy-MM-dd');    // 2026-01-18
 dt.format('HH:mm:ss');      // 14:30:45
 dt.format('hh:mm a');       // 02:30 PM (12時間制)
 ~~~
@@ -175,9 +175,9 @@ dt.format('hh:mm a');       // 02:30 PM (12時間制)
 定義済み定数：
 
 ~~~dart
-dt.format(DateTimeFormats.isoDate);      // 2025-12-07
-dt.format(DateTimeFormats.isoDateTime);  // 2025-12-07T14:30:45
-dt.format(DateTimeFormats.rfc2822);      // Mon, 07 Dec 2025 14:30:45 +0800
+dt.format(DateTimeFormats.isoDate);      // 2026-01-18
+dt.format(DateTimeFormats.isoDateTime);  // 2026-01-18T14:30:45
+dt.format(DateTimeFormats.rfc2822);      // Sun, 18 Jan 2026 14:30:45 +0800
 ~~~
 
 > **パフォーマンス**: ループ内などは `EasyDateTimeFormatter` の再利用を推奨。
@@ -252,7 +252,7 @@ Dart の `DateTime` 仕様に準拠。
 
 ~~~dart
 final utc = EasyDateTime.utc(2025, 1, 1, 0, 0);
-final local = EasyDateTime.parse('2025-01-01T08:00:00+08:00'); // UTC+8
+final local = EasyDateTime.parse('2026-01-18T08:00:00+08:00'); // UTC+8
 
 // false — タイムゾーン種別が異なる (UTC vs Local)
 print(utc == local);
