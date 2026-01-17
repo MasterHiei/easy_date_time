@@ -94,7 +94,8 @@ void main() {
   final eventEnd = EasyDateTime(2025, 12, 31);
   final inRange = now.isAfter(eventStart) && now.isBefore(eventEnd);
   print(
-      '  Event period: ${eventStart.toDateString()} ~ ${eventEnd.toDateString()}');
+    '  Event period: ${eventStart.toDateString()} ~ ${eventEnd.toDateString()}',
+  );
   print('  Current date in range: $inRange');
   print('');
 
@@ -104,11 +105,14 @@ void main() {
   print('Day of year and week of year:');
   final june15 = EasyDateTime(2025, 6, 15);
   print(
-      '  2025-06-15: day ${june15.dayOfYear} of year, week ${june15.weekOfYear}');
+    '  2025-06-15: day ${june15.dayOfYear} of year, week ${june15.weekOfYear}',
+  );
   print(
-      '  2025-01-01: day ${EasyDateTime(2025, 1, 1).dayOfYear}, week ${EasyDateTime(2025, 1, 1).weekOfYear}');
+    '  2025-01-01: day ${EasyDateTime(2025, 1, 1).dayOfYear}, week ${EasyDateTime(2025, 1, 1).weekOfYear}',
+  );
   print(
-      '  2025-12-31: day ${EasyDateTime(2025, 12, 31).dayOfYear}, week ${EasyDateTime(2025, 12, 31).weekOfYear}');
+    '  2025-12-31: day ${EasyDateTime(2025, 12, 31).dayOfYear}, week ${EasyDateTime(2025, 12, 31).weekOfYear}',
+  );
   print('');
 
   // --------------------------------------------------------
@@ -118,9 +122,11 @@ void main() {
   final feb2024 = EasyDateTime(2024, 2, 15);
   final feb2025 = EasyDateTime(2025, 2, 15);
   print(
-      '  Feb 2024: ${feb2024.daysInMonth} days (leap year: ${feb2024.isLeapYear})');
+    '  Feb 2024: ${feb2024.daysInMonth} days (leap year: ${feb2024.isLeapYear})',
+  );
   print(
-      '  Feb 2025: ${feb2025.daysInMonth} days (leap year: ${feb2025.isLeapYear})');
+    '  Feb 2025: ${feb2025.daysInMonth} days (leap year: ${feb2025.isLeapYear})',
+  );
   print('');
 
   // --------------------------------------------------------
@@ -130,9 +136,11 @@ void main() {
   final saturday = EasyDateTime(2025, 1, 4); // Saturday
   final monday = EasyDateTime(2025, 1, 6); // Monday
   print(
-      '  2025-01-04 (Sat): isWeekend=${saturday.isWeekend}, isWeekday=${saturday.isWeekday}');
+    '  2025-01-04 (Sat): isWeekend=${saturday.isWeekend}, isWeekday=${saturday.isWeekday}',
+  );
   print(
-      '  2025-01-06 (Mon): isWeekend=${monday.isWeekend}, isWeekday=${monday.isWeekday}');
+    '  2025-01-06 (Mon): isWeekend=${monday.isWeekend}, isWeekday=${monday.isWeekday}',
+  );
   print('');
 
   // --------------------------------------------------------
@@ -164,8 +172,17 @@ void main() {
   print('DST detection:');
   final nySummer = EasyDateTime(2025, 7, 15, 12, 0, 0, 0, 0, TimeZones.newYork);
   final nyWinter = EasyDateTime(2025, 1, 15, 12, 0, 0, 0, 0, TimeZones.newYork);
-  final shanghai =
-      EasyDateTime(2025, 7, 15, 12, 0, 0, 0, 0, TimeZones.shanghai);
+  final shanghai = EasyDateTime(
+    2025,
+    7,
+    15,
+    12,
+    0,
+    0,
+    0,
+    0,
+    TimeZones.shanghai,
+  );
   print('  New York Summer (Jul): isDst=${nySummer.isDst}');
   print('  New York Winter (Jan): isDst=${nyWinter.isDst}');
   print('  Shanghai (no DST):     isDst=${shanghai.isDst}');

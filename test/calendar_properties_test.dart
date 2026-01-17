@@ -68,14 +68,18 @@ void main() {
         expect(EasyDateTime(2024, 12, 31).weekOfYear, 1);
       });
 
-      test('handles year boundary - date belongs to previous year last week',
-          () {
-        // 2021-01-01 is Friday. Week 53 of 2020 ends on 2021-01-03 (Sun)
-        expect(EasyDateTime(2021, 1, 1).weekOfYear, 53);
-        expect(EasyDateTime(2021, 1, 3).weekOfYear, 53);
-        expect(
-            EasyDateTime(2021, 1, 4).weekOfYear, 1); // Monday, week 1 of 2021
-      });
+      test(
+        'handles year boundary - date belongs to previous year last week',
+        () {
+          // 2021-01-01 is Friday. Week 53 of 2020 ends on 2021-01-03 (Sun)
+          expect(EasyDateTime(2021, 1, 1).weekOfYear, 53);
+          expect(EasyDateTime(2021, 1, 3).weekOfYear, 53);
+          expect(
+            EasyDateTime(2021, 1, 4).weekOfYear,
+            1,
+          ); // Monday, week 1 of 2021
+        },
+      );
 
       test('handles week 53 in years with 53 weeks', () {
         // 2020 has 53 weeks (starts on Wednesday, leap year)
@@ -149,8 +153,17 @@ void main() {
       });
 
       test('preserves timezone', () {
-        final dt =
-            EasyDateTime(2025, 2, 15, 10, 0, 0, 0, 0, TimeZones.shanghai);
+        final dt = EasyDateTime(
+          2025,
+          2,
+          15,
+          10,
+          0,
+          0,
+          0,
+          0,
+          TimeZones.shanghai,
+        );
         expect(dt.daysInMonth, 28);
       });
     });
@@ -216,10 +229,7 @@ void main() {
 
       test('returns correct value at day boundaries', () {
         // Start of Saturday
-        expect(
-          EasyDateTime(2025, 1, 4, 0, 0, 0, 0, 0).isWeekend,
-          isTrue,
-        );
+        expect(EasyDateTime(2025, 1, 4, 0, 0, 0, 0, 0).isWeekend, isTrue);
         // End of Friday
         expect(
           EasyDateTime(2025, 1, 3, 23, 59, 59, 999, 999).isWeekend,
@@ -319,8 +329,17 @@ void main() {
       });
 
       test('preserves timezone', () {
-        final dt =
-            EasyDateTime(2025, 6, 15, 10, 0, 0, 0, 0, TimeZones.shanghai);
+        final dt = EasyDateTime(
+          2025,
+          6,
+          15,
+          10,
+          0,
+          0,
+          0,
+          0,
+          TimeZones.shanghai,
+        );
         expect(dt.quarter, 2);
       });
     });
@@ -328,15 +347,33 @@ void main() {
     group('isDst', () {
       test('returns true during summer in DST-observing timezone', () {
         // New York observes DST: EDT from March to November
-        final summer =
-            EasyDateTime(2025, 7, 15, 12, 0, 0, 0, 0, TimeZones.newYork);
+        final summer = EasyDateTime(
+          2025,
+          7,
+          15,
+          12,
+          0,
+          0,
+          0,
+          0,
+          TimeZones.newYork,
+        );
         expect(summer.isDst, isTrue);
       });
 
       test('returns false during winter in DST-observing timezone', () {
         // New York: EST in winter (no DST)
-        final winter =
-            EasyDateTime(2025, 1, 15, 12, 0, 0, 0, 0, TimeZones.newYork);
+        final winter = EasyDateTime(
+          2025,
+          1,
+          15,
+          12,
+          0,
+          0,
+          0,
+          0,
+          TimeZones.newYork,
+        );
         expect(winter.isDst, isFalse);
       });
 
@@ -347,37 +384,91 @@ void main() {
 
       test('returns false for timezones that do not observe DST', () {
         // China (Asia/Shanghai) does not observe DST
-        final shanghai =
-            EasyDateTime(2025, 7, 15, 12, 0, 0, 0, 0, TimeZones.shanghai);
+        final shanghai = EasyDateTime(
+          2025,
+          7,
+          15,
+          12,
+          0,
+          0,
+          0,
+          0,
+          TimeZones.shanghai,
+        );
         expect(shanghai.isDst, isFalse);
 
         // Japan (Asia/Tokyo) does not observe DST
-        final tokyo =
-            EasyDateTime(2025, 7, 15, 12, 0, 0, 0, 0, TimeZones.tokyo);
+        final tokyo = EasyDateTime(
+          2025,
+          7,
+          15,
+          12,
+          0,
+          0,
+          0,
+          0,
+          TimeZones.tokyo,
+        );
         expect(tokyo.isDst, isFalse);
       });
 
       test('handles DST transition boundaries correctly', () {
         // 2025 US DST starts: March 9, 2:00 AM -> 3:00 AM
         // Just before transition (1:59 AM EST)
-        final beforeDst =
-            EasyDateTime(2025, 3, 9, 1, 59, 0, 0, 0, TimeZones.newYork);
+        final beforeDst = EasyDateTime(
+          2025,
+          3,
+          9,
+          1,
+          59,
+          0,
+          0,
+          0,
+          TimeZones.newYork,
+        );
         expect(beforeDst.isDst, isFalse);
 
         // After transition (3:00 AM EDT)
-        final afterDst =
-            EasyDateTime(2025, 3, 9, 3, 0, 0, 0, 0, TimeZones.newYork);
+        final afterDst = EasyDateTime(
+          2025,
+          3,
+          9,
+          3,
+          0,
+          0,
+          0,
+          0,
+          TimeZones.newYork,
+        );
         expect(afterDst.isDst, isTrue);
 
         // 2025 US DST ends: November 2, 2:00 AM -> 1:00 AM
         // Just before fall back (still EDT)
-        final beforeFallBack =
-            EasyDateTime(2025, 11, 2, 0, 30, 0, 0, 0, TimeZones.newYork);
+        final beforeFallBack = EasyDateTime(
+          2025,
+          11,
+          2,
+          0,
+          30,
+          0,
+          0,
+          0,
+          TimeZones.newYork,
+        );
         expect(beforeFallBack.isDst, isTrue);
 
         // After fall back (EST)
-        final afterFallBack =
-            EasyDateTime(2025, 11, 2, 3, 0, 0, 0, 0, TimeZones.newYork);
+        final afterFallBack = EasyDateTime(
+          2025,
+          11,
+          2,
+          3,
+          0,
+          0,
+          0,
+          0,
+          TimeZones.newYork,
+        );
         expect(afterFallBack.isDst, isFalse);
       });
     });
@@ -400,8 +491,17 @@ void main() {
 
       test('maintains timezone context when comparing', () {
         // A past date in Tokyo should still be past
-        final pastTokyo =
-            EasyDateTime(2020, 1, 1, 12, 0, 0, 0, 0, TimeZones.tokyo);
+        final pastTokyo = EasyDateTime(
+          2020,
+          1,
+          1,
+          12,
+          0,
+          0,
+          0,
+          0,
+          TimeZones.tokyo,
+        );
         expect(pastTokyo.isPast, isTrue);
       });
     });
@@ -419,21 +519,32 @@ void main() {
 
       test('maintains timezone context when comparing', () {
         // A future date in Shanghai should still be future
-        final futureShanghai =
-            EasyDateTime(2100, 1, 1, 12, 0, 0, 0, 0, TimeZones.shanghai);
+        final futureShanghai = EasyDateTime(
+          2100,
+          1,
+          1,
+          12,
+          0,
+          0,
+          0,
+          0,
+          TimeZones.shanghai,
+        );
         expect(futureShanghai.isFuture, isTrue);
       });
 
-      test('isPast and isFuture are mutually exclusive for non-current times',
-          () {
-        final past = EasyDateTime(2020, 1, 1);
-        final future = EasyDateTime(2100, 1, 1);
+      test(
+        'isPast and isFuture are mutually exclusive for non-current times',
+        () {
+          final past = EasyDateTime(2020, 1, 1);
+          final future = EasyDateTime(2100, 1, 1);
 
-        expect(past.isPast, isTrue);
-        expect(past.isFuture, isFalse);
-        expect(future.isPast, isFalse);
-        expect(future.isFuture, isTrue);
-      });
+          expect(past.isPast, isTrue);
+          expect(past.isFuture, isFalse);
+          expect(future.isPast, isFalse);
+          expect(future.isFuture, isTrue);
+        },
+      );
     });
 
     group('isThisWeek', () {

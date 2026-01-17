@@ -33,8 +33,17 @@ void main() {
       });
 
       test('dateOnly preserves timezone', () {
-        final dt =
-            EasyDateTime(2025, 12, 15, 14, 30, 0, 0, 0, TimeZones.shanghai);
+        final dt = EasyDateTime(
+          2025,
+          12,
+          15,
+          14,
+          30,
+          0,
+          0,
+          0,
+          TimeZones.shanghai,
+        );
         final dateOnly = dt.dateOnly;
         expect(dateOnly.locationName, 'Asia/Shanghai');
       });
@@ -56,8 +65,17 @@ void main() {
       });
 
       test('endOfDay preserves timezone', () {
-        final dt =
-            EasyDateTime(2025, 12, 15, 10, 0, 0, 0, 0, TimeZones.newYork);
+        final dt = EasyDateTime(
+          2025,
+          12,
+          15,
+          10,
+          0,
+          0,
+          0,
+          0,
+          TimeZones.newYork,
+        );
         expect(dt.endOfDay.locationName, 'America/New_York');
       });
     });
@@ -175,8 +193,17 @@ void main() {
       });
 
       test('addCalendarDays preserves timezone', () {
-        final dt =
-            EasyDateTime(2025, 6, 15, 10, 0, 0, 0, 0, TimeZones.shanghai);
+        final dt = EasyDateTime(
+          2025,
+          6,
+          15,
+          10,
+          0,
+          0,
+          0,
+          0,
+          TimeZones.shanghai,
+        );
         final result = dt.addCalendarDays(5);
 
         expect(result.locationName, 'Asia/Shanghai');
@@ -379,16 +406,18 @@ void main() {
         expect(start.microsecond, 0);
       });
 
-      test('startOf(week) returns previous Monday midnight (Dart standard)',
-          () {
-        // 2025-06-18 is a Wednesday
-        final wed = EasyDateTime(2025, 6, 18, 14, 30);
-        final start = wed.startOf(DateTimeUnit.week);
+      test(
+        'startOf(week) returns previous Monday midnight (Dart standard)',
+        () {
+          // 2025-06-18 is a Wednesday
+          final wed = EasyDateTime(2025, 6, 18, 14, 30);
+          final start = wed.startOf(DateTimeUnit.week);
 
-        expect(start.weekday, DateTime.monday);
-        expect(start.day, 16); // Monday, June 16
-        expect(start.hour, 0);
-      });
+          expect(start.weekday, DateTime.monday);
+          expect(start.day, 16); // Monday, June 16
+          expect(start.hour, 0);
+        },
+      );
 
       test('startOf(week) on Monday returns same day at midnight', () {
         // 2025-06-16 is a Monday

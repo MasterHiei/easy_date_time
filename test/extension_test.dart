@@ -55,10 +55,7 @@ void main() {
 
       test('Duration getters allow summing for complex Durations', () {
         final combined = 1.days + 2.hours + 30.minutes;
-        expect(
-          combined,
-          const Duration(days: 1, hours: 2, minutes: 30),
-        );
+        expect(combined, const Duration(days: 1, hours: 2, minutes: 30));
       });
     });
 
@@ -71,15 +68,17 @@ void main() {
         expect(easyDt.millisecondsSinceEpoch, dt.millisecondsSinceEpoch);
       });
 
-      test('toEasyDateTime(location: loc) converts using specified location',
-          () {
-        final dt = DateTime.utc(2025, 12, 1, 10, 30);
-        final tokyo = getLocation('Asia/Tokyo');
-        final easyDt = dt.toEasyDateTime(location: tokyo);
+      test(
+        'toEasyDateTime(location: loc) converts using specified location',
+        () {
+          final dt = DateTime.utc(2025, 12, 1, 10, 30);
+          final tokyo = getLocation('Asia/Tokyo');
+          final easyDt = dt.toEasyDateTime(location: tokyo);
 
-        expect(easyDt.locationName, 'Asia/Tokyo');
-        expect(easyDt.millisecondsSinceEpoch, dt.millisecondsSinceEpoch);
-      });
+          expect(easyDt.locationName, 'Asia/Tokyo');
+          expect(easyDt.millisecondsSinceEpoch, dt.millisecondsSinceEpoch);
+        },
+      );
 
       test('toEasyDateTime() respects active global default location', () {
         EasyDateTime.setDefaultLocation(getLocation('Europe/London'));

@@ -29,22 +29,23 @@ void main() {
       });
 
       test(
-          'should transition from 2025-12-31 to 2026-01-01 when adding 1 microsecond',
-          () {
-        // Arrange
-        final last = EasyDateTime.utc(2025, 12, 31, 23, 59, 59, 999, 999);
+        'should transition from 2025-12-31 to 2026-01-01 when adding 1 microsecond',
+        () {
+          // Arrange
+          final last = EasyDateTime.utc(2025, 12, 31, 23, 59, 59, 999, 999);
 
-        // Act
-        final next = last + const Duration(microseconds: 1);
+          // Act
+          final next = last + const Duration(microseconds: 1);
 
-        // Assert
-        expect(next.year, 2026);
-        expect(next.month, 1);
-        expect(next.day, 1);
-        expect(next.hour, 0);
-        expect(next.minute, 0);
-        expect(next.second, 0);
-      });
+          // Assert
+          expect(next.year, 2026);
+          expect(next.month, 1);
+          expect(next.day, 1);
+          expect(next.hour, 0);
+          expect(next.minute, 0);
+          expect(next.second, 0);
+        },
+      );
 
       test('should allow negative millisecondsSinceEpoch (Pre-1970)', () {
         // Arrange & Act
@@ -74,15 +75,21 @@ void main() {
     group('Month', () {
       test('should accept 31 days for valid months', () {
         for (final m in [1, 3, 5, 7, 8, 10, 12]) {
-          expect(EasyDateTime.utc(2025, m, 31).day, 31,
-              reason: 'Month $m should have 31 days');
+          expect(
+            EasyDateTime.utc(2025, m, 31).day,
+            31,
+            reason: 'Month $m should have 31 days',
+          );
         }
       });
 
       test('should accept 30 days for valid months', () {
         for (final m in [4, 6, 9, 11]) {
-          expect(EasyDateTime.utc(2025, m, 30).day, 30,
-              reason: 'Month $m should have 30 days');
+          expect(
+            EasyDateTime.utc(2025, m, 30).day,
+            30,
+            reason: 'Month $m should have 30 days',
+          );
         }
       });
 
@@ -199,13 +206,15 @@ void main() {
         expect(nextMonth.day, 1);
       });
 
-      test('should transition month boundary backward when subtracting days',
-          () {
-        final firstOfMonth = EasyDateTime(2025, 2, 1);
-        final prevMonth = firstOfMonth - Duration(days: 1);
-        expect(prevMonth.month, 1);
-        expect(prevMonth.day, 31);
-      });
+      test(
+        'should transition month boundary backward when subtracting days',
+        () {
+          final firstOfMonth = EasyDateTime(2025, 2, 1);
+          final prevMonth = firstOfMonth - Duration(days: 1);
+          expect(prevMonth.month, 1);
+          expect(prevMonth.day, 31);
+        },
+      );
 
       test('should transition year boundary when adding days', () {
         final endOfYear = EasyDateTime(2025, 12, 31);
@@ -243,21 +252,22 @@ void main() {
     });
 
     test(
-        'should maintain instant equality but different locationName across timezones',
-        () {
-      // Arrange
-      final tokyo = getLocation('Asia/Tokyo');
-      final ny = getLocation('America/New_York');
-      final dt1 = EasyDateTime(2025, 6, 15, 10, 0, 0, 0, 0, tokyo);
+      'should maintain instant equality but different locationName across timezones',
+      () {
+        // Arrange
+        final tokyo = getLocation('Asia/Tokyo');
+        final ny = getLocation('America/New_York');
+        final dt1 = EasyDateTime(2025, 6, 15, 10, 0, 0, 0, 0, tokyo);
 
-      // Act
-      final dt2 = dt1.inLocation(ny);
+        // Act
+        final dt2 = dt1.inLocation(ny);
 
-      // Assert
-      expect(dt1.isAtSameMomentAs(dt2), isTrue);
-      expect(dt1.millisecondsSinceEpoch, dt2.millisecondsSinceEpoch);
-      expect(dt1.locationName, isNot(dt2.locationName));
-    });
+        // Assert
+        expect(dt1.isAtSameMomentAs(dt2), isTrue);
+        expect(dt1.millisecondsSinceEpoch, dt2.millisecondsSinceEpoch);
+        expect(dt1.locationName, isNot(dt2.locationName));
+      },
+    );
   });
 
   group('DST Transitions', () {
@@ -323,23 +333,26 @@ void main() {
 
     group('Cross-DST Arithmetic', () {
       test(
-          'should yield 2 hr physical difference for 3 calendar hours across gap',
-          () {
-        final ny = getLocation('America/New_York');
-        final t1 = EasyDateTime(2025, 3, 9, 1, 0, 0, 0, 0, ny);
-        final t2 = EasyDateTime(2025, 3, 9, 4, 0, 0, 0, 0, ny);
-        expect(t2.difference(t1).inHours, 2);
-      });
+        'should yield 2 hr physical difference for 3 calendar hours across gap',
+        () {
+          final ny = getLocation('America/New_York');
+          final t1 = EasyDateTime(2025, 3, 9, 1, 0, 0, 0, 0, ny);
+          final t2 = EasyDateTime(2025, 3, 9, 4, 0, 0, 0, 0, ny);
+          expect(t2.difference(t1).inHours, 2);
+        },
+      );
 
-      test('should adding 2 hours to 01:30 EST arrive at 04:30 EDT across gap',
-          () {
-        final ny = getLocation('America/New_York');
-        final before = EasyDateTime(2025, 3, 9, 1, 30, 0, 0, 0, ny);
-        final after = before + const Duration(hours: 2);
-        expect(after.hour, 4);
-        expect(after.minute, 30);
-        expect(after.timeZoneOffset.inHours, -4);
-      });
+      test(
+        'should adding 2 hours to 01:30 EST arrive at 04:30 EDT across gap',
+        () {
+          final ny = getLocation('America/New_York');
+          final before = EasyDateTime(2025, 3, 9, 1, 30, 0, 0, 0, ny);
+          final after = before + const Duration(hours: 2);
+          expect(after.hour, 4);
+          expect(after.minute, 30);
+          expect(after.timeZoneOffset.inHours, -4);
+        },
+      );
     });
 
     group('UTC Consistency', () {
@@ -351,20 +364,26 @@ void main() {
         expect(after.timeZoneOffset.inHours, -4);
       });
 
-      test('should show 1ms difference between 01:59:59.999 and 03:00:00.000',
-          () {
-        final ny = getLocation('America/New_York');
-        final last = EasyDateTime(2025, 3, 9, 1, 59, 59, 999, 0, ny);
-        final first = EasyDateTime(2025, 3, 9, 3, 0, 0, 0, 0, ny);
-        expect(first.millisecondsSinceEpoch - last.millisecondsSinceEpoch, 1);
-      });
+      test(
+        'should show 1ms difference between 01:59:59.999 and 03:00:00.000',
+        () {
+          final ny = getLocation('America/New_York');
+          final last = EasyDateTime(2025, 3, 9, 1, 59, 59, 999, 0, ny);
+          final first = EasyDateTime(2025, 3, 9, 3, 0, 0, 0, 0, ny);
+          expect(first.millisecondsSinceEpoch - last.millisecondsSinceEpoch, 1);
+        },
+      );
 
       test('toUtc should convert EST/EDT correctly', () {
         final ny = getLocation('America/New_York');
-        expect(EasyDateTime(2025, 3, 9, 1, 0, 0, 0, 0, ny).toUtc().hour,
-            6); // 1+5=6
-        expect(EasyDateTime(2025, 3, 9, 3, 0, 0, 0, 0, ny).toUtc().hour,
-            7); // 3+4=7
+        expect(
+          EasyDateTime(2025, 3, 9, 1, 0, 0, 0, 0, ny).toUtc().hour,
+          6,
+        ); // 1+5=6
+        expect(
+          EasyDateTime(2025, 3, 9, 3, 0, 0, 0, 0, ny).toUtc().hour,
+          7,
+        ); // 3+4=7
       });
     });
 
@@ -372,15 +391,31 @@ void main() {
       test('Tokyo should maintain +09:00 year round', () {
         final tokyo = getLocation('Asia/Tokyo');
         expect(
-          EasyDateTime(2025, 3, 9, 12, 0, 0, 0, 0, tokyo)
-              .timeZoneOffset
-              .inHours,
+          EasyDateTime(
+            2025,
+            3,
+            9,
+            12,
+            0,
+            0,
+            0,
+            0,
+            tokyo,
+          ).timeZoneOffset.inHours,
           9,
         );
         expect(
-          EasyDateTime(2025, 11, 2, 12, 0, 0, 0, 0, tokyo)
-              .timeZoneOffset
-              .inHours,
+          EasyDateTime(
+            2025,
+            11,
+            2,
+            12,
+            0,
+            0,
+            0,
+            0,
+            tokyo,
+          ).timeZoneOffset.inHours,
           9,
         );
       });
@@ -388,15 +423,31 @@ void main() {
       test('Shanghai should maintain +08:00 year round', () {
         final shanghai = getLocation('Asia/Shanghai');
         expect(
-          EasyDateTime(2025, 3, 30, 12, 0, 0, 0, 0, shanghai)
-              .timeZoneOffset
-              .inHours,
+          EasyDateTime(
+            2025,
+            3,
+            30,
+            12,
+            0,
+            0,
+            0,
+            0,
+            shanghai,
+          ).timeZoneOffset.inHours,
           8,
         );
         expect(
-          EasyDateTime(2025, 10, 26, 12, 0, 0, 0, 0, shanghai)
-              .timeZoneOffset
-              .inHours,
+          EasyDateTime(
+            2025,
+            10,
+            26,
+            12,
+            0,
+            0,
+            0,
+            0,
+            shanghai,
+          ).timeZoneOffset.inHours,
           8,
         );
       });
@@ -519,8 +570,9 @@ void main() {
 
     test('should preserve instant in roundtrip', () {
       final original = EasyDateTime.utc(2025, 6, 15, 10, 30);
-      final restored =
-          EasyDateTime.fromIso8601String(original.toIso8601String());
+      final restored = EasyDateTime.fromIso8601String(
+        original.toIso8601String(),
+      );
       expect(restored.isAtSameMomentAs(original), isTrue);
     });
   });
@@ -529,14 +581,15 @@ void main() {
     test('should update specified fields', () {
       final dt = EasyDateTime.utc(2025, 1, 1);
       final m = dt.copyWith(
-          year: 2026,
-          month: 12,
-          day: 31,
-          hour: 23,
-          minute: 59,
-          second: 59,
-          millisecond: 999,
-          microsecond: 999);
+        year: 2026,
+        month: 12,
+        day: 31,
+        hour: 23,
+        minute: 59,
+        second: 59,
+        millisecond: 999,
+        microsecond: 999,
+      );
       expect(m.year, 2026);
       expect(m.month, 12);
       expect(m.day, 31);
@@ -635,13 +688,15 @@ void main() {
       expect(dt.format("'yyyy'"), 'yyyy');
     });
 
-    test('toUtc and inLocation roundtrip should preserve microsecond precision',
-        () {
-      final now = EasyDateTime.now();
-      final utc = now.toUtc();
-      final back = utc.inLocation(now.location);
-      expect(back.microsecondsSinceEpoch, now.microsecondsSinceEpoch);
-      expect(back.isAtSameMomentAs(now), isTrue);
-    });
+    test(
+      'toUtc and inLocation roundtrip should preserve microsecond precision',
+      () {
+        final now = EasyDateTime.now();
+        final utc = now.toUtc();
+        final back = utc.inLocation(now.location);
+        expect(back.microsecondsSinceEpoch, now.microsecondsSinceEpoch);
+        expect(back.isAtSameMomentAs(now), isTrue);
+      },
+    );
   });
 }

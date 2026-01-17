@@ -66,13 +66,15 @@ void main() {
     });
 
     group('Utilities', () {
-      test('availableTimezones should return non-empty list of identifiers',
-          () {
-        final zones = TimeZones.availableTimezones;
-        expect(zones, isNotEmpty);
-        expect(zones, contains('UTC'));
-        expect(zones, contains('Asia/Tokyo'));
-      });
+      test(
+        'availableTimezones should return non-empty list of identifiers',
+        () {
+          final zones = TimeZones.availableTimezones;
+          expect(zones, isNotEmpty);
+          expect(zones, contains('UTC'));
+          expect(zones, contains('Asia/Tokyo'));
+        },
+      );
 
       test('isValid should return true for valid identifiers', () {
         expect(TimeZones.isValid('Asia/Tokyo'), isTrue);
@@ -125,24 +127,15 @@ void main() {
 
     group('Error Handling', () {
       test('getLocation should throw on invalid identifier', () {
-        expect(
-          () => getLocation('Invalid/Timezone'),
-          throwsException,
-        );
+        expect(() => getLocation('Invalid/Timezone'), throwsException);
       });
 
       test('getLocation should throw on empty string', () {
-        expect(
-          () => getLocation(''),
-          throwsException,
-        );
+        expect(() => getLocation(''), throwsException);
       });
 
       test('getLocation should throw on partial match', () {
-        expect(
-          () => getLocation('Asia'),
-          throwsException,
-        );
+        expect(() => getLocation('Asia'), throwsException);
       });
     });
   });

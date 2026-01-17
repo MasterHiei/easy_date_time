@@ -10,12 +10,15 @@ EventResponse _$EventResponseFromJson(Map<String, dynamic> json) =>
     EventResponse(
       id: json['id'] as String,
       title: json['title'] as String,
-      startTime:
-          const EasyDateTimeConverter().fromJson(json['startTime'] as String),
-      endTime: const EasyDateTimeNullableConverter()
-          .fromJson(json['endTime'] as String?),
-      createdAt:
-          const EasyDateTimeConverter().fromJson(json['createdAt'] as String),
+      startTime: const EasyDateTimeConverter().fromJson(
+        json['startTime'] as String,
+      ),
+      endTime: const EasyDateTimeNullableConverter().fromJson(
+        json['endTime'] as String?,
+      ),
+      createdAt: const EasyDateTimeConverter().fromJson(
+        json['createdAt'] as String,
+      ),
     );
 
 Map<String, dynamic> _$EventResponseToJson(EventResponse instance) =>
@@ -30,10 +33,12 @@ Map<String, dynamic> _$EventResponseToJson(EventResponse instance) =>
 CreateEventRequest _$CreateEventRequestFromJson(Map<String, dynamic> json) =>
     CreateEventRequest(
       title: json['title'] as String,
-      startTime:
-          const EasyDateTimeConverter().fromJson(json['startTime'] as String),
-      endTime: const EasyDateTimeNullableConverter()
-          .fromJson(json['endTime'] as String?),
+      startTime: const EasyDateTimeConverter().fromJson(
+        json['startTime'] as String,
+      ),
+      endTime: const EasyDateTimeNullableConverter().fromJson(
+        json['endTime'] as String?,
+      ),
     );
 
 Map<String, dynamic> _$CreateEventRequestToJson(CreateEventRequest instance) =>
@@ -46,10 +51,12 @@ Map<String, dynamic> _$CreateEventRequestToJson(CreateEventRequest instance) =>
 ScheduleResponse _$ScheduleResponseFromJson(Map<String, dynamic> json) =>
     ScheduleResponse(
       id: json['id'] as String,
-      scheduledAt:
-          const EasyDateTimeConverter().fromJson(json['scheduledAt'] as String),
-      completedAt: const EasyDateTimeNullableConverter()
-          .fromJson(json['completedAt'] as String?),
+      scheduledAt: const EasyDateTimeConverter().fromJson(
+        json['scheduledAt'] as String,
+      ),
+      completedAt: const EasyDateTimeNullableConverter().fromJson(
+        json['completedAt'] as String?,
+      ),
       status: json['status'] as String,
     );
 
@@ -57,8 +64,9 @@ Map<String, dynamic> _$ScheduleResponseToJson(ScheduleResponse instance) =>
     <String, dynamic>{
       'id': instance.id,
       'scheduledAt': const EasyDateTimeConverter().toJson(instance.scheduledAt),
-      'completedAt':
-          const EasyDateTimeNullableConverter().toJson(instance.completedAt),
+      'completedAt': const EasyDateTimeNullableConverter().toJson(
+        instance.completedAt,
+      ),
       'status': instance.status,
     };
 
@@ -69,10 +77,7 @@ Map<String, dynamic> _$ScheduleResponseToJson(ScheduleResponse instance) =>
 // ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers
 
 class _ApiClient implements ApiClient {
-  _ApiClient(
-    this._dio, {
-    this.baseUrl,
-  }) {
+  _ApiClient(this._dio, {this.baseUrl}) {
     baseUrl ??= 'https://api.example.com';
   }
 
@@ -86,23 +91,18 @@ class _ApiClient implements ApiClient {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<List<dynamic>>(_setStreamType<List<EventResponse>>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
+    final _result = await _dio.fetch<List<dynamic>>(
+      _setStreamType<List<EventResponse>>(
+        Options(method: 'GET', headers: _headers, extra: _extra)
             .compose(
               _dio.options,
               '/events',
               queryParameters: queryParameters,
               data: _data,
             )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
+            .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+      ),
+    );
     var value = _result.data!
         .map((dynamic i) => EventResponse.fromJson(i as Map<String, dynamic>))
         .toList();
@@ -115,23 +115,18 @@ class _ApiClient implements ApiClient {
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<EventResponse>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+      _setStreamType<EventResponse>(
+        Options(method: 'GET', headers: _headers, extra: _extra)
             .compose(
               _dio.options,
               '/events/${id}',
               queryParameters: queryParameters,
               data: _data,
             )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
+            .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+      ),
+    );
     final value = EventResponse.fromJson(_result.data!);
     return value;
   }
@@ -143,56 +138,40 @@ class _ApiClient implements ApiClient {
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(request.toJson());
-    final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<EventResponse>(Options(
-      method: 'POST',
-      headers: _headers,
-      extra: _extra,
-    )
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+      _setStreamType<EventResponse>(
+        Options(method: 'POST', headers: _headers, extra: _extra)
             .compose(
               _dio.options,
               '/events',
               queryParameters: queryParameters,
               data: _data,
             )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
+            .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+      ),
+    );
     final value = EventResponse.fromJson(_result.data!);
     return value;
   }
 
   @override
-  Future<List<EventResponse>> getEventsInRange(
-    String start,
-    String end,
-  ) async {
+  Future<List<EventResponse>> getEventsInRange(String start, String end) async {
     const _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{
-      r'start': start,
-      r'end': end,
-    };
+    final queryParameters = <String, dynamic>{r'start': start, r'end': end};
     final _headers = <String, dynamic>{};
     final Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<List<dynamic>>(_setStreamType<List<EventResponse>>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
+    final _result = await _dio.fetch<List<dynamic>>(
+      _setStreamType<List<EventResponse>>(
+        Options(method: 'GET', headers: _headers, extra: _extra)
             .compose(
               _dio.options,
               '/events',
               queryParameters: queryParameters,
               data: _data,
             )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
+            .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+      ),
+    );
     var value = _result.data!
         .map((dynamic i) => EventResponse.fromJson(i as Map<String, dynamic>))
         .toList();
@@ -205,26 +184,22 @@ class _ApiClient implements ApiClient {
     final queryParameters = <String, dynamic>{r'date': date};
     final _headers = <String, dynamic>{};
     final Map<String, dynamic>? _data = null;
-    final _result = await _dio
-        .fetch<List<dynamic>>(_setStreamType<List<ScheduleResponse>>(Options(
-      method: 'GET',
-      headers: _headers,
-      extra: _extra,
-    )
+    final _result = await _dio.fetch<List<dynamic>>(
+      _setStreamType<List<ScheduleResponse>>(
+        Options(method: 'GET', headers: _headers, extra: _extra)
             .compose(
               _dio.options,
               '/schedules',
               queryParameters: queryParameters,
               data: _data,
             )
-            .copyWith(
-                baseUrl: _combineBaseUrls(
-              _dio.options.baseUrl,
-              baseUrl,
-            ))));
+            .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+      ),
+    );
     var value = _result.data!
         .map(
-            (dynamic i) => ScheduleResponse.fromJson(i as Map<String, dynamic>))
+          (dynamic i) => ScheduleResponse.fromJson(i as Map<String, dynamic>),
+        )
         .toList();
     return value;
   }
@@ -242,10 +217,7 @@ class _ApiClient implements ApiClient {
     return requestOptions;
   }
 
-  String _combineBaseUrls(
-    String dioBaseUrl,
-    String? baseUrl,
-  ) {
+  String _combineBaseUrls(String dioBaseUrl, String? baseUrl) {
     if (baseUrl == null || baseUrl.trim().isEmpty) {
       return dioBaseUrl;
     }

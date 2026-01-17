@@ -12,7 +12,8 @@ part of 'freezed_example.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 Event _$EventFromJson(Map<String, dynamic> json) {
   return _Event.fromJson(json);
@@ -38,12 +39,13 @@ abstract class $EventCopyWith<$Res> {
   factory $EventCopyWith(Event value, $Res Function(Event) then) =
       _$EventCopyWithImpl<$Res, Event>;
   @useResult
-  $Res call(
-      {String id,
-      String title,
-      @EasyDateTimeConverter() EasyDateTime startTime,
-      @EasyDateTimeNullableConverter() EasyDateTime? endTime,
-      bool isAllDay});
+  $Res call({
+    String id,
+    String title,
+    @EasyDateTimeConverter() EasyDateTime startTime,
+    @EasyDateTimeNullableConverter() EasyDateTime? endTime,
+    bool isAllDay,
+  });
 }
 
 /// @nodoc
@@ -65,44 +67,49 @@ class _$EventCopyWithImpl<$Res, $Val extends Event>
     Object? endTime = freezed,
     Object? isAllDay = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      title: null == title
-          ? _value.title
-          : title // ignore: cast_nullable_to_non_nullable
-              as String,
-      startTime: null == startTime
-          ? _value.startTime
-          : startTime // ignore: cast_nullable_to_non_nullable
-              as EasyDateTime,
-      endTime: freezed == endTime
-          ? _value.endTime
-          : endTime // ignore: cast_nullable_to_non_nullable
-              as EasyDateTime?,
-      isAllDay: null == isAllDay
-          ? _value.isAllDay
-          : isAllDay // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            title: null == title
+                ? _value.title
+                : title // ignore: cast_nullable_to_non_nullable
+                      as String,
+            startTime: null == startTime
+                ? _value.startTime
+                : startTime // ignore: cast_nullable_to_non_nullable
+                      as EasyDateTime,
+            endTime: freezed == endTime
+                ? _value.endTime
+                : endTime // ignore: cast_nullable_to_non_nullable
+                      as EasyDateTime?,
+            isAllDay: null == isAllDay
+                ? _value.isAllDay
+                : isAllDay // ignore: cast_nullable_to_non_nullable
+                      as bool,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$EventImplCopyWith<$Res> implements $EventCopyWith<$Res> {
   factory _$$EventImplCopyWith(
-          _$EventImpl value, $Res Function(_$EventImpl) then) =
-      __$$EventImplCopyWithImpl<$Res>;
+    _$EventImpl value,
+    $Res Function(_$EventImpl) then,
+  ) = __$$EventImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      String title,
-      @EasyDateTimeConverter() EasyDateTime startTime,
-      @EasyDateTimeNullableConverter() EasyDateTime? endTime,
-      bool isAllDay});
+  $Res call({
+    String id,
+    String title,
+    @EasyDateTimeConverter() EasyDateTime startTime,
+    @EasyDateTimeNullableConverter() EasyDateTime? endTime,
+    bool isAllDay,
+  });
 }
 
 /// @nodoc
@@ -110,8 +117,9 @@ class __$$EventImplCopyWithImpl<$Res>
     extends _$EventCopyWithImpl<$Res, _$EventImpl>
     implements _$$EventImplCopyWith<$Res> {
   __$$EventImplCopyWithImpl(
-      _$EventImpl _value, $Res Function(_$EventImpl) _then)
-      : super(_value, _then);
+    _$EventImpl _value,
+    $Res Function(_$EventImpl) _then,
+  ) : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -122,40 +130,43 @@ class __$$EventImplCopyWithImpl<$Res>
     Object? endTime = freezed,
     Object? isAllDay = null,
   }) {
-    return _then(_$EventImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      title: null == title
-          ? _value.title
-          : title // ignore: cast_nullable_to_non_nullable
-              as String,
-      startTime: null == startTime
-          ? _value.startTime
-          : startTime // ignore: cast_nullable_to_non_nullable
-              as EasyDateTime,
-      endTime: freezed == endTime
-          ? _value.endTime
-          : endTime // ignore: cast_nullable_to_non_nullable
-              as EasyDateTime?,
-      isAllDay: null == isAllDay
-          ? _value.isAllDay
-          : isAllDay // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
+    return _then(
+      _$EventImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        title: null == title
+            ? _value.title
+            : title // ignore: cast_nullable_to_non_nullable
+                  as String,
+        startTime: null == startTime
+            ? _value.startTime
+            : startTime // ignore: cast_nullable_to_non_nullable
+                  as EasyDateTime,
+        endTime: freezed == endTime
+            ? _value.endTime
+            : endTime // ignore: cast_nullable_to_non_nullable
+                  as EasyDateTime?,
+        isAllDay: null == isAllDay
+            ? _value.isAllDay
+            : isAllDay // ignore: cast_nullable_to_non_nullable
+                  as bool,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$EventImpl implements _Event {
-  const _$EventImpl(
-      {required this.id,
-      required this.title,
-      @EasyDateTimeConverter() required this.startTime,
-      @EasyDateTimeNullableConverter() this.endTime,
-      this.isAllDay = false});
+  const _$EventImpl({
+    required this.id,
+    required this.title,
+    @EasyDateTimeConverter() required this.startTime,
+    @EasyDateTimeNullableConverter() this.endTime,
+    this.isAllDay = false,
+  });
 
   factory _$EventImpl.fromJson(Map<String, dynamic> json) =>
       _$$EventImplFromJson(json);
@@ -206,19 +217,18 @@ class _$EventImpl implements _Event {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$EventImplToJson(
-      this,
-    );
+    return _$$EventImplToJson(this);
   }
 }
 
 abstract class _Event implements Event {
-  const factory _Event(
-      {required final String id,
-      required final String title,
-      @EasyDateTimeConverter() required final EasyDateTime startTime,
-      @EasyDateTimeNullableConverter() final EasyDateTime? endTime,
-      final bool isAllDay}) = _$EventImpl;
+  const factory _Event({
+    required final String id,
+    required final String title,
+    @EasyDateTimeConverter() required final EasyDateTime startTime,
+    @EasyDateTimeNullableConverter() final EasyDateTime? endTime,
+    final bool isAllDay,
+  }) = _$EventImpl;
 
   factory _Event.fromJson(Map<String, dynamic> json) = _$EventImpl.fromJson;
 
@@ -265,12 +275,13 @@ abstract class $UserCopyWith<$Res> {
   factory $UserCopyWith(User value, $Res Function(User) then) =
       _$UserCopyWithImpl<$Res, User>;
   @useResult
-  $Res call(
-      {String id,
-      String name,
-      @EasyDateTimeConverter() EasyDateTime createdAt,
-      @EasyDateTimeNullableConverter() EasyDateTime? lastLoginAt,
-      @EasyDateTimeNullableConverter() EasyDateTime? deletedAt});
+  $Res call({
+    String id,
+    String name,
+    @EasyDateTimeConverter() EasyDateTime createdAt,
+    @EasyDateTimeNullableConverter() EasyDateTime? lastLoginAt,
+    @EasyDateTimeNullableConverter() EasyDateTime? deletedAt,
+  });
 }
 
 /// @nodoc
@@ -292,44 +303,49 @@ class _$UserCopyWithImpl<$Res, $Val extends User>
     Object? lastLoginAt = freezed,
     Object? deletedAt = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as EasyDateTime,
-      lastLoginAt: freezed == lastLoginAt
-          ? _value.lastLoginAt
-          : lastLoginAt // ignore: cast_nullable_to_non_nullable
-              as EasyDateTime?,
-      deletedAt: freezed == deletedAt
-          ? _value.deletedAt
-          : deletedAt // ignore: cast_nullable_to_non_nullable
-              as EasyDateTime?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            name: null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as EasyDateTime,
+            lastLoginAt: freezed == lastLoginAt
+                ? _value.lastLoginAt
+                : lastLoginAt // ignore: cast_nullable_to_non_nullable
+                      as EasyDateTime?,
+            deletedAt: freezed == deletedAt
+                ? _value.deletedAt
+                : deletedAt // ignore: cast_nullable_to_non_nullable
+                      as EasyDateTime?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$UserImplCopyWith<$Res> implements $UserCopyWith<$Res> {
   factory _$$UserImplCopyWith(
-          _$UserImpl value, $Res Function(_$UserImpl) then) =
-      __$$UserImplCopyWithImpl<$Res>;
+    _$UserImpl value,
+    $Res Function(_$UserImpl) then,
+  ) = __$$UserImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      String name,
-      @EasyDateTimeConverter() EasyDateTime createdAt,
-      @EasyDateTimeNullableConverter() EasyDateTime? lastLoginAt,
-      @EasyDateTimeNullableConverter() EasyDateTime? deletedAt});
+  $Res call({
+    String id,
+    String name,
+    @EasyDateTimeConverter() EasyDateTime createdAt,
+    @EasyDateTimeNullableConverter() EasyDateTime? lastLoginAt,
+    @EasyDateTimeNullableConverter() EasyDateTime? deletedAt,
+  });
 }
 
 /// @nodoc
@@ -337,7 +353,7 @@ class __$$UserImplCopyWithImpl<$Res>
     extends _$UserCopyWithImpl<$Res, _$UserImpl>
     implements _$$UserImplCopyWith<$Res> {
   __$$UserImplCopyWithImpl(_$UserImpl _value, $Res Function(_$UserImpl) _then)
-      : super(_value, _then);
+    : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -348,40 +364,43 @@ class __$$UserImplCopyWithImpl<$Res>
     Object? lastLoginAt = freezed,
     Object? deletedAt = freezed,
   }) {
-    return _then(_$UserImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as EasyDateTime,
-      lastLoginAt: freezed == lastLoginAt
-          ? _value.lastLoginAt
-          : lastLoginAt // ignore: cast_nullable_to_non_nullable
-              as EasyDateTime?,
-      deletedAt: freezed == deletedAt
-          ? _value.deletedAt
-          : deletedAt // ignore: cast_nullable_to_non_nullable
-              as EasyDateTime?,
-    ));
+    return _then(
+      _$UserImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as EasyDateTime,
+        lastLoginAt: freezed == lastLoginAt
+            ? _value.lastLoginAt
+            : lastLoginAt // ignore: cast_nullable_to_non_nullable
+                  as EasyDateTime?,
+        deletedAt: freezed == deletedAt
+            ? _value.deletedAt
+            : deletedAt // ignore: cast_nullable_to_non_nullable
+                  as EasyDateTime?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$UserImpl implements _User {
-  const _$UserImpl(
-      {required this.id,
-      required this.name,
-      @EasyDateTimeConverter() required this.createdAt,
-      @EasyDateTimeNullableConverter() this.lastLoginAt,
-      @EasyDateTimeNullableConverter() this.deletedAt});
+  const _$UserImpl({
+    required this.id,
+    required this.name,
+    @EasyDateTimeConverter() required this.createdAt,
+    @EasyDateTimeNullableConverter() this.lastLoginAt,
+    @EasyDateTimeNullableConverter() this.deletedAt,
+  });
 
   factory _$UserImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserImplFromJson(json);
@@ -433,20 +452,18 @@ class _$UserImpl implements _User {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$UserImplToJson(
-      this,
-    );
+    return _$$UserImplToJson(this);
   }
 }
 
 abstract class _User implements User {
-  const factory _User(
-          {required final String id,
-          required final String name,
-          @EasyDateTimeConverter() required final EasyDateTime createdAt,
-          @EasyDateTimeNullableConverter() final EasyDateTime? lastLoginAt,
-          @EasyDateTimeNullableConverter() final EasyDateTime? deletedAt}) =
-      _$UserImpl;
+  const factory _User({
+    required final String id,
+    required final String name,
+    @EasyDateTimeConverter() required final EasyDateTime createdAt,
+    @EasyDateTimeNullableConverter() final EasyDateTime? lastLoginAt,
+    @EasyDateTimeNullableConverter() final EasyDateTime? deletedAt,
+  }) = _$UserImpl;
 
   factory _User.fromJson(Map<String, dynamic> json) = _$UserImpl.fromJson;
 
@@ -493,11 +510,12 @@ abstract class $ScheduleCopyWith<$Res> {
   factory $ScheduleCopyWith(Schedule value, $Res Function(Schedule) then) =
       _$ScheduleCopyWithImpl<$Res, Schedule>;
   @useResult
-  $Res call(
-      {String id,
-      @EasyDateTimeConverter() EasyDateTime scheduledAt,
-      @EasyDateTimeNullableConverter() EasyDateTime? completedAt,
-      String status});
+  $Res call({
+    String id,
+    @EasyDateTimeConverter() EasyDateTime scheduledAt,
+    @EasyDateTimeNullableConverter() EasyDateTime? completedAt,
+    String status,
+  });
 }
 
 /// @nodoc
@@ -518,24 +536,27 @@ class _$ScheduleCopyWithImpl<$Res, $Val extends Schedule>
     Object? completedAt = freezed,
     Object? status = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      scheduledAt: null == scheduledAt
-          ? _value.scheduledAt
-          : scheduledAt // ignore: cast_nullable_to_non_nullable
-              as EasyDateTime,
-      completedAt: freezed == completedAt
-          ? _value.completedAt
-          : completedAt // ignore: cast_nullable_to_non_nullable
-              as EasyDateTime?,
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            scheduledAt: null == scheduledAt
+                ? _value.scheduledAt
+                : scheduledAt // ignore: cast_nullable_to_non_nullable
+                      as EasyDateTime,
+            completedAt: freezed == completedAt
+                ? _value.completedAt
+                : completedAt // ignore: cast_nullable_to_non_nullable
+                      as EasyDateTime?,
+            status: null == status
+                ? _value.status
+                : status // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -543,15 +564,17 @@ class _$ScheduleCopyWithImpl<$Res, $Val extends Schedule>
 abstract class _$$ScheduleImplCopyWith<$Res>
     implements $ScheduleCopyWith<$Res> {
   factory _$$ScheduleImplCopyWith(
-          _$ScheduleImpl value, $Res Function(_$ScheduleImpl) then) =
-      __$$ScheduleImplCopyWithImpl<$Res>;
+    _$ScheduleImpl value,
+    $Res Function(_$ScheduleImpl) then,
+  ) = __$$ScheduleImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      @EasyDateTimeConverter() EasyDateTime scheduledAt,
-      @EasyDateTimeNullableConverter() EasyDateTime? completedAt,
-      String status});
+  $Res call({
+    String id,
+    @EasyDateTimeConverter() EasyDateTime scheduledAt,
+    @EasyDateTimeNullableConverter() EasyDateTime? completedAt,
+    String status,
+  });
 }
 
 /// @nodoc
@@ -559,8 +582,9 @@ class __$$ScheduleImplCopyWithImpl<$Res>
     extends _$ScheduleCopyWithImpl<$Res, _$ScheduleImpl>
     implements _$$ScheduleImplCopyWith<$Res> {
   __$$ScheduleImplCopyWithImpl(
-      _$ScheduleImpl _value, $Res Function(_$ScheduleImpl) _then)
-      : super(_value, _then);
+    _$ScheduleImpl _value,
+    $Res Function(_$ScheduleImpl) _then,
+  ) : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -570,35 +594,38 @@ class __$$ScheduleImplCopyWithImpl<$Res>
     Object? completedAt = freezed,
     Object? status = null,
   }) {
-    return _then(_$ScheduleImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      scheduledAt: null == scheduledAt
-          ? _value.scheduledAt
-          : scheduledAt // ignore: cast_nullable_to_non_nullable
-              as EasyDateTime,
-      completedAt: freezed == completedAt
-          ? _value.completedAt
-          : completedAt // ignore: cast_nullable_to_non_nullable
-              as EasyDateTime?,
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+    return _then(
+      _$ScheduleImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        scheduledAt: null == scheduledAt
+            ? _value.scheduledAt
+            : scheduledAt // ignore: cast_nullable_to_non_nullable
+                  as EasyDateTime,
+        completedAt: freezed == completedAt
+            ? _value.completedAt
+            : completedAt // ignore: cast_nullable_to_non_nullable
+                  as EasyDateTime?,
+        status: null == status
+            ? _value.status
+            : status // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ScheduleImpl implements _Schedule {
-  const _$ScheduleImpl(
-      {required this.id,
-      @EasyDateTimeConverter() required this.scheduledAt,
-      @EasyDateTimeNullableConverter() this.completedAt,
-      required this.status});
+  const _$ScheduleImpl({
+    required this.id,
+    @EasyDateTimeConverter() required this.scheduledAt,
+    @EasyDateTimeNullableConverter() this.completedAt,
+    required this.status,
+  });
 
   factory _$ScheduleImpl.fromJson(Map<String, dynamic> json) =>
       _$$ScheduleImplFromJson(json);
@@ -645,18 +672,17 @@ class _$ScheduleImpl implements _Schedule {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ScheduleImplToJson(
-      this,
-    );
+    return _$$ScheduleImplToJson(this);
   }
 }
 
 abstract class _Schedule implements Schedule {
-  const factory _Schedule(
-      {required final String id,
-      @EasyDateTimeConverter() required final EasyDateTime scheduledAt,
-      @EasyDateTimeNullableConverter() final EasyDateTime? completedAt,
-      required final String status}) = _$ScheduleImpl;
+  const factory _Schedule({
+    required final String id,
+    @EasyDateTimeConverter() required final EasyDateTime scheduledAt,
+    @EasyDateTimeNullableConverter() final EasyDateTime? completedAt,
+    required final String status,
+  }) = _$ScheduleImpl;
 
   factory _Schedule.fromJson(Map<String, dynamic> json) =
       _$ScheduleImpl.fromJson;
