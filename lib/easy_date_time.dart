@@ -29,16 +29,14 @@
 /// - **Immutable**: Thread-safe, works with riverpod/bloc/freezed
 library;
 
-// Re-export Location and getLocation from timezone package
 export 'package:timezone/timezone.dart' show Location, getLocation;
 
 export 'src/date_time_unit.dart';
 export 'src/easy_date_time.dart';
 export 'src/easy_date_time_config.dart';
-export 'src/easy_date_time_init.dart';
+export 'src/easy_date_time_init.dart'
+    hide internalInitializeTimeZone, internalIsTimeZoneInitialized;
 export 'src/exceptions/exceptions.dart';
 export 'src/extensions/date_time_extension.dart';
 export 'src/extensions/duration_extension.dart';
 export 'src/timezones.dart';
-
-// DateTimeFormats is exported automatically as part of src/easy_date_time.dart
