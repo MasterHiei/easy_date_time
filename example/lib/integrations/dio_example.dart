@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, public_member_api_docs
 
 /// Dio HTTP Client Example
 ///
@@ -12,6 +12,7 @@
 library;
 
 import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:easy_date_time/easy_date_time.dart';
 
