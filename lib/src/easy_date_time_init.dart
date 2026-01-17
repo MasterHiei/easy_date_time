@@ -1,24 +1,23 @@
-import 'package:timezone/data/latest.dart' as tz;
+import 'package:meta/meta.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart';
 
-// ============================================================
-// Internal API for EasyDateTime static methods
-// ============================================================
-// These functions are used by EasyDateTime's static methods to avoid
-// triggering deprecation warnings internally.
+// Helper functions for internal use.
 
 /// Cached initialization status to avoid repeated checks.
 bool? _timeZoneInitialized;
 
-/// Internal: Initializes the IANA timezone database.
+/// Initializes the IANA timezone database.
+@internal
 void internalInitializeTimeZone() {
   tz.initializeTimeZones();
   _timeZoneInitialized = true;
 }
 
-/// Internal: Checks if the timezone database has been initialized.
+/// Checks if the timezone database has been initialized.
 ///
 /// Uses caching to avoid repeated `getLocation` calls after first check.
+@internal
 bool get internalIsTimeZoneInitialized {
   if (_timeZoneInitialized == true) return true;
   try {

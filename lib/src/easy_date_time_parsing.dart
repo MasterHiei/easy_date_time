@@ -37,9 +37,7 @@ String _formatOffset(Duration offset) {
 /// When multiple regions share an offset, we pick a representative one.
 /// The fallback search will find others if this one doesn't match.
 ///
-/// **Maintenance Note:** This map is an optimization to avoid iterating through
-/// the entire timezone database for common offsets. It should be periodically
-/// reviewed to ensure the representative locations are still valid and relevant.
+/// **Note:** This map optimizes lookup for common offsets to avoid O(n) iteration.
 const _commonOffsetMappings = <int, String>{
   // UTC
   0: 'UTC',
@@ -89,10 +87,9 @@ Location? _findLocationForOffset(Duration offset, {required int utcMs}) {
   if (!init.internalIsTimeZoneInitialized) return null;
 
   final offsetMinutes = offset.inMinutes;
-  final offsetMs = offset.inMilliseconds;
 
   // Helper to verify a location uses this offset at the target time
-  bool matchesOffset(Location loc) => loc.timeZone(utcMs).offset == offsetMs;
+  bool matchesOffset(Location loc) => loc.timeZone(utcMs).offset == offset;
 
   // 1. Check cache (must re-verify due to DST variations)
   if (_offsetLocationCache.containsKey(offsetMinutes)) {
