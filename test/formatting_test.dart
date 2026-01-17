@@ -244,5 +244,27 @@ void main() {
         expect(shanghai.format('HH:mm'), newYork.format('HH:mm'));
       });
     });
+
+    group('toDateString / toTimeString', () {
+      test('toDateString formats correctly', () {
+        final dt = EasyDateTime(2025, 12, 1, 14, 30, 45);
+        expect(dt.toDateString(), '2025-12-01');
+      });
+
+      test('toDateString pads single digits', () {
+        final dt = EasyDateTime(2025, 1, 5);
+        expect(dt.toDateString(), '2025-01-05');
+      });
+
+      test('toTimeString formats correctly', () {
+        final dt = EasyDateTime(2025, 12, 1, 14, 30, 45);
+        expect(dt.toTimeString(), '14:30:45');
+      });
+
+      test('toTimeString pads single digits', () {
+        final dt = EasyDateTime(2025, 12, 1, 9, 5, 3);
+        expect(dt.toTimeString(), '09:05:03');
+      });
+    });
   });
 }

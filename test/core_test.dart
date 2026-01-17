@@ -1,6 +1,6 @@
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
-import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart';
 
 // Will be set in setUpAll after timezone initialization
@@ -43,8 +43,8 @@ void main() {
       });
 
       test('now() captures current time in default location', () {
-        // Note: We don't test the day here because EasyDateTime.now() depends on
-        // the timezone library's initialization, which can be affected by global state
+        // EasyDateTime.now() depends on the timezone library's initialization,
+        // which can be affected by global state.
         final dt = EasyDateTime.now();
 
         // Verify that year, month, and date components exist and are reasonable
@@ -445,6 +445,67 @@ void main() {
           expect(feb.millisecond, 123);
           expect(feb.microsecond, 456);
         });
+      });
+
+      test('toString() returns string representation', () {
+        final dt = EasyDateTime.utc(2025, 12, 1, 10, 30);
+        expect(dt.toString(), contains('2025'));
+      });
+    });
+
+    group('Default value behavior', () {
+      test('now() uses local timezone when no location specified', () {
+        final now = EasyDateTime.now();
+        expect(now, isNotNull);
+        expect(now.location, isNotNull);
+      });
+
+      test('fromDateTime() uses default timezone when location not provided',
+          () {
+        final dt = EasyDateTime.fromDateTime(DateTime.now());
+        expect(dt, isNotNull);
+        expect(dt.location, isNotNull);
+      });
+
+      test('inLocation() always returns a valid EasyDateTime', () {
+        final tokyo = EasyDateTime.now(location: getLocation('Asia/Tokyo'));
+        final london = tokyo.inLocation(getLocation('Europe/London'));
+        expect(london, isNotNull);
+        expect(london.location.name, equals('Europe/London'));
+      });
+
+      test(
+          'isAtSameMomentAs() correctly compares times across different timezones',
+          () {
+        final tokyo = EasyDateTime(
+            2025, 6, 15, 20, 0, 0, 0, 0, getLocation('Asia/Tokyo'));
+        final london = tokyo.inLocation(getLocation('Europe/London'));
+
+        expect(tokyo.isAtSameMomentAs(london), isTrue);
+      });
+    });
+
+    group('Immutability', () {
+      test('modifying returned date does not affect original', () {
+        final original = EasyDateTime(2025, 1, 1, 10, 30);
+        final modified = original + Duration(days: 1);
+
+        expect(original.day, equals(1));
+        expect(modified.day, equals(2));
+      });
+
+      test('arithmetic operations return new instances', () {
+        final dt1 = EasyDateTime(2025, 1, 1);
+        final dt2 = dt1 + Duration(days: 1);
+
+        expect(identical(dt1, dt2), isFalse);
+      });
+
+      test('timezone conversion returns new instance', () {
+        final tokyo = EasyDateTime.now(location: getLocation('Asia/Tokyo'));
+        final london = tokyo.inLocation(getLocation('Europe/London'));
+
+        expect(identical(tokyo, london), isFalse);
       });
     });
   });

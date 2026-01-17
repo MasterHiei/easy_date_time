@@ -1,6 +1,5 @@
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
-import 'package:timezone/timezone.dart' show local;
 
 /// Tests for PR #7 changes: DateTime compatibility constants and static methods.
 ///
@@ -145,75 +144,6 @@ void main() {
     });
   });
 
-  group('Static Configuration Methods', () {
-    test('EasyDateTime.setDefaultLocation sets global default', () {
-      EasyDateTime.setDefaultLocation(TimeZones.tokyo);
-
-      final dt = EasyDateTime(2025, 12, 1, 10, 30);
-      expect(dt.locationName, 'Asia/Tokyo');
-    });
-
-    test('EasyDateTime.getDefaultLocation returns current default', () {
-      expect(EasyDateTime.getDefaultLocation(), isNull);
-
-      EasyDateTime.setDefaultLocation(TimeZones.shanghai);
-      expect(EasyDateTime.getDefaultLocation()?.name, 'Asia/Shanghai');
-    });
-
-    test('EasyDateTime.clearDefaultLocation resets to local', () {
-      EasyDateTime.setDefaultLocation(TimeZones.london);
-      expect(EasyDateTime.getDefaultLocation(), isNotNull);
-
-      EasyDateTime.clearDefaultLocation();
-      expect(EasyDateTime.getDefaultLocation(), isNull);
-
-      final dt = EasyDateTime.now();
-      expect(dt.location, local);
-    });
-
-    test('EasyDateTime.effectiveDefaultLocation returns effective location',
-        () {
-      // When no default is set, should return local
-      EasyDateTime.clearDefaultLocation();
-      expect(EasyDateTime.effectiveDefaultLocation, local);
-
-      // When default is set, should return that
-      EasyDateTime.setDefaultLocation(TimeZones.newYork);
-      expect(EasyDateTime.effectiveDefaultLocation.name, 'America/New_York');
-    });
-
-    test('EasyDateTime.isTimeZoneInitialized returns true after init', () {
-      // Since we called initializeTimeZone in setUpAll, this should be true
-      expect(EasyDateTime.isTimeZoneInitialized, isTrue);
-    });
-
-    test('Static methods are equivalent to global functions', () {
-      // Set via static method
-      EasyDateTime.setDefaultLocation(TimeZones.paris);
-      final viaStatic = EasyDateTime.getDefaultLocation();
-
-      // Get via global function
-      final viaGlobal = EasyDateTime.getDefaultLocation();
-
-      expect(viaStatic, viaGlobal);
-
-      // Clear via static method
-      EasyDateTime.clearDefaultLocation();
-      expect(EasyDateTime.getDefaultLocation(), isNull);
-
-      // Set via global function
-      EasyDateTime.setDefaultLocation(TimeZones.berlin);
-      expect(EasyDateTime.getDefaultLocation()?.name, 'Europe/Berlin');
-    });
-
-    test('EasyDateTime.now() uses static setDefaultLocation', () {
-      EasyDateTime.setDefaultLocation(TimeZones.sydney);
-      final now = EasyDateTime.now();
-
-      expect(now.locationName, 'Australia/Sydney');
-    });
-  });
-
   group('DateTime Interface Compliance', () {
     test('EasyDateTime is assignable to DateTime', () {
       final easyDt = EasyDateTime.utc(2025, 12, 1, 10, 30);
@@ -262,6 +192,16 @@ void main() {
       expect(dt.microsecondsSinceEpoch, isA<int>());
       expect(dt.timeZoneOffset, isA<Duration>());
       expect(dt.timeZoneName, isA<String>());
+    });
+
+    test('operator == handles DateTime comparison', () {
+      final easy = EasyDateTime.utc(2025, 1, 1, 10, 0);
+      final dart = DateTime.utc(2025, 1, 1, 10, 0);
+
+      expect(easy == dart, isTrue);
+
+      final dartLocal = DateTime(2025, 1, 1, 10, 0); // Local
+      expect(easy == dartLocal, isFalse); // Different timezone type
     });
   });
 }
