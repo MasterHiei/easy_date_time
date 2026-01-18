@@ -408,6 +408,66 @@ void main() {
           expect(dtExplicit.day, 2);
         },
       );
+
+      test('should reject non-standard formats in strict mode', () {
+        // Extended year form (+002025) strictly does NOT match our enforced regex.
+        // Therefore, strict mode should reject it to ensure consistency,
+        // instead of falling back to a lenient parser.
+        expect(
+          () => EasyDateTime.parse('+002025-02-30', strict: true),
+          throwsFormatException,
+        );
+      });
+    });
+
+    group('Separator Consistency Policy', () {
+      test('should accept consistent separators (auto-normalization)', () {
+        // Slash
+        final dtSlash = EasyDateTime.parse('2025/02/28');
+        expect(dtSlash.year, 2025);
+        expect(dtSlash.month, 2);
+        expect(dtSlash.day, 28);
+
+        // Dot
+        final dtDot = EasyDateTime.parse('2025.02.28');
+        expect(dtDot.year, 2025);
+        expect(dtDot.month, 2);
+        expect(dtDot.day, 28);
+      });
+
+      test('should reject mixed separators (Anti-corruption)', () {
+        // Slash then Dash
+        expect(
+          () => EasyDateTime.parse('2025/02-28'),
+          throwsA(isA<InvalidDateFormatException>()),
+          reason: 'Mixed separators / and - must be rejected',
+        );
+
+        // Dash then Slash
+        expect(
+          () => EasyDateTime.parse('2025-02/28'),
+          throwsA(isA<InvalidDateFormatException>()),
+          reason: 'Mixed separators - and / must be rejected',
+        );
+
+        // Dash then Dot
+        expect(
+          () => EasyDateTime.parse('2025-02.28'),
+          throwsA(isA<InvalidDateFormatException>()),
+          reason: 'Mixed separators - and . must be rejected',
+        );
+      });
+
+      test('should reject mixed separators even in strict mode', () {
+        // In strict mode, the regex check happens BEFORE the parse attempt.
+        // It specifically throws FormatException for regex mismatch.
+        expect(
+          () => EasyDateTime.parse('2025/02-28', strict: true),
+          throwsFormatException,
+          reason:
+              'Strict mode regex mismatch should throw FormatException immediately',
+        );
+      });
     });
   });
 }
