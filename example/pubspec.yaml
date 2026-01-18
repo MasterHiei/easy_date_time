@@ -6,17 +6,17 @@ environment:
   sdk: ">=3.10.0 <4.0.0"
 
 dependencies:
-  dio: ^5.4.0
+  dio: ^5.9.0
   easy_date_time:
     path: ../
-  freezed_annotation: ^2.4.1
-  intl: ^0.19.0
-  json_annotation: ^4.8.1
-  retrofit: ^4.0.3
+  freezed_annotation: ^3.1.0
+  intl: ^0.20.2
+  json_annotation: ^4.9.0
+  retrofit: ^4.9.2
 
 dev_dependencies:
-  build_runner: ^2.4.6
-  freezed: ^2.4.1
-  json_serializable: ^6.7.1
+  build_runner: ^2.10.5
+  freezed: ^3.2.4
+  json_serializable: ^6.11.4
   lints: ^6.0.0
-  retrofit_generator: ^7.0.8
+  retrofit_generator: ^10.2.1

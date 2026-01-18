@@ -70,14 +70,16 @@ Map<String, dynamic> _$ScheduleResponseToJson(ScheduleResponse instance) =>
       'status': instance.status,
     };
 
+// dart format off
+
 // **************************************************************************
 // RetrofitGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers
+// ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers,unused_element,unnecessary_string_interpolations,unused_element_parameter,avoid_unused_constructor_parameters,unreachable_from_main
 
 class _ApiClient implements ApiClient {
-  _ApiClient(this._dio, {this.baseUrl}) {
+  _ApiClient(this._dio, {this.baseUrl, this.errorLogger}) {
     baseUrl ??= 'https://api.example.com';
   }
 
@@ -85,123 +87,150 @@ class _ApiClient implements ApiClient {
 
   String? baseUrl;
 
+  final ParseErrorLogger? errorLogger;
+
   @override
   Future<List<EventResponse>> getEvents() async {
-    const _extra = <String, dynamic>{};
+    final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
-    final Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<List<dynamic>>(
-      _setStreamType<List<EventResponse>>(
-        Options(method: 'GET', headers: _headers, extra: _extra)
-            .compose(
-              _dio.options,
-              '/events',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
-      ),
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<List<EventResponse>>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/events',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
-    var value = _result.data!
-        .map((dynamic i) => EventResponse.fromJson(i as Map<String, dynamic>))
-        .toList();
-    return value;
+    final _result = await _dio.fetch<List<dynamic>>(_options);
+    late List<EventResponse> _value;
+    try {
+      _value = _result.data!
+          .map((dynamic i) => EventResponse.fromJson(i as Map<String, dynamic>))
+          .toList();
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
   }
 
   @override
   Future<EventResponse> getEvent(String id) async {
-    const _extra = <String, dynamic>{};
+    final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
-    final Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-      _setStreamType<EventResponse>(
-        Options(method: 'GET', headers: _headers, extra: _extra)
-            .compose(
-              _dio.options,
-              '/events/${id}',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
-      ),
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<EventResponse>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/events/${id}',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
-    final value = EventResponse.fromJson(_result.data!);
-    return value;
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late EventResponse _value;
+    try {
+      _value = EventResponse.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
   }
 
   @override
   Future<EventResponse> createEvent(CreateEventRequest request) async {
-    const _extra = <String, dynamic>{};
+    final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(request.toJson());
-    final _result = await _dio.fetch<Map<String, dynamic>>(
-      _setStreamType<EventResponse>(
-        Options(method: 'POST', headers: _headers, extra: _extra)
-            .compose(
-              _dio.options,
-              '/events',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
-      ),
+    final _options = _setStreamType<EventResponse>(
+      Options(method: 'POST', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/events',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
-    final value = EventResponse.fromJson(_result.data!);
-    return value;
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late EventResponse _value;
+    try {
+      _value = EventResponse.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
   }
 
   @override
   Future<List<EventResponse>> getEventsInRange(String start, String end) async {
-    const _extra = <String, dynamic>{};
+    final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{r'start': start, r'end': end};
     final _headers = <String, dynamic>{};
-    final Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<List<dynamic>>(
-      _setStreamType<List<EventResponse>>(
-        Options(method: 'GET', headers: _headers, extra: _extra)
-            .compose(
-              _dio.options,
-              '/events',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
-      ),
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<List<EventResponse>>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/events',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
-    var value = _result.data!
-        .map((dynamic i) => EventResponse.fromJson(i as Map<String, dynamic>))
-        .toList();
-    return value;
+    final _result = await _dio.fetch<List<dynamic>>(_options);
+    late List<EventResponse> _value;
+    try {
+      _value = _result.data!
+          .map((dynamic i) => EventResponse.fromJson(i as Map<String, dynamic>))
+          .toList();
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
   }
 
   @override
   Future<List<ScheduleResponse>> getSchedules(String date) async {
-    const _extra = <String, dynamic>{};
+    final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{r'date': date};
     final _headers = <String, dynamic>{};
-    final Map<String, dynamic>? _data = null;
-    final _result = await _dio.fetch<List<dynamic>>(
-      _setStreamType<List<ScheduleResponse>>(
-        Options(method: 'GET', headers: _headers, extra: _extra)
-            .compose(
-              _dio.options,
-              '/schedules',
-              queryParameters: queryParameters,
-              data: _data,
-            )
-            .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
-      ),
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<List<ScheduleResponse>>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/schedules',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
-    var value = _result.data!
-        .map(
-          (dynamic i) => ScheduleResponse.fromJson(i as Map<String, dynamic>),
-        )
-        .toList();
-    return value;
+    final _result = await _dio.fetch<List<dynamic>>(_options);
+    late List<ScheduleResponse> _value;
+    try {
+      _value = _result.data!
+          .map(
+            (dynamic i) => ScheduleResponse.fromJson(i as Map<String, dynamic>),
+          )
+          .toList();
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options, response: _result);
+      rethrow;
+    }
+    return _value;
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
@@ -231,3 +260,5 @@ class _ApiClient implements ApiClient {
     return Uri.parse(dioBaseUrl).resolveUri(url).toString();
   }
 }
+
+// dart format on
