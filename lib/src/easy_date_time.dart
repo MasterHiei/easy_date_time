@@ -509,6 +509,18 @@ class EasyDateTime implements DateTime {
         ),
       );
     } on FormatException catch (e) {
+      // Fallback: Try to normalize common formats (e.g. 2025/01/01)
+      // This ensures strict mode (which validates regex) doesn't fail due to
+      // DateTime.parse rejecting valid alternative separators.
+      final normalized = _tryNormalizeFormat(trimmed);
+      if (normalized != null) {
+        return EasyDateTime.parse(
+          normalized,
+          location: location,
+          strict: false,
+        );
+      }
+
       throw InvalidDateFormatException(
         source: dateTimeString,
         message: e.message,

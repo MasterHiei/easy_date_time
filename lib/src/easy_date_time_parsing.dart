@@ -129,10 +129,18 @@ Location? _findLocationForOffset(Duration offset, {required int utcMs}) {
   return null;
 }
 
-/// Regex pattern for YYYY/MM/DD format.
-/// Allows loose matching for separator options but enforces strict
-/// year/month/day structure.
-final _slashYMDPattern = RegExp(r'^(\d{4})[./-](\d{1,2})[./-](\d{1,2})(.*)$');
+/// Regex pattern for YYYY-MM-DD format (and dot/slash variants).
+///
+/// **Enforced Consistency**: Uses backreference `\2` to ensure the same separator
+/// is used for both positions. Rejects mixed separators like `2025/01-01`.
+///
+/// Groups:
+/// 1: Year
+/// 2: Separator
+/// 3: Month
+/// 4: Day
+/// 5: Time (optional)
+final _slashYMDPattern = RegExp(r'^(\d{4})([./-])(\d{1,2})\2(\d{1,2})(.*)$');
 
 /// Attempts to normalize common date formats to ISO 8601.
 ///
@@ -145,14 +153,14 @@ String? _tryNormalizeFormat(String input) {
   }
 
   // Pattern: YYYY/MM/DD or YYYY/MM/DD HH:MM:SS
-  // Adjusts to allow dot and dash separators in this fallback logic too
-  // for consistency
+  // Requires consistent separators.
   final slashMatch = _slashYMDPattern.firstMatch(input);
   if (slashMatch != null) {
     final year = slashMatch.group(1)!;
-    final month = slashMatch.group(2)!.padLeft(2, '0');
-    final day = slashMatch.group(3)!.padLeft(2, '0');
-    final time = slashMatch.group(4)?.trim() ?? '';
+    // group(2) is separator
+    final month = slashMatch.group(3)!.padLeft(2, '0');
+    final day = slashMatch.group(4)!.padLeft(2, '0');
+    final time = slashMatch.group(5)?.trim() ?? '';
 
     // Validate logical ranges to fail early on obvious nonsense
     if (int.parse(month) > 12 || int.parse(day) > 31) {
@@ -181,29 +189,26 @@ String? _tryNormalizeFormat(String input) {
 ///
 /// Throws [FormatException] if date is invalid.
 void _validateStrict(String input) {
-  // Simple regex to extract YMD from start of string.
-  // Matches 2025-02-29, 2025/02/29, 2025.02.29 etc.
+  // Enforces consistent separators.
   final match = _slashYMDPattern.firstMatch(input);
 
-  if (match != null) {
-    final year = int.parse(match.group(1)!);
-    final month = int.parse(match.group(2)!);
-    final day = int.parse(match.group(3)!);
-
-    if (month < 1 || month > 12) {
-      throw FormatException('Invalid month: $month', input);
-    }
-
-    final maxDays = DateTime(year, month + 1, 0).day;
-    if (day < 1 || day > maxDays) {
-      throw FormatException(
-        'Invalid day for month: $day (Max: $maxDays)',
-        input,
-      );
-    }
+  if (match == null) {
+    throw FormatException(
+      'Strict mode requires standard YYYY-MM-DD format (ISO 8601 or common variants) with consistent separators.',
+      input,
+    );
   }
-  // Note: If input doesn't match standard YMD pattern, strict numeric validation
-  // is skipped to allow main parsing to handle potential fallback logic.
-  // This prevents rejection of valid but obscure ISO formats unless
-  // they are definitively invalid dates.
+
+  final year = int.parse(match.group(1)!);
+  final month = int.parse(match.group(3)!);
+  final day = int.parse(match.group(4)!);
+
+  if (month < 1 || month > 12) {
+    throw FormatException('Invalid month: $month', input);
+  }
+
+  final maxDays = DateTime(year, month + 1, 0).day;
+  if (day < 1 || day > maxDays) {
+    throw FormatException('Invalid day for month: $day (Max: $maxDays)', input);
+  }
 }
