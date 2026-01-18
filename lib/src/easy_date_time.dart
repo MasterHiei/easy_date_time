@@ -416,36 +416,59 @@ class EasyDateTime implements DateTime {
   /// **Throws [TimeZoneNotInitializedException]** if [EasyDateTime.initializeTimeZone]
   /// has not been called at app startup.
   ///
+  /// ## Strict Mode
+  ///
+  /// By default (`strict: false`), invalid dates overflow (e.g., Feb 30 becomes Mar 2).
+  /// Pass `strict: true` to reject invalid dates with a [FormatException].
+  ///
+  /// ```dart
+  /// // Default (Overflow)
+  /// EasyDateTime.parse('2025-02-30'); // 2025-03-02
+  ///
+  /// // Strict (Throw)
+  /// EasyDateTime.parse('2025-02-30', strict: true); // Throws FormatException
+  /// ```
+  ///
+  /// **Time Complexity**: `O(n)` where `n` is the length of the string.
+  ///
   /// See also:
   /// - [tryParse] for safe parsing of user input.
-  factory EasyDateTime.parse(String dateTimeString, {Location? location}) {
+  factory EasyDateTime.parse(
+    String dateTimeString, {
+    Location? location,
+    bool strict = false,
+  }) {
     final trimmed = dateTimeString.trim();
+
+    if (strict) {
+      _validateStrict(trimmed);
+    }
 
     try {
       // First, use DateTime.parse for validation and basic parsing
       final dt = DateTime.parse(trimmed);
 
-      // If location is explicitly provided, convert to that timezone
+      // If location is explicitly provided, convert to that timezone.
       if (location != null) {
         return EasyDateTime.fromDateTime(dt.toUtc(), location: location);
       }
 
-      // Extract offset from string to determine how to handle it
+      // Extract offset from string to determine how to handle it.
       final offsetInfo = _extractTimezoneOffset(trimmed);
 
       if (offsetInfo != null) {
-        // Find matching timezone for this offset at the parsed moment
+        // Find matching timezone for this offset at the parsed moment.
         final matchingLocation = _findLocationForOffset(
           offsetInfo,
           utcMs: dt.millisecondsSinceEpoch,
         );
 
         if (matchingLocation != null) {
-          // Project the parsed moment to the matching timezone
+          // Project the parsed moment to the matching timezone.
           return EasyDateTime._(TZDateTime.from(dt.toUtc(), matchingLocation));
         }
 
-        // No matching timezone found - throw exception
+        // No matching timezone found - throw exception.
         final offsetStr = _formatOffset(offsetInfo);
         throw InvalidTimeZoneException(
           timeZoneId: offsetStr,
@@ -455,7 +478,7 @@ class EasyDateTime implements DateTime {
         );
       }
 
-      // UTC indicator (Z)
+      // UTC indicator (Z).
       if (trimmed.toUpperCase().endsWith('Z')) {
         return EasyDateTime._(
           TZDateTime.utc(
@@ -471,7 +494,7 @@ class EasyDateTime implements DateTime {
         );
       }
 
-      // No timezone indicator - use effective default location with original values
+      // No timezone indicator - use effective default location with original values.
       return EasyDateTime._(
         TZDateTime(
           config.effectiveDefaultLocation,
@@ -523,25 +546,43 @@ class EasyDateTime implements DateTime {
   /// // Handles common formats
   /// final slashFormat = EasyDateTime.tryParse('2025/12/01 10:30:00');
   /// ```
-  static EasyDateTime? tryParse(String dateTimeString, {Location? location}) {
-    // Trim whitespace
+  ///
+  /// **Time Complexity**: `O(n)` where `n` is the length of the string.
+  static EasyDateTime? tryParse(
+    String dateTimeString, {
+    Location? location,
+    bool strict = false,
+  }) {
+    // Trim whitespace.
     final input = dateTimeString.trim();
     if (input.isEmpty) {
       return null;
     }
 
-    // Try ISO 8601 first (most common and unambiguous)
-    try {
-      return EasyDateTime.parse(input, location: location);
-    } catch (_) {
-      // Continue to fallback formats
+    if (strict) {
+      try {
+        _validateStrict(input);
+      } catch (_) {
+        return null;
+      }
     }
 
-    // Try common alternative formats
+    // Try ISO 8601 first (most common and unambiguous).
+    try {
+      return EasyDateTime.parse(input, location: location, strict: false);
+    } catch (_) {
+      // Continue to fallback formats.
+    }
+
+    // Try common alternative formats.
     final normalized = _tryNormalizeFormat(input);
     if (normalized != null) {
       try {
-        return EasyDateTime.parse(normalized, location: location);
+        return EasyDateTime.parse(
+          normalized,
+          location: location,
+          strict: false,
+        );
       } catch (_) {
         return null;
       }

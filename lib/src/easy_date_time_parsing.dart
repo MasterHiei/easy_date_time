@@ -34,7 +34,7 @@ String _formatOffset(Duration offset) {
 
 /// Common timezone mappings for efficiency (most used offsets).
 ///
-/// When multiple regions share an offset, we pick a representative one.
+/// When multiple regions share an offset, a representative one is selected.
 /// The fallback search will find others if this one doesn't match.
 ///
 /// **Note:** This map optimizes lookup for common offsets to avoid O(n) iteration.
@@ -171,4 +171,39 @@ String? _tryNormalizeFormat(String input) {
   }
 
   return null;
+}
+
+// ============================================================
+// Strict Validation
+// ============================================================
+
+/// Validates date components strictly to prevent overflow (e.g., Feb 30).
+///
+/// Throws [FormatException] if date is invalid.
+void _validateStrict(String input) {
+  // Simple regex to extract YMD from start of string.
+  // Matches 2025-02-29, 2025/02/29, 2025.02.29 etc.
+  final match = _slashYMDPattern.firstMatch(input);
+
+  if (match != null) {
+    final year = int.parse(match.group(1)!);
+    final month = int.parse(match.group(2)!);
+    final day = int.parse(match.group(3)!);
+
+    if (month < 1 || month > 12) {
+      throw FormatException('Invalid month: $month', input);
+    }
+
+    final maxDays = DateTime(year, month + 1, 0).day;
+    if (day < 1 || day > maxDays) {
+      throw FormatException(
+        'Invalid day for month: $day (Max: $maxDays)',
+        input,
+      );
+    }
+  }
+  // Note: If input doesn't match standard YMD pattern, strict numeric validation
+  // is skipped to allow main parsing to handle potential fallback logic.
+  // This prevents rejection of valid but obscure ISO formats unless
+  // they are definitively invalid dates.
 }
