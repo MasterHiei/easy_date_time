@@ -1,3 +1,5 @@
+library;
+
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:easy_date_time/src/easy_date_time_init.dart' as init;
 import 'package:test/test.dart';

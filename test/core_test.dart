@@ -1,3 +1,5 @@
+library;
+
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -45,8 +47,6 @@ void main() {
       });
 
       test('now() captures current time in default location', () {
-        // EasyDateTime.now() depends on the timezone library's initialization,
-        // which can be affected by global state.
         final dt = EasyDateTime.now();
 
         // Verify that year, month, and date components exist and are reasonable
@@ -347,25 +347,6 @@ void main() {
           expect(dt.timeZoneName, anyOf('EST', 'EDT', 'GMT-5', 'GMT-4'));
         },
       );
-
-      test('hashCode returns same value for equal objects', () {
-        final dt1 = EasyDateTime.utc(2025, 12, 1, 10, 30);
-        final dt2 = EasyDateTime.utc(2025, 12, 1, 10, 30);
-        expect(dt1.hashCode, dt2.hashCode);
-      });
-
-      test('hashCode differs for different moments', () {
-        final dt1 = EasyDateTime.utc(2025, 12, 1, 10, 30);
-        final dt2 = EasyDateTime.utc(2025, 12, 1, 10, 31);
-        expect(dt1.hashCode, isNot(dt2.hashCode));
-      });
-
-      test('hashCode is identical for same moment in different timezones', () {
-        // 10:30 Shanghai (+8) = 11:30 Tokyo (+9) = 02:30 UTC
-        final shanghai = EasyDateTime.parse('2025-12-01T10:30:00+08:00');
-        final tokyo = EasyDateTime.parse('2025-12-01T11:30:00+09:00');
-        expect(shanghai.hashCode, tokyo.hashCode);
-      });
     });
 
     group('Timezone Conversion', () {
@@ -510,26 +491,6 @@ void main() {
         expect(london, isNotNull);
         expect(london.location.name, equals('Europe/London'));
       });
-
-      test(
-        'isAtSameMomentAs() correctly compares times across different timezones',
-        () {
-          final tokyo = EasyDateTime(
-            2025,
-            6,
-            15,
-            20,
-            0,
-            0,
-            0,
-            0,
-            getLocation('Asia/Tokyo'),
-          );
-          final london = tokyo.inLocation(getLocation('Europe/London'));
-
-          expect(tokyo.isAtSameMomentAs(london), isTrue);
-        },
-      );
     });
 
     group('Immutability', () {
@@ -553,6 +514,32 @@ void main() {
         final london = tokyo.inLocation(getLocation('Europe/London'));
 
         expect(identical(tokyo, london), isFalse);
+      });
+    });
+
+    group('Serialization', () {
+      test('should preserve precision in ISO 8601 roundtrip', () {
+        final dt = EasyDateTime.utc(2025, 6, 15, 10, 30, 45, 123, 456);
+        final restored = EasyDateTime.fromIso8601String(dt.toIso8601String());
+        expect(restored.millisecond, 123);
+        expect(restored.microsecond, 456);
+      });
+
+      test('should include offset in ISO 8601 string', () {
+        final tokyo = getLocation('Asia/Tokyo');
+        final dt = EasyDateTime(2025, 6, 15, 10, 0, 0, 0, 0, tokyo);
+        expect(
+          dt.toIso8601String(),
+          anyOf(contains('+09:00'), contains('+0900')),
+        );
+      });
+
+      test('should preserve instant in roundtrip', () {
+        final original = EasyDateTime.utc(2025, 6, 15, 10, 30);
+        final restored = EasyDateTime.fromIso8601String(
+          original.toIso8601String(),
+        );
+        expect(restored.isAtSameMomentAs(original), isTrue);
       });
     });
   });

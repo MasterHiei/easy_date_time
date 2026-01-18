@@ -1,11 +1,13 @@
+library;
+
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
 
 /// Tests for PR #7 changes: DateTime compatibility constants and static methods.
 ///
 /// These tests verify that:
-/// 1. Weekday and month constants match DateTime's constants
-/// 2. Static configuration methods work correctly on EasyDateTime class
+/// 1. Weekday and month constants match DateTime's constants.
+/// 2. Static configuration methods work correctly on EasyDateTime class.
 void main() {
   setUpAll(() {
     EasyDateTime.initializeTimeZone();
@@ -58,11 +60,9 @@ void main() {
       });
 
       test('weekday property returns correct constant', () {
-        // 2025-12-01 is Monday
         final monday = EasyDateTime.utc(2025, 12, 1);
         expect(monday.weekday, EasyDateTime.monday);
 
-        // 2025-12-07 is Sunday
         final sunday = EasyDateTime.utc(2025, 12, 7);
         expect(sunday.weekday, EasyDateTime.sunday);
       });
@@ -147,14 +147,13 @@ void main() {
   group('DateTime Interface Compliance', () {
     test('EasyDateTime is assignable to DateTime', () {
       final easyDt = EasyDateTime.utc(2025, 12, 1, 10, 30);
-      // This should compile: EasyDateTime implements DateTime
+      // EasyDateTime implements DateTime.
       DateTime dt = easyDt;
       expect(dt.year, 2025);
       expect(dt.month, 12);
     });
 
     test('EasyDateTime works with functions accepting DateTime', () {
-      // A function that accepts DateTime should accept EasyDateTime
       int extractYear(DateTime dt) => dt.year;
 
       final easyDt = EasyDateTime.utc(2025, 12, 1);
@@ -200,8 +199,14 @@ void main() {
 
       expect(easy == dart, isTrue);
 
-      final dartLocal = DateTime(2025, 1, 1, 10, 0); // Local
-      expect(easy == dartLocal, isFalse); // Different timezone type
+      final dartLocal = DateTime(
+        2025,
+        1,
+        1,
+        10,
+        0,
+      ); // This creates a local DateTime.
+      expect(easy == dartLocal, isFalse); // Timezones differ.
     });
   });
 }

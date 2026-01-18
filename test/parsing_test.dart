@@ -1,3 +1,5 @@
+library;
+
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -10,7 +12,6 @@ void main() {
   group('EasyDateTime Parsing', () {
     group('tryParse', () {
       test('should return instance for valid ISO 8601 strings', () {
-        // Arrange & Act & Assert
         expect(EasyDateTime.tryParse('2025-12-01T10:30:00Z'), isNotNull);
         expect(EasyDateTime.tryParse('2025-12-01T10:30:00+09:00'), isNotNull);
         expect(EasyDateTime.tryParse('2025-12-01'), isNotNull);
@@ -19,7 +20,6 @@ void main() {
       test(
         'should return instance for fallback formats (Slash, Dash, Dot)',
         () {
-          // Arrange & Act & Assert
           expect(EasyDateTime.tryParse('2025/12/01'), isNotNull);
           expect(EasyDateTime.tryParse('2025/12/01 10:30:00'), isNotNull);
           expect(EasyDateTime.tryParse('2025-12-01 10:30:00'), isNotNull);
@@ -29,35 +29,32 @@ void main() {
       );
 
       test('should return null for excessively long inputs', () {
-        // Arrange
         final longString = '2025-12-01${' ' * 1000}10:00';
         final veryLongInvalid = 'a' * 200;
 
-        // Act & Assert
         expect(EasyDateTime.tryParse(longString), isNull);
         expect(EasyDateTime.tryParse(veryLongInvalid), isNull);
       });
 
       test('should return null for invalid date components', () {
-        // Arrange & Act & Assert
-        expect(EasyDateTime.tryParse('2025/13/01'), isNull); // Month 13
-        expect(EasyDateTime.tryParse('2025/12/32'), isNull); // Day 32
-        expect(EasyDateTime.tryParse('202A/12/01'), isNull); // Invalid year
+        expect(EasyDateTime.tryParse('2025/13/01'), isNull); // Month is 13.
+        expect(EasyDateTime.tryParse('2025/12/32'), isNull); // Day is 32.
+        expect(
+          EasyDateTime.tryParse('202A/12/01'),
+          isNull,
+        ); // Invalid year format.
       });
 
       test('should handle T prefix in time part within fallback formats', () {
-        // Arrange & Act & Assert
         expect(EasyDateTime.tryParse('2025/12/01T10:30:00'), isNotNull);
       });
 
       test('should ignore leading and trailing whitespace', () {
-        // Arrange & Act & Assert
         expect(EasyDateTime.tryParse('  2025-12-01T10:00:00Z  '), isNotNull);
         expect(EasyDateTime.tryParse('  2025/12/01  '), isNotNull);
       });
 
       test('should return null for completely invalid inputs', () {
-        // Arrange & Act & Assert
         expect(EasyDateTime.tryParse(''), isNull);
         expect(EasyDateTime.tryParse('   '), isNull);
         expect(EasyDateTime.tryParse('not-a-date'), isNull);
@@ -68,13 +65,10 @@ void main() {
 
     group('parse', () {
       test('should handle uncommon timezone offsets', () {
-        // Arrange
-        const input = '2025-12-01T10:00:00+05:45'; // Nepal
+        const input = '2025-12-01T10:00:00+05:45'; // Nepal time (+05:45).
 
-        // Act
         final result = EasyDateTime.parse(input);
 
-        // Assert
         expect(result.hour, 10);
         expect(result.locationName, 'Asia/Kathmandu');
       });
@@ -82,10 +76,8 @@ void main() {
       test(
         'should throw InvalidTimeZoneException for non-standard offsets',
         () {
-          // Arrange
           const input = '2025-12-01T10:00:00+05:17';
 
-          // Act & Assert
           expect(
             () => EasyDateTime.parse(input),
             throwsA(isA<InvalidTimeZoneException>()),
@@ -93,25 +85,19 @@ void main() {
         },
       );
 
-      test('tryParse should return null for non-standard offsets', () {
-        // Arrange
+      test('tryParse returns null for non-standard offsets', () {
         const input = '2025-12-01T10:00:00+05:17';
 
-        // Act
         final result = EasyDateTime.tryParse(input);
 
-        // Assert
         expect(result, isNull);
       });
 
       test('should handle DST offsets correctly', () {
-        // Arrange
-        const input = '2025-07-01T10:00:00-04:00'; // EDT
+        const input = '2025-07-01T10:00:00-04:00'; // Timezone is EDT.
 
-        // Act
         final result = EasyDateTime.parse(input);
 
-        // Assert
         expect(result.hour, 10);
         expect(result.locationName, 'America/New_York');
       });
@@ -240,15 +226,12 @@ void main() {
 
     group('DST Transition Handling', () {
       test('should match DateTime.parse result for Spring Forward gap', () {
-        // Arrange
         // 2023-03-12 02:30 is invalid in local time but valid with offset
         const input = '2023-03-12T02:30:00-04:00';
 
-        // Act
         final standard = DateTime.parse(input);
         final easy = EasyDateTime.parse(input);
 
-        // Assert
         expect(
           easy.microsecondsSinceEpoch,
           equals(standard.microsecondsSinceEpoch),
@@ -256,11 +239,9 @@ void main() {
       });
 
       test('should convert gap time to correct UTC equivalent', () {
-        // Arrange
         // 02:30 at UTC-4 = 06:30 UTC
         final parsed = EasyDateTime.parse('2023-03-12T02:30:00-04:00');
 
-        // Act & Assert
         expect(parsed.toUtc().hour, equals(6));
         expect(parsed.toUtc().minute, equals(30));
       });
@@ -268,14 +249,11 @@ void main() {
       test(
         'should distinguish Fall Back overlap - First Occurrence (Pre-Switch)',
         () {
-          // Arrange
           const input = '2023-11-05T01:30:00-04:00'; // EDT
 
-          // Act
           final standard = DateTime.parse(input);
           final easy = EasyDateTime.parse(input);
 
-          // Assert
           expect(
             easy.microsecondsSinceEpoch,
             equals(standard.microsecondsSinceEpoch),
@@ -287,14 +265,11 @@ void main() {
       test(
         'should distinguish Fall Back overlap - Second Occurrence (Post-Switch)',
         () {
-          // Arrange
           const input = '2023-11-05T01:30:00-05:00'; // EST
 
-          // Act
           final standard = DateTime.parse(input);
           final easy = EasyDateTime.parse(input);
 
-          // Assert
           expect(
             easy.microsecondsSinceEpoch,
             equals(standard.microsecondsSinceEpoch),
@@ -306,7 +281,6 @@ void main() {
       test(
         'should correctly calculate duration between repeated overlap hours',
         () {
-          // Arrange
           final firstOccurrence = EasyDateTime.parse(
             '2023-11-05T01:30:00-04:00',
           );
@@ -314,10 +288,8 @@ void main() {
             '2023-11-05T01:30:00-05:00',
           );
 
-          // Act
           final difference = secondOccurrence.difference(firstOccurrence);
 
-          // Assert
           expect(difference, equals(const Duration(hours: 1)));
         },
       );
@@ -325,14 +297,11 @@ void main() {
       test(
         'should parse correctly crossing seasons (Summer offset in Winter)',
         () {
-          // Arrange
           const summerInput = '2025-07-01T10:00:00-04:00';
 
-          // Act
           final standard = DateTime.parse(summerInput);
           final easy = EasyDateTime.parse(summerInput);
 
-          // Assert
           expect(
             easy.microsecondsSinceEpoch,
             equals(standard.microsecondsSinceEpoch),
@@ -343,14 +312,11 @@ void main() {
       test(
         'should parse correctly crossing seasons (Winter offset in Summer)',
         () {
-          // Arrange
           const winterInput = '2025-01-15T10:00:00-05:00';
 
-          // Act
           final standard = DateTime.parse(winterInput);
           final easy = EasyDateTime.parse(winterInput);
 
-          // Assert
           expect(
             easy.microsecondsSinceEpoch,
             equals(standard.microsecondsSinceEpoch),
@@ -363,33 +329,85 @@ void main() {
       test(
         'should parse ISO 8601 strings efficiently (<500ms for 1000 iter)',
         () {
-          // Arrange
           final stopwatch = Stopwatch()..start();
 
-          // Act
           for (int i = 0; i < 1000; i++) {
             EasyDateTime.parse('2025-12-01T10:30:00Z');
           }
           stopwatch.stop();
 
-          // Assert
           expect(stopwatch.elapsedMilliseconds, lessThan(500));
         },
       );
 
-      test('tryParse should fail very long strings efficiently (<100ms)', () {
-        // Arrange
-        final input = '2025-01-01${' ' * 10000}';
-        final start = DateTime.now();
+      test(
+        'tryParse should parse very long strings with whitespace efficiently (<100ms)',
+        () {
+          final input = '2025-01-01${' ' * 10000}';
+          final start = DateTime.now();
 
-        // Act
-        final result = EasyDateTime.tryParse(input);
-        final elapsed = DateTime.now().difference(start);
+          final result = EasyDateTime.tryParse(input);
+          final elapsed = DateTime.now().difference(start);
 
-        // Assert
-        expect(result, isNotNull);
-        expect(elapsed.inMilliseconds, lessThan(100));
+          expect(result, isNotNull);
+          expect(elapsed.inMilliseconds, lessThan(100));
+        },
+      );
+    });
+
+    group('Strict Parsing', () {
+      test('should accept valid dates in strict mode', () {
+        expect(EasyDateTime.parse('2025-02-28', strict: true).day, 28);
+        expect(
+          EasyDateTime.parse('2024-02-29', strict: true).day,
+          29, // Leap year.
+        );
       });
+
+      test('should reject invalid days in strict mode', () {
+        expect(
+          () => EasyDateTime.parse('2025-02-30', strict: true),
+          throwsFormatException,
+        );
+        expect(
+          () => EasyDateTime.parse('2025-02-29', strict: true),
+          throwsFormatException, // Not a leap year.
+        );
+        expect(
+          () => EasyDateTime.parse('2025-04-31', strict: true),
+          throwsFormatException, // April has 30 days.
+        );
+      });
+
+      test('should reject invalid months in strict mode', () {
+        expect(
+          () => EasyDateTime.parse('2025-13-01', strict: true),
+          throwsFormatException,
+        );
+        expect(
+          () => EasyDateTime.parse('2025-00-01', strict: true),
+          throwsFormatException,
+        );
+      });
+
+      test('tryParse strict should return null for invalid dates', () {
+        expect(EasyDateTime.tryParse('2025-02-30', strict: true), isNull);
+        expect(EasyDateTime.tryParse('2025-13-01', strict: true), isNull);
+      });
+
+      test(
+        'should maintain overflow behavior when strict is false (default)',
+        () {
+          // 2025-02-30 -> 2025-03-02
+          final dt = EasyDateTime.parse('2025-02-30');
+          expect(dt.month, 3);
+          expect(dt.day, 2);
+
+          final dtExplicit = EasyDateTime.parse('2025-02-30', strict: false);
+          expect(dtExplicit.month, 3);
+          expect(dtExplicit.day, 2);
+        },
+      );
     });
   });
 }

@@ -242,7 +242,7 @@ void main() {
       final newDt = dt.copyWith(hour: 15, minute: 45);
 
       expect(newDt.day, 7); // Date unchanged
-      expect(newDt.hour, 15); // Time changed
+      expect(newDt.hour, 15); // Time is now 15:00.
       expect(newDt.minute, 45);
     });
 
