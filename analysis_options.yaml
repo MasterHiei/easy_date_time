@@ -68,6 +68,10 @@ dart_code_metrics:
     maximum-nesting-level: 5
     source-lines-of-code: 50
   metrics-exclude:
+    - example/**
+    - test/**
+  rules-exclude:
+    - example/**
     - test/**
   rules:
     - avoid-dynamic

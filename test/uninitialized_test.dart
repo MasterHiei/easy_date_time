@@ -1,3 +1,9 @@
+/// Tests behavior BEFORE initialization.
+///
+/// This file must run in isolation (or before any other test calls [initializeTimeZone])
+/// to correctly verify the [TimeZoneNotInitializedException] behavior.
+library;
+
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
 

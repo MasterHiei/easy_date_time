@@ -71,4 +71,27 @@ void main() {
   final invalid = EasyDateTime.tryParse('not-a-date');
   print('  Valid input:   $valid');
   print('  Invalid input: $invalid');
+  print('');
+
+  // --------------------------------------------------------
+  // Strict Parsing (Rejecting invalid dates)
+  // --------------------------------------------------------
+  print('Strict Parsing (Rejecting invalid dates):');
+
+  // Default behavior: Overflow
+  final overflow = EasyDateTime.parse('2025-02-30');
+  print(
+    '  Default (Overflow): 2025-02-30 -> ${overflow.year}-${overflow.month}-${overflow.day}',
+  );
+
+  // Strict behavior: Throw
+  try {
+    EasyDateTime.parse('2025-02-30', strict: true);
+  } catch (e) {
+    print('  Strict (Throw):     Caught expected error: $e');
+  }
+
+  // Strict behavior: tryParse returns null
+  final strictParam = EasyDateTime.tryParse('2025-02-30', strict: true);
+  print('  Strict (tryParse):  2025-02-30 -> $strictParam');
 }

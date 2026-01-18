@@ -8,33 +8,34 @@
 
 [中文](https://github.com/MasterHiei/easy_date_time/blob/main/README_zh.md) | [日本語](https://github.com/MasterHiei/easy_date_time/blob/main/README_ja.md)
 
-A drop-in DateTime replacement with IANA timezone support. Preserves original time values when parsing.
+A drop-in replacement for Dart's `DateTime` with IANA timezone support. It preserves the original time values when parsing and simplifies timezone handling.
 
 ~~~dart
-// DateTime converts to UTC, changing the hour
+// DateTime converts to UTC across timezones, often changing the hour
 DateTime.parse('2026-01-18T10:30:00+08:00').hour   // 2
 
-// EasyDateTime keeps the original hour
+// EasyDateTime keeps the original hour and timezone context
 EasyDateTime.parse('2026-01-18T10:30:00+08:00').hour  // 10
 ~~~
 
-## Install
+## Installation
 
 ### Dependency
 
-Add to your `pubspec.yaml`:
+Add the package to your `pubspec.yaml`:
 
 ~~~yaml
 dependencies:
-  easy_date_time: ^0.10.0
+  easy_date_time: ^0.11.0
 ~~~
 
 ### Initialization
 
-Initialize the timezone database before use:
+You **must** initialize the timezone database before using the library:
 
 ~~~dart
 void main() {
+  // Call this once before any usage
   EasyDateTime.initializeTimeZone();
   runApp(MyApp());
 }
@@ -42,17 +43,20 @@ void main() {
 
 ## Usage
 
-Create and parse datetime with timezone:
+Construct and parse with timezone awareness:
 
 ~~~dart
+// Use a predefined location
 final now = EasyDateTime.now(location: TimeZones.tokyo);
+
+// Parse a string while preserving its offset and location
 final parsed = EasyDateTime.parse('2026-01-18T10:30:00+08:00');
 
 print(parsed.hour);         // 10
 print(parsed.locationName); // Asia/Shanghai
 ~~~
 
-Use Duration extensions for arithmetic:
+Arithmetic with `Duration` extensions:
 
 ~~~dart
 final tomorrow = now + 1.days;
@@ -70,30 +74,30 @@ print(dt.format('yyyy-MM-dd HH:mm'));
 
 ### Timezones
 
-Three ways to specify timezone:
+There are three ways to specify a timezone (Location):
 
 ~~~dart
-// 1. TimeZones constants
+// 1. Using TimeZones constants (Recommended)
 final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
 
-// 2. IANA timezone names
+// 2. Using IANA timezone naming
 final nairobi = EasyDateTime.now(location: getLocation('Africa/Nairobi'));
 
-// 3. Global default
+// 3. Setting a global default
 EasyDateTime.setDefaultLocation(TimeZones.shanghai);
-final now = EasyDateTime.now();  // uses Asia/Shanghai
+final now = EasyDateTime.now();  // Uses Asia/Shanghai by default
 ~~~
 
 Convert between timezones:
 
 ~~~dart
 final newYork = tokyo.inLocation(TimeZones.newYork);
-tokyo.isAtSameMomentAs(newYork);  // true — same instant
+tokyo.isAtSameMomentAs(newYork);  // true — represents the same instant
 ~~~
 
 ### Arithmetic
 
-Duration extensions provide natural syntax:
+Syntax using extensions:
 
 ~~~dart
 now + 1.days
@@ -101,67 +105,73 @@ now - 2.hours
 now + 30.minutes + 15.seconds
 ~~~
 
-Calendar arithmetic preserves wall time during DST changes:
+**DST-Safe Calendar Arithmetic**
+
+When adding time across Daylight Saving Time boundaries, `addCalendarDays` preserves the "wall time" (the time on the clock), whereas standard addition respects physical time.
 
 ~~~dart
-// DST transition day in New York (March 9, 2025)
+// DST transition day in New York (March 9, 2025: clocks jump forward)
 final dt = EasyDateTime(2025, 3, 9, 0, 0, location: newYork);
 
-dt.addCalendarDays(1);      // 2025-03-10 00:00 — same wall time
-dt.add(Duration(days: 1));  // 2025-03-10 01:00 — 24 hours later
+dt.addCalendarDays(1);      // 2025-03-10 00:00 — Same clock time
+dt.add(Duration(days: 1));  // 2025-03-10 01:00 — 24 physical hours later
 ~~~
 
-Related getters:
+Convenience getters:
 
 ~~~dart
-dt.tomorrow    // next calendar day
-dt.yesterday   // previous calendar day
-dt.dateOnly    // time set to 00:00:00
+dt.tomorrow    // The next calendar day
+dt.yesterday   // The previous calendar day
+dt.dateOnly    // Resets time components to 00:00:00
 ~~~
 
-Safe month overflow handling:
+**Month Overflow Handling**
+
+Handle cases where a month change results in an invalid date (e.g., changing Jan 31st to February):
 
 ~~~dart
 final jan31 = EasyDateTime.utc(2025, 1, 31);
 
-jan31.copyWith(month: 2);        // Mar 3 (overflow)
-jan31.copyWithClamped(month: 2); // Feb 28 (clamped to valid day)
+jan31.copyWith(month: 2);        // Mar 3 (Standard overflow behavior)
+jan31.copyWithClamped(month: 2); // Feb 28 (Clamped to the last valid day)
 ~~~
 
-Get boundaries of time units:
+**Time Unit Boundaries**
+
+Calculate start and end points:
 
 ~~~dart
-dt.startOf(DateTimeUnit.day);    // 00:00:00
+dt.startOf(DateTimeUnit.day);    // 00:00:00.000
 dt.startOf(DateTimeUnit.week);   // Monday 00:00:00 (ISO 8601)
-dt.startOf(DateTimeUnit.month);  // 1st 00:00:00
-dt.endOf(DateTimeUnit.month);    // last day 23:59:59.999999
+dt.startOf(DateTimeUnit.month);  // 1st of month 00:00:00
+dt.endOf(DateTimeUnit.month);    // Last day of month 23:59:59.999
 ~~~
 
 ### Properties
 
-Date calculations:
+Date components:
 
-- `dayOfYear` — day number within year (1-366)
+- `dayOfYear` — Day number (1-366)
 - `weekOfYear` — ISO 8601 week number (1-53)
-- `quarter` — quarter of year (1-4)
-- `daysInMonth` — days in current month (28-31)
-- `isLeapYear` — whether year is a leap year
+- `quarter` — Quarter of the year (1-4)
+- `daysInMonth` — Total days in the current month (28-31)
+- `isLeapYear` — true if leap year
 
-Day checks:
+Status checkers:
 
 - `isToday`, `isTomorrow`, `isYesterday`
 - `isThisWeek`, `isThisMonth`, `isThisYear`
 - `isWeekend`, `isWeekday`
 - `isPast`, `isFuture`
 
-Timezone:
+Timezone info:
 
-- `isDst` — whether daylight saving time is active
-- `locationName` — IANA timezone name
+- `isDst` — true if currently in Daylight Saving Time
+- `locationName` — IANA timezone identifier
 
 ### Formatting
 
-Use `format()` with pattern strings:
+Format dates using patterns:
 
 ~~~dart
 dt.format('yyyy-MM-dd');    // 2026-01-18
@@ -169,7 +179,7 @@ dt.format('HH:mm:ss');      // 14:30:45
 dt.format('hh:mm a');       // 02:30 PM
 ~~~
 
-Predefined format constants:
+Or use predefined constants:
 
 ~~~dart
 dt.format(DateTimeFormats.isoDate);      // 2026-01-18
@@ -177,14 +187,14 @@ dt.format(DateTimeFormats.isoDateTime);  // 2026-01-18T14:30:45
 dt.format(DateTimeFormats.rfc2822);      // Sun, 18 Jan 2026 14:30:45 +0800
 ~~~
 
-For performance in loops, pre-compile the pattern:
+> **Performance**: In loops or high-throughput scenarios, it is recommended to reuse `EasyDateTimeFormatter` instances.
 
 ~~~dart
 static final formatter = EasyDateTimeFormatter('yyyy-MM-dd HH:mm');
 formatter.format(dt);
 ~~~
 
-Pattern tokens:
+**Pattern Tokens:**
 
 | Token | Description | Example |
 |-------|-------------|---------|
@@ -202,20 +212,20 @@ Pattern tokens:
 | `xxxxx` | Offset | +08:00 |
 | `X` | ISO Offset | Z / +0800 |
 
-### intl
+### Integration with `intl`
 
-`EasyDateTime` implements `DateTime` and works directly with the `intl` package:
+`EasyDateTime` implements the `DateTime` interface, making it compatible with `package:intl` without modification:
 
 ~~~dart
-import 'package:intl/intl.dart';
+import 'package:package:intl/intl.dart';
 
 DateFormat.yMMMMd('ja').format(dt);  // 2025年12月7日
 DateFormat.yMMMMd('en').format(dt);  // December 7, 2025
 ~~~
 
-### JSON
+### JSON Serialization
 
-Use a custom converter with `json_serializable` or `freezed`:
+Custom converters are provided for `json_serializable` and `freezed`:
 
 ~~~dart
 class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
@@ -229,7 +239,7 @@ class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
 }
 ~~~
 
-With freezed:
+Usage with `freezed`:
 
 ~~~dart
 @freezed
@@ -242,36 +252,52 @@ class Event with _$Event {
 }
 ~~~
 
-## Notes
+## Important Notes
 
-**Equality** follows Dart's `DateTime` semantics:
+**Equality (`==`)**
+Equality intentionally follows Dart's `DateTime` semantics.
+- `==` compares absolute time value AND timezone/location.
+- `isAtSameMomentAs` compares only the absolute time value (instant).
 
 ~~~dart
 final utc = EasyDateTime.utc(2025, 1, 1, 0, 0);
 final local = EasyDateTime.parse('2026-01-18T08:00:00+08:00');
 
-utc == local;                  // false — different timezone type
-utc.isAtSameMomentAs(local);   // true — same instant
+utc == local;                  // false — different Location
+utc.isAtSameMomentAs(local);   // true — same instant in time
 ~~~
 
-**Avoid** mixing `EasyDateTime` and `DateTime` in the same `Set` or `Map`. They have different `hashCode` implementations.
+> **Warning:** Do not mix `EasyDateTime` and `DateTime` in the same `Set` or `Map` key, as their `hashCode` implementations differ.
 
-**Invalid dates** automatically roll over:
+**Auto-Correction vs. Strict Mode**
+By default, invalid calendar dates are automatically rolled over (overflow):
 
 ~~~dart
-EasyDateTime(2025, 2, 30);  // 2025-03-02
+EasyDateTime(2025, 2, 30);  // Becomes 2025-03-02
 ~~~
 
-**Safe parsing** for user input:
+To enforce strict validation and reject invalid dates, use the `strict` parameter:
+
+~~~dart
+// Throws FormatException for invalid dates
+EasyDateTime.parse('2025-02-30', strict: true);
+
+// Returns null for invalid dates
+EasyDateTime.tryParse('2025-02-30', strict: true);
+~~~
+
+**Safe Parsing**
+Always use `tryParse` for handling potentially malformed user input:
 
 ~~~dart
 final dt = EasyDateTime.tryParse(userInput);
 if (dt == null) {
-  // invalid format
+  // Handle invalid format
 }
 ~~~
 
-**Extension conflicts** — if `1.days` conflicts with another package:
+**Extension Conflicts**
+If `1.days` conflicts with another package (like `time`), hide the extension:
 
 ~~~dart
 import 'package:easy_date_time/easy_date_time.dart' hide DurationExtension;
@@ -279,7 +305,7 @@ import 'package:easy_date_time/easy_date_time.dart' hide DurationExtension;
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## License
 

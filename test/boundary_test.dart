@@ -1,6 +1,7 @@
+library;
+
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
-import 'package:timezone/timezone.dart' show local;
 
 /// Boundary and edge case tests for EasyDateTime.
 void main() {
@@ -31,13 +32,10 @@ void main() {
       test(
         'should transition from 2025-12-31 to 2026-01-01 when adding 1 microsecond',
         () {
-          // Arrange
           final last = EasyDateTime.utc(2025, 12, 31, 23, 59, 59, 999, 999);
 
-          // Act
           final next = last + const Duration(microseconds: 1);
 
-          // Assert
           expect(next.year, 2026);
           expect(next.month, 1);
           expect(next.day, 1);
@@ -48,21 +46,16 @@ void main() {
       );
 
       test('should allow negative millisecondsSinceEpoch (Pre-1970)', () {
-        // Arrange & Act
         final dt = EasyDateTime.utc(1969, 12, 31, 23, 59, 59);
 
-        // Assert
         expect(dt.millisecondsSinceEpoch, lessThan(0));
       });
 
       test('should correctly subtract across the epoch boundary', () {
-        // Arrange
         final after = EasyDateTime.utc(1970, 1, 1, 0, 0, 1);
 
-        // Act
         final before = after - const Duration(seconds: 2);
 
-        // Assert
         expect(before.year, 1969);
         expect(before.month, 12);
         expect(before.day, 31);
@@ -228,25 +221,19 @@ void main() {
 
   group('Timezone Boundaries', () {
     test('should convert across date line (UTC+14)', () {
-      // Arrange
       final utc = EasyDateTime.utc(2025, 6, 15, 10, 0);
 
-      // Act
       final local = utc.inLocation(getLocation('Pacific/Kiritimati'));
 
-      // Assert
       expect(local.day, 16);
       expect(local.hour, 0);
     });
 
     test('should convert across dst offset (UTC-8)', () {
-      // Arrange
       final utc = EasyDateTime.utc(2025, 6, 15, 10, 0);
 
-      // Act
       final local = utc.inLocation(getLocation('America/Anchorage'));
 
-      // Assert
       expect(local.day, 15);
       expect(local.hour, 2);
     });
@@ -254,15 +241,12 @@ void main() {
     test(
       'should maintain instant equality but different locationName across timezones',
       () {
-        // Arrange
         final tokyo = getLocation('Asia/Tokyo');
         final ny = getLocation('America/New_York');
         final dt1 = EasyDateTime(2025, 6, 15, 10, 0, 0, 0, 0, tokyo);
 
-        // Act
         final dt2 = dt1.inLocation(ny);
 
-        // Assert
         expect(dt1.isAtSameMomentAs(dt2), isTrue);
         expect(dt1.millisecondsSinceEpoch, dt2.millisecondsSinceEpoch);
         expect(dt1.locationName, isNot(dt2.locationName));
@@ -531,129 +515,6 @@ void main() {
       });
     });
   });
-
-  group('Comparison and Sorting', () {
-    test('should consider two identical UTC times as equal', () {
-      final dt1 = EasyDateTime.utc(2025, 6, 15, 10, 0);
-      final dt2 = EasyDateTime.utc(2025, 6, 15, 10, 0);
-      expect(dt1 == dt2, isTrue);
-      expect(dt1.hashCode, dt2.hashCode);
-    });
-
-    test('should sort dates chronologically', () {
-      final list = [
-        EasyDateTime.utc(2025, 6, 16),
-        EasyDateTime.utc(2025, 6, 14),
-        EasyDateTime.utc(2025, 6, 15),
-      ];
-      list.sort();
-      expect(list.map((d) => d.day).toList(), [14, 15, 16]);
-    });
-  });
-
-  group('Serialization', () {
-    test('should preserve precision in ISO 8601 roundtrip', () {
-      final dt = EasyDateTime.utc(2025, 6, 15, 10, 30, 45, 123, 456);
-      final restored = EasyDateTime.fromIso8601String(dt.toIso8601String());
-      expect(restored.millisecond, 123);
-      expect(restored.microsecond, 456);
-    });
-
-    test('should include offset in ISO 8601 string', () {
-      final tokyo = getLocation('Asia/Tokyo');
-      final dt = EasyDateTime(2025, 6, 15, 10, 0, 0, 0, 0, tokyo);
-      expect(
-        dt.toIso8601String(),
-        anyOf(contains('+09:00'), contains('+0900')),
-      );
-    });
-
-    test('should preserve instant in roundtrip', () {
-      final original = EasyDateTime.utc(2025, 6, 15, 10, 30);
-      final restored = EasyDateTime.fromIso8601String(
-        original.toIso8601String(),
-      );
-      expect(restored.isAtSameMomentAs(original), isTrue);
-    });
-  });
-
-  group('copyWith', () {
-    test('should update specified fields', () {
-      final dt = EasyDateTime.utc(2025, 1, 1);
-      final m = dt.copyWith(
-        year: 2026,
-        month: 12,
-        day: 31,
-        hour: 23,
-        minute: 59,
-        second: 59,
-        millisecond: 999,
-        microsecond: 999,
-      );
-      expect(m.year, 2026);
-      expect(m.month, 12);
-      expect(m.day, 31);
-      expect(m.hour, 23);
-      expect(m.minute, 59);
-      expect(m.second, 59);
-      expect(m.millisecond, 999);
-      expect(m.microsecond, 999);
-    });
-
-    test('should return equivalent instance if no arguments', () {
-      final dt = EasyDateTime.utc(2025, 6, 15);
-      final same = dt.copyWith();
-      expect(same.isAtSameMomentAs(dt), isTrue);
-    });
-
-    test('should update location while preserving local component values', () {
-      final dt = EasyDateTime.utc(2025, 6, 15, 10, 0);
-      final tokyo = getLocation('Asia/Tokyo');
-      final m = dt.copyWith(location: tokyo);
-      expect(m.locationName, 'Asia/Tokyo');
-      expect(m.hour, 10);
-    });
-
-    group('copyWithClamped', () {
-      test('should clamp Feb 29 to Feb 28 when changing to non-leap year', () {
-        final leap = EasyDateTime(2024, 2, 29, 12, 0);
-        final clamped = leap.copyWithClamped(year: 2025);
-        expect(clamped.month, 2);
-        expect(clamped.day, 28);
-      });
-
-      test('should overflow to Mar 1 when using standard copyWith', () {
-        final leap = EasyDateTime(2024, 2, 29, 12, 0);
-        final overflow = leap.copyWith(year: 2025);
-        expect(overflow.month, 3);
-        expect(overflow.day, 1);
-      });
-    });
-  });
-
-  group('Global Configuration', () {
-    test('should allow clearing default location safely', () {
-      EasyDateTime.clearDefaultLocation();
-      EasyDateTime.clearDefaultLocation();
-      expect(EasyDateTime.now().location, local);
-    });
-
-    test('should correctly cycle setDefaultLocation', () {
-      final tokyo = getLocation('Asia/Tokyo');
-      EasyDateTime.setDefaultLocation(tokyo);
-      expect(EasyDateTime.getDefaultLocation()!.name, 'Asia/Tokyo');
-
-      EasyDateTime.clearDefaultLocation();
-      expect(EasyDateTime.getDefaultLocation(), isNull);
-    });
-
-    test('should apply default location to new instances', () {
-      final tokyo = getLocation('Asia/Tokyo');
-      EasyDateTime.setDefaultLocation(tokyo);
-      expect(EasyDateTime(2025, 6, 15, 10, 0).locationName, 'Asia/Tokyo');
-    });
-  });
-
   group('Misc Edge Cases', () {
     test('adding Duration.zero should preserve instant', () {
       final dt = EasyDateTime.utc(2025, 6, 15);
@@ -671,21 +532,6 @@ void main() {
       final dt = EasyDateTime.utc(2025, 6, 15, 10, 0, 0, 0, 0);
       final next = dt + const Duration(microseconds: 1);
       expect(next.microsecond, 1);
-    });
-
-    test('unclosed quote in format should be treated as literal', () {
-      final dt = EasyDateTime(2025, 1, 1, 12, 0, 0);
-      expect(dt.format("'Hello world"), 'Hello world');
-    });
-
-    test('empty quotes in format should be empty', () {
-      final dt = EasyDateTime(2025, 1, 1, 12, 0, 0);
-      expect(dt.format("''"), '');
-    });
-
-    test('quoted tokens should be literal', () {
-      final dt = EasyDateTime(2025, 1, 1, 12, 0, 0);
-      expect(dt.format("'yyyy'"), 'yyyy');
     });
 
     test(

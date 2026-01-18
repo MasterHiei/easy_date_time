@@ -1,3 +1,5 @@
+library;
+
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
 
@@ -221,7 +223,7 @@ void main() {
         expect(identical(f3, f4), isTrue);
         // Note: 'yyyy-MM-dd' is the pattern for isoDate, so they might share instance
         // depending on implementation. Assuming implementation normalizes.
-        // Actually, looking at implementation, DateTimeFormats.isoDate string is used.
+        // DateTimeFormats.isoDate string is used internally.
         expect(identical(f1, f3), isTrue);
       });
 

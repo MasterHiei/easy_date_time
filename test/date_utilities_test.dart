@@ -1,3 +1,5 @@
+library;
+
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
 
@@ -552,7 +554,7 @@ void main() {
 
       test('isToday is based on local timezone date', () {
         // isToday compares against "today" in the instance's timezone
-        // So if we get now() in Tokyo, isToday should be true
+        // If now() is in Tokyo, isToday should be true.
         final tokyo = EasyDateTime.now(location: getLocation('Asia/Tokyo'));
         expect(tokyo.isToday, isTrue);
 
