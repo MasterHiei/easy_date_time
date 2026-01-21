@@ -520,7 +520,7 @@ abstract class _FormatterToken {
 }
 
 /// A token representing a literal string.
-class _LiteralToken implements _FormatterToken {
+final class _LiteralToken implements _FormatterToken {
   final String value;
   _LiteralToken(this.value);
 
@@ -529,7 +529,7 @@ class _LiteralToken implements _FormatterToken {
 }
 
 /// A token representing a variable date/time part.
-class _PatternToken implements _FormatterToken {
+final class _PatternToken implements _FormatterToken {
   final String token;
   _PatternToken(this.token);
 

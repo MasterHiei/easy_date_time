@@ -12,7 +12,7 @@
 /// // Invalid - will throw
 /// final invalid = getLocation('Invalid/Timezone');
 /// ```
-class InvalidTimeZoneException implements Exception {
+final class InvalidTimeZoneException implements Exception {
   /// The invalid timezone identifier that was provided.
   final String timeZoneId;
 
