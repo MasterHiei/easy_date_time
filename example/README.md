@@ -4,15 +4,15 @@ Complete runnable examples with all dependencies.
 
 ## Setup
 
-```bash
+~~~bash
 cd example
 dart pub get
-```
+~~~
 
 For freezed/retrofit examples, run code generation:
-```bash
+~~~bash
 dart run build_runner build
-```
+~~~
 
 ## Directory Structure
 
@@ -41,9 +41,9 @@ No code generation needed. Run directly:
 | [copywith.dart](lib/core/copywith.dart) | Creating modified copies |
 | [error_handling.dart](lib/core/error_handling.dart) | Safe parsing, validation |
 
-```bash
+~~~bash
 dart run lib/core/basic_usage.dart
-```
+~~~
 
 ## Integration Examples
 
@@ -56,16 +56,16 @@ Requires `dart run build_runner build` first:
 | [dio_example.dart](lib/integrations/dio_example.dart) | Dio HTTP client |
 | [retrofit_example.dart](lib/integrations/retrofit_example.dart) | Retrofit type-safe API |
 
-```bash
+~~~bash
 dart run lib/integrations/freezed_example.dart
-```
+~~~
 
 ## Custom JsonConverter
 
 EasyDateTime works with json_serializable via custom converters.
 See [freezed_example.dart](lib/integrations/freezed_example.dart) for the converter template:
 
-```dart
+~~~dart
 class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
   const EasyDateTimeConverter();
 
@@ -75,4 +75,4 @@ class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
   @override
   String toJson(EasyDateTime object) => object.toIso8601String();
 }
-```
+~~~

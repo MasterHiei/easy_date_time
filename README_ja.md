@@ -271,22 +271,32 @@ print(utc.isAtSameMomentAs(local));
 > **重要**：`EasyDateTime` と `DateTime` は `hashCode` の実装が異なるため、同じ `Set` に入れたり、`Map` のキーとして混在させないでください。
 
 **自動補正と厳密モード (Strict Mode)**
-デフォルトでは、カレンダー上に存在しない日付は自動的に繰り越されます（オーバーフロー）：
+
+`strict` パラメータは `parse()` と `tryParse()` メソッド**のみ**で利用可能で、コンストラクタでは使用できません。
+
+**コンストラクタの挙動**（常に繰り越し）：
 
 ~~~dart
-// 2月30日は存在しないため、3月2日として扱われる
-EasyDateTime(2025, 2, 30); // -> 2025-03-02
+// コンストラクタは常に繰り越される - 厳密モード非対応
+EasyDateTime(2025, 2, 30);     // 2025-03-02 になる
+EasyDateTime.utc(2025, 4, 31); // 2025-05-01 になる
 ~~~
 
-厳密なバリデーション（厳密な解析）を適用し、無効な日付を拒否するには `strict` パラメータを使用してください：
+**解析メソッド**は `strict` パラメータで厳密な検証をサポート：
 
 ~~~dart
-// 無効な日付の場合は FormatException をスロー
-EasyDateTime.parse('2025-02-30', strict: true);
+// デフォルト：無効な日付は繰り越される
+EasyDateTime.parse('2025-02-30');  // 2025-03-02
 
-// 無効な日付の場合は null を返す
-EasyDateTime.tryParse('2025-02-30', strict: true);
+// 厳密モード：無効な日付で FormatException をスロー
+EasyDateTime.parse('2025-02-30', strict: true);  // ❌ FormatException
+
+// 厳密モード + tryParse：無効な日付で null を返す
+EasyDateTime.tryParse('2025-02-30', strict: true);  // null
 ~~~
+
+> **注意**: 厳密モードはカレンダーの正確性（2月30日や13月の拒否など）と ISO 8601 形式への準拠を検証します。ユーザー入力の安全な検証には `tryParse()` と `strict: true` の組み合わせを推奨します。
+
 
 
 **ユーザー入力の安全な解析**

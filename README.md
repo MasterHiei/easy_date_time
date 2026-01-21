@@ -217,7 +217,7 @@ formatter.format(dt);
 `EasyDateTime` implements the `DateTime` interface, making it compatible with `package:intl` without modification:
 
 ~~~dart
-import 'package:package:intl/intl.dart';
+import 'package:intl/intl.dart';
 
 DateFormat.yMMMMd('ja').format(dt);  // 2025年12月7日
 DateFormat.yMMMMd('en').format(dt);  // December 7, 2025
@@ -270,21 +270,32 @@ utc.isAtSameMomentAs(local);   // true — same instant in time
 > **Warning:** Do not mix `EasyDateTime` and `DateTime` in the same `Set` or `Map` key, as their `hashCode` implementations differ.
 
 **Auto-Correction vs. Strict Mode**
-By default, invalid calendar dates are automatically rolled over (overflow):
+
+The `strict` parameter is available **only** for `parse()` and `tryParse()` methods, not for constructors.
+
+**Constructor behavior** (always overflows):
 
 ~~~dart
-EasyDateTime(2025, 2, 30);  // Becomes 2025-03-02
+// Constructors always overflow - no strict mode available
+EasyDateTime(2025, 2, 30);     // Becomes 2025-03-02
+EasyDateTime.utc(2025, 4, 31); // Becomes 2025-05-01
 ~~~
 
-To enforce strict validation and reject invalid dates, use the `strict` parameter:
+**Parsing methods** support strict validation via the `strict` parameter:
 
 ~~~dart
-// Throws FormatException for invalid dates
-EasyDateTime.parse('2025-02-30', strict: true);
+// Default: invalid dates overflow
+EasyDateTime.parse('2025-02-30');  // 2025-03-02
 
-// Returns null for invalid dates
-EasyDateTime.tryParse('2025-02-30', strict: true);
+// Strict mode: throws FormatException for invalid dates
+EasyDateTime.parse('2025-02-30', strict: true);  // ❌ FormatException
+
+// Strict mode with tryParse: returns null for invalid dates
+EasyDateTime.tryParse('2025-02-30', strict: true);  // null
 ~~~
+
+> **Note**: Strict mode validates calendar correctness (e.g., no Feb 30, no month 13) and ISO 8601 format compliance. Use `tryParse()` with `strict: true` for safe validation of user input.
+
 
 **Safe Parsing**
 Always use `tryParse` for handling potentially malformed user input:
