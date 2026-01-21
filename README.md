@@ -26,7 +26,7 @@ Add the package to your `pubspec.yaml`:
 
 ~~~yaml
 dependencies:
-  easy_date_time: ^0.11.0
+  easy_date_time: ^0.11.1
 ~~~
 
 ### Initialization

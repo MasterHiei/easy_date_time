@@ -27,7 +27,7 @@ EasyDateTime.parse('2026-01-18T10:30:00+08:00').hour // 10
 
 ~~~yaml
 dependencies:
-  easy_date_time: ^0.11.0
+  easy_date_time: ^0.11.1
 ~~~
 
 ### 初期化
