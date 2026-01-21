@@ -27,7 +27,7 @@ EasyDateTime.parse('2026-01-18T10:30:00+08:00').hour // 10
 
 ~~~yaml
 dependencies:
-  easy_date_time: ^0.11.0
+  easy_date_time: ^0.11.1
 ~~~
 
 ### 初始化
@@ -271,22 +271,32 @@ print(utc.isAtSameMomentAs(local));
 > **重要**：请勿将 `EasyDateTime` 和 `DateTime` 放入同一个 `Set` 或作为 `Map` 的 key，因为它们的 `hashCode` 实现存在区别。
 
 **自动修正与严格模式**
-默认情况下，无效的日历日期会自动溢出（顺延修正）：
+
+`strict` 参数**仅**适用于 `parse()` 和 `tryParse()` 方法，构造函数不支持严格模式。
+
+**构造函数行为**（始终溢出）：
 
 ~~~dart
-// 2月30日不存在，自动顺延推算为3月2日
-EasyDateTime(2025, 2, 30); // -> 2025-03-02
+// 构造函数始终自动溢出 - 不支持严格模式
+EasyDateTime(2025, 2, 30);     // 变成 2025-03-02
+EasyDateTime.utc(2025, 4, 31); // 变成 2025-05-01
 ~~~
 
-如需强制进行严格验证并拒绝无效日期，请使用 `strict` 参数：
+**解析方法**支持通过 `strict` 参数进行严格验证：
 
 ~~~dart
-// 对无效日期抛出 FormatException
-EasyDateTime.parse('2025-02-30', strict: true);
+// 默认行为：无效日期自动溢出
+EasyDateTime.parse('2025-02-30');  // 2025-03-02
 
-// 对无效日期返回 null
-EasyDateTime.tryParse('2025-02-30', strict: true);
+// 严格模式：对无效日期抛出 FormatException
+EasyDateTime.parse('2025-02-30', strict: true);  // ❌ FormatException
+
+// 严格模式配合 tryParse：对无效日期返回 null
+EasyDateTime.tryParse('2025-02-30', strict: true);  // null
 ~~~
+
+> **注意**：严格模式会验证日历正确性（如拒绝 2 月 30 日、13 月等）和 ISO 8601 格式合规性。处理用户输入时，建议使用 `tryParse()` 配合 `strict: true` 进行安全验证。
+
 
 
 **安全解析**

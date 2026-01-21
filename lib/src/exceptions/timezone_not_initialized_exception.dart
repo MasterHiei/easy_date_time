@@ -11,7 +11,7 @@
 ///   runApp(MyApp());
 /// }
 /// ```
-class TimeZoneNotInitializedException implements Exception {
+final class TimeZoneNotInitializedException implements Exception {
   /// The error message explaining why the exception was thrown.
   final String message;
 

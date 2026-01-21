@@ -12,7 +12,7 @@
 ///   print('Invalid date format');
 /// }
 /// ```
-class InvalidDateFormatException implements FormatException {
+final class InvalidDateFormatException implements FormatException {
   /// The input string that couldn't be parsed.
   @override
   final String source;
