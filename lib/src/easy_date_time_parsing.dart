@@ -32,6 +32,29 @@ String _formatOffset(Duration offset) {
   return '$sign${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
 }
 
+EasyParseMode _resolveParseMode(bool? strict, EasyParseOptions options) {
+  if (strict == null) {
+    return options.mode;
+  }
+
+  return strict ? EasyParseMode.isoStrict : EasyParseMode.compatible;
+}
+
+bool _useLegacyDefaultParsePath(bool? strict, EasyParseOptions options) {
+  return strict == null && identical(options, const EasyParseOptions());
+}
+
+OffsetResolution _resolveOffsetResolution(
+  EasyParseMode mode,
+  EasyParseOptions options,
+) {
+  if (mode == EasyParseMode.legacy) {
+    return OffsetResolution.region;
+  }
+
+  return options.offsetResolution;
+}
+
 Location? _resolveLocationForOffset(
   Duration offset, {
   required int utcMs,
@@ -42,6 +65,97 @@ Location? _resolveLocationForOffset(
       return fixedOffsetLocation(offset);
     case OffsetResolution.region:
       return _findLocationForOffset(offset, utcMs: utcMs);
+  }
+}
+
+EasyDateTime _parseDateTimeString(
+  String dateTimeString, {
+  Location? location,
+  bool? strict,
+  EasyParseOptions options = const EasyParseOptions(),
+}) {
+  final trimmed = dateTimeString.trim();
+  if (trimmed.isEmpty) {
+    throw const FormatException('Invalid date format');
+  }
+
+  final effectiveMode = _useLegacyDefaultParsePath(strict, options)
+      ? EasyParseMode.legacy
+      : _resolveParseMode(strict, options);
+
+  if (effectiveMode == EasyParseMode.isoStrict) {
+    _validateStrict(trimmed);
+  }
+
+  try {
+    final dt = DateTime.parse(trimmed);
+
+    if (location != null) {
+      return EasyDateTime.fromDateTime(dt.toUtc(), location: location);
+    }
+
+    final offsetInfo = _extractTimezoneOffset(trimmed);
+    if (offsetInfo != null) {
+      final resolution = _resolveOffsetResolution(effectiveMode, options);
+      final matchingLocation = _resolveLocationForOffset(
+        offsetInfo,
+        utcMs: dt.millisecondsSinceEpoch,
+        resolution: resolution,
+      );
+
+      if (matchingLocation != null) {
+        return EasyDateTime._(TZDateTime.from(dt.toUtc(), matchingLocation));
+      }
+
+      final offsetStr = _formatOffset(offsetInfo);
+      throw InvalidTimeZoneException(
+        timeZoneId: offsetStr,
+        message:
+            'No IANA timezone found for offset $offsetStr. '
+            'Valid timezone offsets are defined in the IANA database.',
+      );
+    }
+
+    if (trimmed.toUpperCase().endsWith('Z')) {
+      return EasyDateTime._(
+        TZDateTime.utc(
+          dt.year,
+          dt.month,
+          dt.day,
+          dt.hour,
+          dt.minute,
+          dt.second,
+          dt.millisecond,
+          dt.microsecond,
+        ),
+      );
+    }
+
+    return EasyDateTime._(
+      TZDateTime(
+        config.effectiveDefaultLocation,
+        dt.year,
+        dt.month,
+        dt.day,
+        dt.hour,
+        dt.minute,
+        dt.second,
+        dt.millisecond,
+        dt.microsecond,
+      ),
+    );
+  } on FormatException {
+    final normalized = _tryNormalizeFormat(trimmed);
+    if (normalized != null) {
+      return _parseDateTimeString(
+        normalized,
+        location: location,
+        strict: strict,
+        options: options,
+      );
+    }
+
+    rethrow;
   }
 }
 
