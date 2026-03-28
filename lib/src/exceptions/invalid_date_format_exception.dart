@@ -1,3 +1,6 @@
+import '../parsing/easy_parse_options.dart';
+import '../parsing/parse_diagnostics.dart';
+
 /// Exception thrown when an invalid date string is provided for parsing.
 ///
 /// The [parse()] method throws this when the input string doesn't match
@@ -25,12 +28,22 @@ final class InvalidDateFormatException implements FormatException {
   @override
   final int? offset;
 
+  /// Structured metadata describing the failed parse attempt.
+  final ParseDiagnostics diagnostics;
+
   /// Creates a new [InvalidDateFormatException].
   InvalidDateFormatException({
     required this.source,
     required this.message,
     this.offset,
-  });
+    ParseDiagnostics? diagnostics,
+  }) : diagnostics =
+           diagnostics ??
+           const ParseDiagnostics(
+             mode: EasyParseMode.legacy,
+             offsetResolution: OffsetResolution.region,
+             stage: ParseFailureStage.parsing,
+           );
 
   @override
   String toString() {

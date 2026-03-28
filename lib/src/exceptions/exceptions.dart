@@ -5,4 +5,5 @@ library;
 
 export 'invalid_date_format_exception.dart';
 export 'invalid_timezone_exception.dart';
+export '../parsing/parse_diagnostics.dart';
 export 'timezone_not_initialized_exception.dart';

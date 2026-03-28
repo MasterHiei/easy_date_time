@@ -21,5 +21,31 @@ void main() {
       expect(options.mode, EasyParseMode.isoStrict);
       expect(options.offsetResolution, OffsetResolution.region);
     });
+
+    test('strict parse failures expose structured diagnostics', () {
+      const options = EasyParseOptions(mode: EasyParseMode.isoStrict);
+
+      expect(
+        () => EasyDateTime.parse('2025/02-30', options: options),
+        throwsA(
+          isA<InvalidDateFormatException>()
+              .having(
+                (error) => error.diagnostics.mode,
+                'diagnostics.mode',
+                EasyParseMode.isoStrict,
+              )
+              .having(
+                (error) => error.diagnostics.offsetResolution,
+                'diagnostics.offsetResolution',
+                OffsetResolution.fixed,
+              )
+              .having(
+                (error) => error.diagnostics.stage,
+                'diagnostics.stage',
+                ParseFailureStage.validation,
+              ),
+        ),
+      );
+    });
   });
 }
