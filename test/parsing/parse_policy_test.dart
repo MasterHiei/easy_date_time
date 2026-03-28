@@ -11,5 +11,15 @@ void main() {
       expect(options.mode, EasyParseMode.compatible);
       expect(options.offsetResolution, OffsetResolution.fixed);
     });
+
+    test('EasyParseOptions preserves explicit mode and offset resolution', () {
+      const options = EasyParseOptions(
+        mode: EasyParseMode.isoStrict,
+        offsetResolution: OffsetResolution.region,
+      );
+
+      expect(options.mode, EasyParseMode.isoStrict);
+      expect(options.offsetResolution, OffsetResolution.region);
+    });
   });
 }
