@@ -33,3 +33,4 @@ migrate_working_dir/
 
 # Agent related
 .agent/
+.worktrees/
