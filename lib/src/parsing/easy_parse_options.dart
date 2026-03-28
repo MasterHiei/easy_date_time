@@ -1,10 +1,13 @@
 /// Parsing behavior modes for [EasyDateTime] string parsing.
 enum EasyParseMode {
+  /// Preserve the legacy parsing behavior.
+  legacy,
+
   /// Preserve the current permissive parsing behavior.
   compatible,
 
-  /// Apply strict parsing rules.
-  strict,
+  /// Apply strict ISO parsing rules.
+  isoStrict,
 }
 
 /// How timezone offsets should be resolved during parsing.
@@ -12,8 +15,8 @@ enum OffsetResolution {
   /// Resolve offsets to a matching fixed IANA location when possible.
   fixed,
 
-  /// Preserve or resolve offsets using location-based behavior.
-  location,
+  /// Preserve or resolve offsets using region-based behavior.
+  region,
 }
 
 /// Configures how [EasyDateTime] parsing should behave.
