@@ -22,6 +22,18 @@ void main() {
       expect(options.offsetResolution, OffsetResolution.region);
     });
 
+    test('ParseFailureStage exposes the complete supported stage set', () {
+      expect(
+        ParseFailureStage.values,
+        equals([
+          ParseFailureStage.validation,
+          ParseFailureStage.normalization,
+          ParseFailureStage.parsing,
+          ParseFailureStage.offsetResolution,
+        ]),
+      );
+    });
+
     test('strict parse failures expose structured diagnostics', () {
       const options = EasyParseOptions(mode: EasyParseMode.isoStrict);
 

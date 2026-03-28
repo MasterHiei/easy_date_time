@@ -7,8 +7,14 @@ enum ParseFailureStage {
   /// Input-level validation failed before `DateTime.parse` ran.
   validation,
 
+  /// Input normalization failed before parsing could continue.
+  normalization,
+
   /// The input reached parsing but could not be parsed successfully.
   parsing,
+
+  /// Offset resolution failed after parsing produced a timestamp.
+  offsetResolution,
 }
 
 /// Structured metadata attached to parse failures.
