@@ -11,44 +11,6 @@ part 'easy_date_time_formatting.dart';
 part 'easy_date_time_parsing.dart';
 part 'easy_date_time_utilities.dart';
 
-ParseDiagnostics _buildParseDiagnostics(
-  String dateTimeString, {
-  bool? strict,
-  EasyParseOptions? options,
-}) {
-  final mode = _resolveParseMode(strict, options);
-
-  return ParseDiagnostics(
-    mode: mode,
-    offsetResolution: _resolveOffsetResolution(
-      mode,
-      options: options,
-      strict: strict,
-    ),
-    stage: _inferParseFailureStage(dateTimeString, mode),
-  );
-}
-
-ParseFailureStage _inferParseFailureStage(
-  String dateTimeString,
-  EasyParseMode mode,
-) {
-  final trimmed = dateTimeString.trim();
-  if (trimmed.isEmpty) {
-    return ParseFailureStage.validation;
-  }
-
-  if (mode == EasyParseMode.isoStrict) {
-    try {
-      _validateStrict(trimmed);
-    } on FormatException {
-      return ParseFailureStage.validation;
-    }
-  }
-
-  return ParseFailureStage.parsing;
-}
-
 /// A timezone-aware DateTime implementation.
 ///
 /// [EasyDateTime] implements Dart's [DateTime] interface, extending it with
@@ -487,15 +449,22 @@ class EasyDateTime implements DateTime {
         options: options,
       );
     } on FormatException catch (e) {
+      final mode = _resolveParseMode(strict, options);
       throw InvalidDateFormatException(
         source: dateTimeString,
         message: e.message,
         offset: e.offset,
-        diagnostics: _buildParseDiagnostics(
-          dateTimeString,
-          strict: strict,
-          options: options,
-        ),
+        diagnostics: e is _StagedFormatException
+            ? e.diagnostics
+            : ParseDiagnostics(
+                mode: mode,
+                offsetResolution: _resolveOffsetResolution(
+                  mode,
+                  options: options,
+                  strict: strict,
+                ),
+                stage: ParseFailureStage.parsing,
+              ),
       );
     }
   }

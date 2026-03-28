@@ -7,6 +7,57 @@ part of 'easy_date_time.dart';
 /// Pattern for timezone offset: +HH:MM, -HH:MM, +HHMM, -HHMM at end of string.
 final _timezoneOffsetPattern = RegExp(r'([+-])(\d{2}):?(\d{2})$');
 
+ParseDiagnostics _parseDiagnosticsForStage({
+  required EasyParseMode mode,
+  required OffsetResolution offsetResolution,
+  required ParseFailureStage stage,
+}) {
+  return ParseDiagnostics(
+    mode: mode,
+    offsetResolution: offsetResolution,
+    stage: stage,
+  );
+}
+
+_StagedFormatException _stagedFormatException(
+  FormatException error, {
+  required String source,
+  required EasyParseMode mode,
+  required OffsetResolution offsetResolution,
+  required ParseFailureStage stage,
+}) {
+  return _StagedFormatException(
+    message: error.message,
+    source: source,
+    offset: error.offset,
+    diagnostics: _parseDiagnosticsForStage(
+      mode: mode,
+      offsetResolution: offsetResolution,
+      stage: stage,
+    ),
+  );
+}
+
+final class _StagedFormatException implements FormatException {
+  const _StagedFormatException({
+    required this.message,
+    required this.source,
+    this.offset,
+    required this.diagnostics,
+  });
+
+  @override
+  final String message;
+
+  @override
+  final String source;
+
+  @override
+  final int? offset;
+
+  final ParseDiagnostics diagnostics;
+}
+
 /// Extracts timezone offset from an ISO 8601 string.
 /// Returns the offset as Duration, or null if no offset found.
 Duration? _extractTimezoneOffset(String input) {
@@ -86,14 +137,37 @@ EasyDateTime _parseDateTimeString(
   EasyParseOptions? options,
 }) {
   final trimmed = dateTimeString.trim();
+  final effectiveMode = _resolveParseMode(strict, options);
+  final effectiveResolution = _resolveOffsetResolution(
+    effectiveMode,
+    options: options,
+    strict: strict,
+  );
+
   if (trimmed.isEmpty) {
-    throw const FormatException('Invalid date format');
+    throw _StagedFormatException(
+      message: 'Invalid date format',
+      source: dateTimeString,
+      diagnostics: _parseDiagnosticsForStage(
+        mode: effectiveMode,
+        offsetResolution: effectiveResolution,
+        stage: ParseFailureStage.validation,
+      ),
+    );
   }
 
-  final effectiveMode = _resolveParseMode(strict, options);
-
   if (effectiveMode == EasyParseMode.isoStrict) {
-    _validateStrict(trimmed);
+    try {
+      _validateStrict(trimmed);
+    } on FormatException catch (error) {
+      throw _stagedFormatException(
+        error,
+        source: dateTimeString,
+        mode: effectiveMode,
+        offsetResolution: effectiveResolution,
+        stage: ParseFailureStage.validation,
+      );
+    }
   }
 
   try {
@@ -105,11 +179,7 @@ EasyDateTime _parseDateTimeString(
 
     final offsetInfo = _extractTimezoneOffset(trimmed);
     if (offsetInfo != null) {
-      final resolution = _resolveOffsetResolution(
-        effectiveMode,
-        options: options,
-        strict: strict,
-      );
+      final resolution = effectiveResolution;
       final matchingLocation = _resolveLocationForOffset(
         offsetInfo,
         utcMs: dt.millisecondsSinceEpoch,
@@ -126,6 +196,11 @@ EasyDateTime _parseDateTimeString(
         message:
             'No IANA timezone found for offset $offsetStr. '
             'Valid timezone offsets are defined in the IANA database.',
+        diagnostics: _parseDiagnosticsForStage(
+          mode: effectiveMode,
+          offsetResolution: resolution,
+          stage: ParseFailureStage.offsetResolution,
+        ),
       );
     }
 
@@ -157,18 +232,34 @@ EasyDateTime _parseDateTimeString(
         dt.microsecond,
       ),
     );
-  } on FormatException {
+  } on FormatException catch (error) {
     final normalized = _tryNormalizeFormat(trimmed);
-    if (normalized != null) {
-      return _parseDateTimeString(
-        normalized,
-        location: location,
-        strict: strict,
-        options: options,
-      );
+    if (normalized != null && normalized != trimmed) {
+      try {
+        return _parseDateTimeString(
+          normalized,
+          location: location,
+          strict: strict,
+          options: options,
+        );
+      } on FormatException catch (normalizedError) {
+        throw _stagedFormatException(
+          normalizedError,
+          source: dateTimeString,
+          mode: effectiveMode,
+          offsetResolution: effectiveResolution,
+          stage: ParseFailureStage.normalization,
+        );
+      }
     }
 
-    rethrow;
+    throw _stagedFormatException(
+      error,
+      source: dateTimeString,
+      mode: effectiveMode,
+      offsetResolution: effectiveResolution,
+      stage: ParseFailureStage.parsing,
+    );
   }
 }
 

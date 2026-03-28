@@ -23,15 +23,13 @@ void main() {
     });
 
     test('ParseFailureStage exposes the complete supported stage set', () {
-      expect(
-        ParseFailureStage.values,
-        equals([
-          ParseFailureStage.validation,
-          ParseFailureStage.normalization,
-          ParseFailureStage.parsing,
-          ParseFailureStage.offsetResolution,
-        ]),
-      );
+      final stages = ParseFailureStage.values.toSet();
+
+      expect(stages, contains(ParseFailureStage.validation));
+      expect(stages, contains(ParseFailureStage.normalization));
+      expect(stages, contains(ParseFailureStage.parsing));
+      expect(stages, contains(ParseFailureStage.offsetResolution));
+      expect(stages, hasLength(4));
     });
 
     test('strict parse failures expose structured diagnostics', () {
@@ -56,6 +54,32 @@ void main() {
                 'diagnostics.stage',
                 ParseFailureStage.validation,
               ),
+        ),
+      );
+    });
+
+    test('normalized fallback failures report normalization stage', () {
+      expect(
+        () => EasyDateTime.parse('2025/12/01 10:00:00+0A:00'),
+        throwsA(
+          isA<InvalidDateFormatException>().having(
+            (error) => error.diagnostics.stage,
+            'diagnostics.stage',
+            ParseFailureStage.normalization,
+          ),
+        ),
+      );
+    });
+
+    test('plain parse failures report parsing stage', () {
+      expect(
+        () => EasyDateTime.parse('not-a-date'),
+        throwsA(
+          isA<InvalidDateFormatException>().having(
+            (error) => error.diagnostics.stage,
+            'diagnostics.stage',
+            ParseFailureStage.parsing,
+          ),
         ),
       );
     });

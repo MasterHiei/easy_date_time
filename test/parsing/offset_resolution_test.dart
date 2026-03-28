@@ -48,10 +48,7 @@ void main() {
       expect(fromConst.locationName, fromRuntime.locationName);
       expect(fromConst.locationName, 'UTC+05:17');
       expect(fromConst.timeZoneOffset, fromRuntime.timeZoneOffset);
-      expect(
-        fromConst.timeZoneOffset,
-        const Duration(hours: 5, minutes: 17),
-      );
+      expect(fromConst.timeZoneOffset, const Duration(hours: 5, minutes: 17));
       expect(fromConst.hour, fromRuntime.hour);
       expect(fromConst.hour, 10);
       expect(fromConst.minute, fromRuntime.minute);
@@ -71,16 +68,25 @@ void main() {
       expect(parsed.hour, 10);
     });
 
-    test('region resolution rejects offsets without an IANA match', () {
-      expect(
-        () => EasyDateTime.parse(
-          '2025-12-01T10:00:00+05:17',
-          options: const EasyParseOptions(
-            offsetResolution: OffsetResolution.region,
+    test(
+      'region resolution rejects offsets without an IANA match with diagnostics',
+      () {
+        expect(
+          () => EasyDateTime.parse(
+            '2025-12-01T10:00:00+05:17',
+            options: const EasyParseOptions(
+              offsetResolution: OffsetResolution.region,
+            ),
           ),
-        ),
-        throwsA(isA<InvalidTimeZoneException>()),
-      );
-    });
+          throwsA(
+            isA<InvalidTimeZoneException>().having(
+              (error) => error.diagnostics?.stage,
+              'diagnostics.stage',
+              ParseFailureStage.offsetResolution,
+            ),
+          ),
+        );
+      },
+    );
   });
 }
