@@ -4,6 +4,8 @@ import 'date_time_unit.dart';
 import 'easy_date_time_config.dart' as config;
 import 'easy_date_time_init.dart' as init;
 import 'exceptions/exceptions.dart';
+import 'parsing/easy_parse_options.dart';
+import 'parsing/fixed_offset_location.dart';
 
 part 'easy_date_time_formatting.dart';
 part 'easy_date_time_parsing.dart';
@@ -457,10 +459,10 @@ class EasyDateTime implements DateTime {
       final offsetInfo = _extractTimezoneOffset(trimmed);
 
       if (offsetInfo != null) {
-        // Find matching timezone for this offset at the parsed moment.
-        final matchingLocation = _findLocationForOffset(
+        final matchingLocation = _resolveLocationForOffset(
           offsetInfo,
           utcMs: dt.millisecondsSinceEpoch,
+          resolution: OffsetResolution.region,
         );
 
         if (matchingLocation != null) {

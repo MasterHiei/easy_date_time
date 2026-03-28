@@ -32,6 +32,19 @@ String _formatOffset(Duration offset) {
   return '$sign${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
 }
 
+Location? _resolveLocationForOffset(
+  Duration offset, {
+  required int utcMs,
+  required OffsetResolution resolution,
+}) {
+  switch (resolution) {
+    case OffsetResolution.fixed:
+      return fixedOffsetLocation(offset);
+    case OffsetResolution.region:
+      return _findLocationForOffset(offset, utcMs: utcMs);
+  }
+}
+
 /// Common timezone mappings for efficiency (most used offsets).
 ///
 /// When multiple regions share an offset, a representative one is selected.
