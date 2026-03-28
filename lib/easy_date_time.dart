@@ -36,6 +36,7 @@ export 'src/easy_date_time.dart';
 export 'src/easy_date_time_config.dart';
 export 'src/easy_date_time_init.dart'
     hide internalInitializeTimeZone, internalIsTimeZoneInitialized;
+export 'src/parsing/easy_parse_options.dart';
 export 'src/exceptions/exceptions.dart';
 export 'src/extensions/date_time_extension.dart';
 export 'src/extensions/duration_extension.dart';
