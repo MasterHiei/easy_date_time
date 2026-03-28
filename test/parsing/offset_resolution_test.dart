@@ -26,6 +26,38 @@ void main() {
       expect(parsed.minute, 0);
     });
 
+    test('const and non-const fixed options behave the same for +05:17', () {
+      const constOptions = EasyParseOptions(
+        mode: EasyParseMode.compatible,
+        offsetResolution: OffsetResolution.fixed,
+      );
+      final runtimeOptions = EasyParseOptions(
+        mode: EasyParseMode.compatible,
+        offsetResolution: OffsetResolution.fixed,
+      );
+
+      final fromConst = EasyDateTime.parse(
+        '2025-12-01T10:00:00+05:17',
+        options: constOptions,
+      );
+      final fromRuntime = EasyDateTime.parse(
+        '2025-12-01T10:00:00+05:17',
+        options: runtimeOptions,
+      );
+
+      expect(fromConst.locationName, fromRuntime.locationName);
+      expect(fromConst.locationName, 'UTC+05:17');
+      expect(fromConst.timeZoneOffset, fromRuntime.timeZoneOffset);
+      expect(
+        fromConst.timeZoneOffset,
+        const Duration(hours: 5, minutes: 17),
+      );
+      expect(fromConst.hour, fromRuntime.hour);
+      expect(fromConst.hour, 10);
+      expect(fromConst.minute, fromRuntime.minute);
+      expect(fromConst.minute, 0);
+    });
+
     test('region resolution preserves current IANA lookup behavior', () {
       final parsed = EasyDateTime.parse(
         '2025-12-01T10:00:00+09:00',

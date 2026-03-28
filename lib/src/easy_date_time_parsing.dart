@@ -32,27 +32,38 @@ String _formatOffset(Duration offset) {
   return '$sign${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
 }
 
-EasyParseMode _resolveParseMode(bool? strict, EasyParseOptions options) {
-  if (strict == null) {
-    return options.mode;
-  }
-
-  return strict ? EasyParseMode.isoStrict : EasyParseMode.compatible;
+bool _usesDefaultCompatibleOptions(EasyParseOptions? options) {
+  return options?.mode == EasyParseMode.compatible &&
+      options?.offsetResolution == OffsetResolution.fixed;
 }
 
-bool _useLegacyDefaultParsePath(bool? strict, EasyParseOptions options) {
-  return strict == null && identical(options, const EasyParseOptions());
+EasyParseMode _resolveParseMode(bool? strict, EasyParseOptions? options) {
+  if (strict != null) {
+    return strict ? EasyParseMode.isoStrict : EasyParseMode.compatible;
+  }
+
+  if (options == null) {
+    return EasyParseMode.legacy;
+  }
+
+  return options.mode;
 }
 
 OffsetResolution _resolveOffsetResolution(
-  EasyParseMode mode,
-  EasyParseOptions options,
-) {
+  EasyParseMode mode, {
+  EasyParseOptions? options,
+  bool? strict,
+}) {
   if (mode == EasyParseMode.legacy) {
     return OffsetResolution.region;
   }
 
-  return options.offsetResolution;
+  final effectiveOptions = options ?? const EasyParseOptions();
+  if (strict != null && _usesDefaultCompatibleOptions(effectiveOptions)) {
+    return OffsetResolution.region;
+  }
+
+  return effectiveOptions.offsetResolution;
 }
 
 Location? _resolveLocationForOffset(
@@ -72,16 +83,14 @@ EasyDateTime _parseDateTimeString(
   String dateTimeString, {
   Location? location,
   bool? strict,
-  EasyParseOptions options = const EasyParseOptions(),
+  EasyParseOptions? options,
 }) {
   final trimmed = dateTimeString.trim();
   if (trimmed.isEmpty) {
     throw const FormatException('Invalid date format');
   }
 
-  final effectiveMode = _useLegacyDefaultParsePath(strict, options)
-      ? EasyParseMode.legacy
-      : _resolveParseMode(strict, options);
+  final effectiveMode = _resolveParseMode(strict, options);
 
   if (effectiveMode == EasyParseMode.isoStrict) {
     _validateStrict(trimmed);
@@ -96,7 +105,11 @@ EasyDateTime _parseDateTimeString(
 
     final offsetInfo = _extractTimezoneOffset(trimmed);
     if (offsetInfo != null) {
-      final resolution = _resolveOffsetResolution(effectiveMode, options);
+      final resolution = _resolveOffsetResolution(
+        effectiveMode,
+        options: options,
+        strict: strict,
+      );
       final matchingLocation = _resolveLocationForOffset(
         offsetInfo,
         utcMs: dt.millisecondsSinceEpoch,

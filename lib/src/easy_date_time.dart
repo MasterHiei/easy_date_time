@@ -439,7 +439,7 @@ class EasyDateTime implements DateTime {
     String dateTimeString, {
     Location? location,
     @Deprecated('Use options.mode instead.') bool? strict,
-    EasyParseOptions options = const EasyParseOptions(),
+    EasyParseOptions? options,
   }) {
     try {
       return _parseDateTimeString(
@@ -492,7 +492,7 @@ class EasyDateTime implements DateTime {
     String dateTimeString, {
     Location? location,
     @Deprecated('Use options.mode instead.') bool? strict,
-    EasyParseOptions options = const EasyParseOptions(),
+    EasyParseOptions? options,
   }) {
     try {
       return _parseDateTimeString(

@@ -71,5 +71,40 @@ void main() {
         isNull,
       );
     });
+
+    test(
+      'default strict callers preserve region failure path for non-IANA offsets',
+      () {
+        expect(
+          () => EasyDateTime.parse(
+            '2025-12-01T10:00:00+05:17',
+            strict: false,
+          ),
+          throwsA(isA<InvalidTimeZoneException>()),
+        );
+        expect(
+          () => EasyDateTime.parse(
+            '2025-12-01T10:00:00+05:17',
+            strict: true,
+          ),
+          throwsA(isA<InvalidTimeZoneException>()),
+        );
+
+        expect(
+          EasyDateTime.tryParse(
+            '2025-12-01T10:00:00+05:17',
+            strict: false,
+          ),
+          isNull,
+        );
+        expect(
+          EasyDateTime.tryParse(
+            '2025-12-01T10:00:00+05:17',
+            strict: true,
+          ),
+          isNull,
+        );
+      },
+    );
   });
 }
