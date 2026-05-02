@@ -8,318 +8,129 @@
 
 [English](https://github.com/MasterHiei/easy_date_time/blob/main/README.md) | [日本語](https://github.com/MasterHiei/easy_date_time/blob/main/README_ja.md)
 
-支持 IANA 时区的 `DateTime` 替代方案。
-在解析带时区的字符串时，保留原始的时间值与时区信息，并且实现了 `DateTime` 接口。
+一个兼容 `DateTime` API 的时区增强库，支持 IANA 时区与可控解析策略。
 
-~~~dart
-// DateTime 会自动转换为 UTC，导致小时值发生改变
-DateTime.parse('2026-01-18T10:30:00+08:00').hour // 2
+## 为什么使用 easy_date_time
 
-// EasyDateTime 保留原始的小时与时区
-EasyDateTime.parse('2026-01-18T10:30:00+08:00').hour // 10
-~~~
+`DateTime.parse()` 会把带偏移输入归一化为 UTC，常导致小时值变化。
+`EasyDateTime.parse()` 会保留原始本地时间语义。
 
-## 开始使用
+```dart
+DateTime.parse('2026-01-18T10:30:00+08:00').hour;   // 2
+EasyDateTime.parse('2026-01-18T10:30:00+08:00').hour; // 10
+```
 
-### 安装依赖
+## 快速开始
 
-将以下内容添加到你的 `pubspec.yaml` 文件中：
+### 1) 添加依赖
 
-~~~yaml
+```yaml
 dependencies:
-  easy_date_time: ^0.11.1
-~~~
+  easy_date_time: ^0.12.0
+```
 
-### 初始化
+### 2) 初始化时区数据库（只需一次）
 
-**注意**：在使用前，必须初始化时区数据库：
+```dart
+import 'package:easy_date_time/easy_date_time.dart';
 
-~~~dart
 void main() {
-  // 必须在使用任何功能前调用一次
   EasyDateTime.initializeTimeZone();
-  runApp(MyApp());
 }
-~~~
+```
 
-## 使用指南
+### 3) 解析与转换
 
-创建实例并解析带时区的时间：
+```dart
+final source = EasyDateTime.parse('2026-01-18T10:30:00+08:00');
+final ny = source.inLocation(TimeZones.newYork);
 
-~~~dart
-// 使用预定义的时区常量
-final now = EasyDateTime.now(location: TimeZones.tokyo);
+print(source.hour);         // 10
+print(source.locationName); // UTC+08:00（fixed 模式默认）
+print(ny.locationName);     // America/New_York
+```
 
-// 解析字符串，同时保留其时区上下文
-final parsed = EasyDateTime.parse('2026-01-18T10:30:00+08:00');
+## 核心概念
 
-print(parsed.hour);         // 10
-print(parsed.locationName); // Asia/Shanghai
-~~~
+- `EasyDateTime` 实现了 `DateTime` 接口。
+- 解析策略通过 `EasyParseOptions` 显式控制。
+- 显式传入 options 时，默认是 `compatible + fixed`。
+- 为平滑迁移保留了 legacy 无 options 路径。
 
-使用 `Duration` 扩展进行日期运算：
+```dart
+final dt = EasyDateTime.parse(
+  '2026-01-18T10:30:00+08:00',
+  options: const EasyParseOptions(
+    mode: EasyParseMode.compatible,
+    offsetResolution: OffsetResolution.fixed,
+  ),
+);
+```
 
-~~~dart
-final tomorrow = now + 1.days;
-final later = now + 2.hours + 30.minutes;
-~~~
+## 常见任务
 
-使用模式字符串进行格式化：
+### 构造带时区时间
 
-~~~dart
-const pattern = 'yyyy-MM-dd HH:mm';
-print(dt.format(pattern)); // 2026-01-18 10:30
-~~~
+```dart
+final nowInTokyo = EasyDateTime.now(location: TimeZones.tokyo);
+final meeting = EasyDateTime(2026, 5, 3, 9, 30, location: TimeZones.london);
+```
 
-## 功能特性
+### DST 安全的日历运算
 
-### 时区支持
+```dart
+final ny = TimeZones.newYork;
+final beforeDst = EasyDateTime(2025, 3, 9, 0, 0, location: ny);
 
-支持三种方式指定时区：
+final wallClock = beforeDst.addCalendarDays(1); // 2025-03-10 00:00
+final physical = beforeDst.add(const Duration(days: 1)); // 2025-03-10 01:00
+```
 
-~~~dart
-// 1. 使用 TimeZones 常量（推荐）
-final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
+### 格式化
 
-// 2. 使用标准 IANA 时区名称
-final nairobi = EasyDateTime.now(location: getLocation('Africa/Nairobi'));
+```dart
+final formatted = EasyDateTime.now(location: TimeZones.tokyo)
+    .format('yyyy-MM-dd HH:mm:ss xxxxx');
+```
 
-// 3. 设置全局默认时区
-EasyDateTime.setDefaultLocation(TimeZones.shanghai);
-final now = EasyDateTime.now(); // 默认使用 Asia/Shanghai
-~~~
+## 迁移指南（v0.12）
 
-无缝进行时区转换：
+完整文档见：[docs/migration/v0_12_migration_guide.md](docs/migration/v0_12_migration_guide.md)
 
-~~~dart
-final newYork = tokyo.inLocation(TimeZones.newYork);
-// 检查物理时间是否为同一时刻
-print(tokyo.isAtSameMomentAs(newYork)); // true
-~~~
+### `strict` 迁移到 `options`
 
-### 日期运算
+- `strict: false` -> `EasyParseOptions(mode: EasyParseMode.compatible)`
+- `strict: true` -> `EasyParseOptions(mode: EasyParseMode.isoStrict)`
 
-借助 `Duration` 扩展，代码更简洁：
+### Offset 解析行为
 
-~~~dart
-now + 1.days
-now - 2.hours
-now + 30.minutes + 15.seconds
-~~~
+- 兼容/legacy 路径：按偏移推断区域时区（`OffsetResolution.region`）
+- 显式新路径：固定偏移位置（`OffsetResolution.fixed`，例如 `UTC+08:00`）
 
-**DST (夏令时) 安全计算**
+## DateTime / timezone API 对照
 
-在涉及夏令时切换的日期进行加减运算时，`addCalendarDays` 会保留"墙上时间"（Wall Time，即钟表时间），而普通加法则遵循物理时间。
+| 现有 API | easy_date_time |
+|---|---|
+| `DateTime.now()` | `EasyDateTime.now()` |
+| `DateTime.utc(...)` | `EasyDateTime.utc(...)` |
+| `DateTime.parse(String)` | `EasyDateTime.parse(String, options: ...)` |
+| `DateTime.tryParse(String)` | `EasyDateTime.tryParse(String, options: ...)` |
+| `DateTime.fromMillisecondsSinceEpoch(ms)` | `EasyDateTime.fromMillisecondsSinceEpoch(ms)` |
+| `DateTime.toUtc()` | `EasyDateTime.toUtc()` |
+| `DateTime.toLocal()` | `EasyDateTime.toLocal()` |
+| `DateTime` 无 IANA Location 模型 | `inLocation(TimeZones.xxx)` |
+| 无 | `setDefaultLocation(...)` / `clearDefaultLocation()` |
 
-~~~dart
-// 纽约夏令时切换日（2025年3月9日，当天时钟会拨快一小时）
-final dt = EasyDateTime(2025, 3, 9, 0, 0, location: newYork);
+## FAQ
 
-dt.addCalendarDays(1);     // 2025-03-10 00:00 (保留钟表指向)
-dt.add(Duration(days: 1)); // 2025-03-10 01:00 (物理时间增加24小时)
-~~~
+### 能与 `intl` 一起使用吗？
 
-便捷属性：
+可以。`EasyDateTime` 实现了 `DateTime`，可直接传给现有 `intl` 格式化器。
 
-~~~dart
-dt.tomorrow    // 下一个日历日
-dt.yesterday   // 上一个日历日
-dt.dateOnly    // 除去时间部分，保留日期 (00:00:00)
-~~~
+### 默认是否严格校验？
 
-**月份溢出处理**
+不是。需要严格校验时请使用 `EasyParseMode.isoStrict`。
 
-当月份变化导致日期无效时（如 1 月 31 日变成 2 月），提供两种处理策略：
+### 是否必须初始化时区数据？
 
-~~~dart
-final jan31 = EasyDateTime.utc(2025, 1, 31);
-
-jan31.copyWith(month: 2);        // 3月3日 (标准的自动溢出)
-jan31.copyWithClamped(month: 2); // 2月28日 (智能截断到当月最后一天)
-~~~
-
-**时间单位边界计算**
-
-快速获取时间周期的起始与结束点：
-
-~~~dart
-dt.startOf(DateTimeUnit.day);   // 当天 00:00:00
-dt.startOf(DateTimeUnit.week);  // 本周一 00:00:00 (遵循 ISO 8601 标准)
-dt.startOf(DateTimeUnit.month); // 当月 1 日 00:00:00
-dt.endOf(DateTimeUnit.month);   // 当月最后一天 23:59:59.999
-~~~
-
-### 日期属性
-
-常用计算属性：
-
-- `dayOfYear` — 一年中的第几天 (1-366)
-- `weekOfYear` — ISO 8601 周数 (1-53)
-- `quarter` — 季度 (1-4)
-- `daysInMonth` — 当月总天数 (28-31)
-- `isLeapYear` — 是否为闰年
-
-状态判断：
-
-- `isToday`, `isTomorrow`, `isYesterday`
-- `isThisWeek`, `isThisMonth`, `isThisYear`
-- `isWeekend` (周六日), `isWeekday` (周一至周五)
-- `isPast` (过去), `isFuture` (未来)
-- `isDst` — 当前是否处于夏令时
-
-### 日期格式化
-
-使用 `format()` 配合占位符进行格式化：
-
-~~~dart
-dt.format('yyyy-MM-dd');    // 2026-01-18
-dt.format('HH:mm:ss');      // 14:30:45
-dt.format('hh:mm a');       // 02:30 PM (12小时制)
-~~~
-
-或使用预定义常量：
-
-~~~dart
-dt.format(DateTimeFormats.isoDate);      // 2026-01-18
-dt.format(DateTimeFormats.isoDateTime);  // 2026-01-18T14:30:45
-dt.format(DateTimeFormats.rfc2822);      // Sun, 18 Jan 2026 14:30:45 +0800
-~~~
-
-> **性能提示**：在循环或高频场景中使用时，建议预编译 `EasyDateTimeFormatter` 以复用实例，提升性能。
-
-~~~dart
-static final formatter = EasyDateTimeFormatter('yyyy-MM-dd HH:mm');
-String result = formatter.format(dt);
-~~~
-
-| 符号 | 说明 | 示例 |
-|------|------|------|
-| `yyyy` | 4位年份 | 2025 |
-| `MM` / `M` | 月份 | 01 / 1 |
-| `dd` / `d` | 日期 | 07 / 7 |
-| `HH` / `H` | 24小时 | 09 / 9 |
-| `hh` / `h` | 12小时 | 02 / 2 |
-| `mm` / `m` | 分钟 | 05 / 5 |
-| `ss` / `s` | 秒 | 05 / 5 |
-| `SSS` | 毫秒 | 123 |
-| `a` | 上下午 | AM / PM |
-| `EEE` | 星期缩写 | Mon |
-| `MMM` | 月份缩写 | Dec |
-| `xxxxx` | 时区偏移 | +08:00 |
-| `X` | ISO时区 | Z / +0800 |
-
-### 国际化 (intl)
-
-`EasyDateTime` 实现了 `DateTime` 接口，可以直接与官方 `intl` 包配合使用：
-
-~~~dart
-import 'package:intl/intl.dart';
-
-// 输出：2025年12月7日
-DateFormat.yMMMMd('zh_CN').format(dt);
-// 输出：December 7, 2025
-DateFormat.yMMMMd('en_US').format(dt);
-~~~
-
-### JSON 序列化
-
-提供适配 `json_serializable` 和 `freezed` 的自定义 `JsonConverter`：
-
-~~~dart
-class EasyDateTimeConverter implements JsonConverter<EasyDateTime, String> {
-  const EasyDateTimeConverter();
-
-  @override
-  EasyDateTime fromJson(String json) => EasyDateTime.fromIso8601String(json);
-
-  @override
-  String toJson(EasyDateTime object) => object.toIso8601String();
-}
-~~~
-
-在 freezed 中使用示例：
-
-~~~dart
-@freezed
-class Event with _$Event {
-  const factory Event({
-    @EasyDateTimeConverter() required EasyDateTime startTime,
-  }) = _Event;
-
-  factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);
-}
-~~~
-
-## 注意事项
-
-**判等逻辑 (`==`)**
-我们遵循 Dart `DateTime` 的语义。
-- `==` 比较绝对时间值 **和** 时区信息 (Location)。
-- `isAtSameMomentAs` 仅比较绝对时间值（是否为同一瞬间）。
-
-~~~dart
-final utc = EasyDateTime.utc(2025, 1, 1, 0, 0);
-final local = EasyDateTime.parse('2026-01-18T08:00:00+08:00'); // UTC+8
-
-// false — 因为时区类型不同 (UTC vs Local)
-print(utc == local);
-
-// true — 因为处于同一时刻（只是所处时区不同）
-print(utc.isAtSameMomentAs(local));
-~~~
-
-> **重要**：请勿将 `EasyDateTime` 和 `DateTime` 放入同一个 `Set` 或作为 `Map` 的 key，因为它们的 `hashCode` 实现存在区别。
-
-**自动修正与严格模式**
-
-`strict` 参数**仅**适用于 `parse()` 和 `tryParse()` 方法，构造函数不支持严格模式。
-
-**构造函数行为**（始终溢出）：
-
-~~~dart
-// 构造函数始终自动溢出 - 不支持严格模式
-EasyDateTime(2025, 2, 30);     // 变成 2025-03-02
-EasyDateTime.utc(2025, 4, 31); // 变成 2025-05-01
-~~~
-
-**解析方法**支持通过 `strict` 参数进行严格验证：
-
-~~~dart
-// 默认行为：无效日期自动溢出
-EasyDateTime.parse('2025-02-30');  // 2025-03-02
-
-// 严格模式：对无效日期抛出 FormatException
-EasyDateTime.parse('2025-02-30', strict: true);  // ❌ FormatException
-
-// 严格模式配合 tryParse：对无效日期返回 null
-EasyDateTime.tryParse('2025-02-30', strict: true);  // null
-~~~
-
-> **注意**：严格模式会验证日历正确性（如拒绝 2 月 30 日、13 月等）和 ISO 8601 格式合规性。处理用户输入时，建议使用 `tryParse()` 配合 `strict: true` 进行安全验证。
-
-
-
-**安全解析**
-处理用户输入时，强烈建议使用 `tryParse` 以提升应用的健壮性：
-
-~~~dart
-final dt = EasyDateTime.tryParse(userInput);
-if (dt == null) {
-  // 处理格式错误
-}
-~~~
-
-**解决扩展名冲突**
-如 `1.days` 等便捷扩展与其他库（如 `time`）冲突，请隐藏对应的扩展方法：
-
-~~~dart
-import 'package:easy_date_time/easy_date_time.dart' hide DurationExtension;
-~~~
-
-## 贡献
-
-欢迎提交 Issue 和 PR。详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
-
-## 许可证
-
-BSD 2-Clause
+是。使用时区相关能力前必须先调用 `EasyDateTime.initializeTimeZone()`。
