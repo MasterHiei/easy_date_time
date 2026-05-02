@@ -31,7 +31,7 @@ Stable release on pub.dev:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.11.1
+  easy_date_time: ^0.12.0
 ```
 
 ## Requirements
