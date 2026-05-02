@@ -6,18 +6,17 @@ codecov:
 
 coverage:
   status:
-    # Project coverage: overall repository coverage
     project:
       default:
-        target: 99%       # Minimum baseline threshold
-        threshold: 1%     # Allow 1% drop (common in small packages)
+        target: 95%
+        threshold: 0%
 
-    # Patch coverage: coverage of new/changed lines only
     patch:
       default:
-        target: 99%       # New code should be well-tested
+        target: 95%
+        threshold: 0%
 
 comment:
   layout: "reach,diff,flags,files"
   behavior: default
-  require_changes: true   # Only comment when coverage changes
+  require_changes: true

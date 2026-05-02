@@ -7,6 +7,57 @@ part of 'easy_date_time.dart';
 /// Pattern for timezone offset: +HH:MM, -HH:MM, +HHMM, -HHMM at end of string.
 final _timezoneOffsetPattern = RegExp(r'([+-])(\d{2}):?(\d{2})$');
 
+ParseDiagnostics _parseDiagnosticsForStage({
+  required EasyParseMode mode,
+  required OffsetResolution offsetResolution,
+  required ParseFailureStage stage,
+}) {
+  return ParseDiagnostics(
+    mode: mode,
+    offsetResolution: offsetResolution,
+    stage: stage,
+  );
+}
+
+_StagedFormatException _stagedFormatException(
+  FormatException error, {
+  required String source,
+  required EasyParseMode mode,
+  required OffsetResolution offsetResolution,
+  required ParseFailureStage stage,
+}) {
+  return _StagedFormatException(
+    message: error.message,
+    source: source,
+    offset: error.offset,
+    diagnostics: _parseDiagnosticsForStage(
+      mode: mode,
+      offsetResolution: offsetResolution,
+      stage: stage,
+    ),
+  );
+}
+
+final class _StagedFormatException implements FormatException {
+  const _StagedFormatException({
+    required this.message,
+    required this.source,
+    this.offset,
+    required this.diagnostics,
+  });
+
+  @override
+  final String message;
+
+  @override
+  final String source;
+
+  @override
+  final int? offset;
+
+  final ParseDiagnostics diagnostics;
+}
+
 /// Extracts timezone offset from an ISO 8601 string.
 /// Returns the offset as Duration, or null if no offset found.
 Duration? _extractTimezoneOffset(String input) {
@@ -30,6 +81,186 @@ String _formatOffset(Duration offset) {
   final minutes = absMinutes % 60;
 
   return '$sign${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
+}
+
+bool _usesDefaultCompatibleOptions(EasyParseOptions? options) {
+  return options?.mode == EasyParseMode.compatible &&
+      options?.offsetResolution == OffsetResolution.fixed;
+}
+
+EasyParseMode _resolveParseMode(bool? strict, EasyParseOptions? options) {
+  if (strict != null) {
+    return strict ? EasyParseMode.isoStrict : EasyParseMode.compatible;
+  }
+
+  if (options == null) {
+    return EasyParseMode.legacy;
+  }
+
+  return options.mode;
+}
+
+OffsetResolution _resolveOffsetResolution(
+  EasyParseMode mode, {
+  EasyParseOptions? options,
+  bool? strict,
+}) {
+  if (mode == EasyParseMode.legacy) {
+    return OffsetResolution.region;
+  }
+
+  final effectiveOptions = options ?? const EasyParseOptions();
+  if (strict != null && _usesDefaultCompatibleOptions(effectiveOptions)) {
+    return OffsetResolution.region;
+  }
+
+  return effectiveOptions.offsetResolution;
+}
+
+Location? _resolveLocationForOffset(
+  Duration offset, {
+  required int utcMs,
+  required OffsetResolution resolution,
+}) {
+  switch (resolution) {
+    case OffsetResolution.fixed:
+      return fixedOffsetLocation(offset);
+    case OffsetResolution.region:
+      return _findLocationForOffset(offset, utcMs: utcMs);
+  }
+}
+
+EasyDateTime _parseDateTimeString(
+  String dateTimeString, {
+  Location? location,
+  bool? strict,
+  EasyParseOptions? options,
+}) {
+  final trimmed = dateTimeString.trim();
+  final effectiveMode = _resolveParseMode(strict, options);
+  final effectiveResolution = _resolveOffsetResolution(
+    effectiveMode,
+    options: options,
+    strict: strict,
+  );
+
+  if (trimmed.isEmpty) {
+    throw _StagedFormatException(
+      message: 'Invalid date format',
+      source: dateTimeString,
+      diagnostics: _parseDiagnosticsForStage(
+        mode: effectiveMode,
+        offsetResolution: effectiveResolution,
+        stage: ParseFailureStage.validation,
+      ),
+    );
+  }
+
+  if (effectiveMode == EasyParseMode.isoStrict) {
+    try {
+      _validateStrict(trimmed);
+    } on FormatException catch (error) {
+      throw _stagedFormatException(
+        error,
+        source: dateTimeString,
+        mode: effectiveMode,
+        offsetResolution: effectiveResolution,
+        stage: ParseFailureStage.validation,
+      );
+    }
+  }
+
+  try {
+    final dt = DateTime.parse(trimmed);
+
+    if (location != null) {
+      return EasyDateTime.fromDateTime(dt.toUtc(), location: location);
+    }
+
+    final offsetInfo = _extractTimezoneOffset(trimmed);
+    if (offsetInfo != null) {
+      final resolution = effectiveResolution;
+      final matchingLocation = _resolveLocationForOffset(
+        offsetInfo,
+        utcMs: dt.millisecondsSinceEpoch,
+        resolution: resolution,
+      );
+
+      if (matchingLocation != null) {
+        return EasyDateTime._(TZDateTime.from(dt.toUtc(), matchingLocation));
+      }
+
+      final offsetStr = _formatOffset(offsetInfo);
+      throw InvalidTimeZoneException(
+        timeZoneId: offsetStr,
+        message:
+            'No IANA timezone found for offset $offsetStr. '
+            'Valid timezone offsets are defined in the IANA database.',
+        diagnostics: _parseDiagnosticsForStage(
+          mode: effectiveMode,
+          offsetResolution: resolution,
+          stage: ParseFailureStage.offsetResolution,
+        ),
+      );
+    }
+
+    if (trimmed.toUpperCase().endsWith('Z')) {
+      return EasyDateTime._(
+        TZDateTime.utc(
+          dt.year,
+          dt.month,
+          dt.day,
+          dt.hour,
+          dt.minute,
+          dt.second,
+          dt.millisecond,
+          dt.microsecond,
+        ),
+      );
+    }
+
+    return EasyDateTime._(
+      TZDateTime(
+        config.effectiveDefaultLocation,
+        dt.year,
+        dt.month,
+        dt.day,
+        dt.hour,
+        dt.minute,
+        dt.second,
+        dt.millisecond,
+        dt.microsecond,
+      ),
+    );
+  } on FormatException catch (error) {
+    final normalized = _tryNormalizeFormat(trimmed);
+    if (normalized != null && normalized != trimmed) {
+      try {
+        return _parseDateTimeString(
+          normalized,
+          location: location,
+          strict: strict,
+          options: options,
+        );
+      } on FormatException catch (normalizedError) {
+        throw _stagedFormatException(
+          normalizedError,
+          source: dateTimeString,
+          mode: effectiveMode,
+          offsetResolution: effectiveResolution,
+          stage: ParseFailureStage.normalization,
+        );
+      }
+    }
+
+    throw _stagedFormatException(
+      error,
+      source: dateTimeString,
+      mode: effectiveMode,
+      offsetResolution: effectiveResolution,
+      stage: ParseFailureStage.parsing,
+    );
+  }
 }
 
 /// Common timezone mappings for efficiency (most used offsets).

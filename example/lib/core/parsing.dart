@@ -86,12 +86,18 @@ void main() {
 
   // Strict behavior: Throw
   try {
-    EasyDateTime.parse('2025-02-30', strict: true);
+    EasyDateTime.parse(
+      '2025-02-30',
+      options: const EasyParseOptions(mode: EasyParseMode.isoStrict),
+    );
   } catch (e) {
     print('  Strict (Throw):     Caught expected error: $e');
   }
 
   // Strict behavior: tryParse returns null
-  final strictParam = EasyDateTime.tryParse('2025-02-30', strict: true);
+  final strictParam = EasyDateTime.tryParse(
+    '2025-02-30',
+    options: const EasyParseOptions(mode: EasyParseMode.isoStrict),
+  );
   print('  Strict (tryParse):  2025-02-30 -> $strictParam');
 }

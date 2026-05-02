@@ -4,6 +4,8 @@ import 'date_time_unit.dart';
 import 'easy_date_time_config.dart' as config;
 import 'easy_date_time_init.dart' as init;
 import 'exceptions/exceptions.dart';
+import 'parsing/easy_parse_options.dart';
+import 'parsing/fixed_offset_location.dart';
 
 part 'easy_date_time_formatting.dart';
 part 'easy_date_time_parsing.dart';
@@ -436,91 +438,25 @@ class EasyDateTime implements DateTime {
   factory EasyDateTime.parse(
     String dateTimeString, {
     Location? location,
-    bool strict = false,
+    @Deprecated('Use options.mode instead.') bool? strict,
+    EasyParseOptions? options,
   }) {
-    final trimmed = dateTimeString.trim();
-
-    if (strict) {
-      _validateStrict(trimmed);
-    }
-
     try {
-      // First, use DateTime.parse for validation and basic parsing
-      final dt = DateTime.parse(trimmed);
-
-      // If location is explicitly provided, convert to that timezone.
-      if (location != null) {
-        return EasyDateTime.fromDateTime(dt.toUtc(), location: location);
-      }
-
-      // Extract offset from string to determine how to handle it.
-      final offsetInfo = _extractTimezoneOffset(trimmed);
-
-      if (offsetInfo != null) {
-        // Find matching timezone for this offset at the parsed moment.
-        final matchingLocation = _findLocationForOffset(
-          offsetInfo,
-          utcMs: dt.millisecondsSinceEpoch,
-        );
-
-        if (matchingLocation != null) {
-          // Project the parsed moment to the matching timezone.
-          return EasyDateTime._(TZDateTime.from(dt.toUtc(), matchingLocation));
-        }
-
-        // No matching timezone found - throw exception.
-        final offsetStr = _formatOffset(offsetInfo);
-        throw InvalidTimeZoneException(
-          timeZoneId: offsetStr,
-          message:
-              'No IANA timezone found for offset $offsetStr. '
-              'Valid timezone offsets are defined in the IANA database.',
-        );
-      }
-
-      // UTC indicator (Z).
-      if (trimmed.toUpperCase().endsWith('Z')) {
-        return EasyDateTime._(
-          TZDateTime.utc(
-            dt.year,
-            dt.month,
-            dt.day,
-            dt.hour,
-            dt.minute,
-            dt.second,
-            dt.millisecond,
-            dt.microsecond,
-          ),
-        );
-      }
-
-      // No timezone indicator - use effective default location with original values.
-      return EasyDateTime._(
-        TZDateTime(
-          config.effectiveDefaultLocation,
-          dt.year,
-          dt.month,
-          dt.day,
-          dt.hour,
-          dt.minute,
-          dt.second,
-          dt.millisecond,
-          dt.microsecond,
-        ),
+      return _parseDateTimeString(
+        dateTimeString,
+        location: location,
+        strict: strict,
+        options: options,
+      );
+    } on _StagedFormatException catch (e) {
+      throw InvalidDateFormatException(
+        source: dateTimeString,
+        message: e.message,
+        offset: e.offset,
+        diagnostics: e.diagnostics,
       );
     } on FormatException catch (e) {
-      // Fallback: Try to normalize common formats (e.g. 2025/01/01)
-      // This ensures strict mode (which validates regex) doesn't fail due to
-      // DateTime.parse rejecting valid alternative separators.
-      final normalized = _tryNormalizeFormat(trimmed);
-      if (normalized != null) {
-        return EasyDateTime.parse(
-          normalized,
-          location: location,
-          strict: false,
-        );
-      }
-
+      // Defensive fallback if a future parse path throws a raw FormatException.
       throw InvalidDateFormatException(
         source: dateTimeString,
         message: e.message,
@@ -563,44 +499,19 @@ class EasyDateTime implements DateTime {
   static EasyDateTime? tryParse(
     String dateTimeString, {
     Location? location,
-    bool strict = false,
+    @Deprecated('Use options.mode instead.') bool? strict,
+    EasyParseOptions? options,
   }) {
-    // Trim whitespace.
-    final input = dateTimeString.trim();
-    if (input.isEmpty) {
+    try {
+      return _parseDateTimeString(
+        dateTimeString,
+        location: location,
+        strict: strict,
+        options: options,
+      );
+    } catch (_) {
       return null;
     }
-
-    if (strict) {
-      try {
-        _validateStrict(input);
-      } catch (_) {
-        return null;
-      }
-    }
-
-    // Try ISO 8601 first (most common and unambiguous).
-    try {
-      return EasyDateTime.parse(input, location: location, strict: false);
-    } catch (_) {
-      // Continue to fallback formats.
-    }
-
-    // Try common alternative formats.
-    final normalized = _tryNormalizeFormat(input);
-    if (normalized != null) {
-      try {
-        return EasyDateTime.parse(
-          normalized,
-          location: location,
-          strict: false,
-        );
-      } catch (_) {
-        return null;
-      }
-    }
-
-    return null;
   }
 
   // ============================================================

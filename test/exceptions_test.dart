@@ -65,6 +65,17 @@ void main() {
       expect(e.offset, 10);
     });
 
+    test(
+      'InvalidDateFormatException default diagnostics preserve fallback parse metadata',
+      () {
+        final e = InvalidDateFormatException(source: 'src', message: 'msg');
+
+        expect(e.diagnostics.mode, EasyParseMode.legacy);
+        expect(e.diagnostics.offsetResolution, OffsetResolution.region);
+        expect(e.diagnostics.stage, ParseFailureStage.parsing);
+      },
+    );
+
     test('TimeZoneNotInitializedException message property', () {
       final e = TimeZoneNotInitializedException('Custom message');
       expect(e.message, 'Custom message');

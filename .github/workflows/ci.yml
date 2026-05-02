@@ -37,7 +37,7 @@ jobs:
         run: dart format --output=none --set-exit-if-changed .
 
       - name: Analyze project
-        run: dart analyze --fatal-infos
+        run: dart analyze --fatal-infos --fatal-warnings
 
   test_coverage:
     name: Test (Stable & Coverage)
@@ -64,6 +64,9 @@ jobs:
       - name: Run tests
         run: dart test --coverage=coverage --file-reporter=json:test-results.json
 
+      - name: Run web tests (Chrome)
+        run: dart test -p chrome
+
       - name: Install coverage and test tools
         run: |
           dart pub global activate coverage
@@ -74,6 +77,9 @@ jobs:
 
       - name: Generate coverage report
         run: dart pub global run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
+
+      - name: Enforce line coverage >=95%
+        run: dart run tool/check_coverage_threshold.dart coverage/lcov.info 95
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
