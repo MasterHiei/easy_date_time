@@ -21,7 +21,7 @@ EasyDateTime.parse('2026-01-18T10:30:00+08:00').hour; // 10
 
 ## Documentation
 
-- [Migration guide](docs/migration/v0_12_migration_guide.md)
+- [Migration guide](doc/migration/v0_12_migration_guide.md)
 - [API reference](https://pub.dev/documentation/easy_date_time/latest/)
 - [Contribution guide](CONTRIBUTING.md)
 
@@ -147,7 +147,7 @@ EasyDateTime.parse(
 );
 ```
 
-For full migration details, see [docs/migration/v0_12_migration_guide.md](docs/migration/v0_12_migration_guide.md).
+For full migration details, see [doc/migration/v0_12_migration_guide.md](doc/migration/v0_12_migration_guide.md).
 
 ## Support
 

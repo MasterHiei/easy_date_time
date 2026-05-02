@@ -6,7 +6,8 @@ import 'dart:io';
 import 'package:test/test.dart';
 
 void main() {
-  String readFile(String path) => File(path).readAsStringSync();
+  String readFile(String path) =>
+      File(path).readAsStringSync().replaceAll('\r\n', '\n');
 
   String packageVersion() {
     final pubspec = readFile('pubspec.yaml');
@@ -47,7 +48,7 @@ void main() {
   });
 
   group('README contract', () {
-    test('quick-start demonstrates explicit fixed parse options', () {
+    test('quick-start demonstrates explicit parse options', () {
       final readme = readFile('README.md');
 
       expect(
@@ -55,9 +56,32 @@ void main() {
         contains(
           'final source = EasyDateTime.parse(\n'
           "  '2026-01-18T10:30:00+08:00',\n"
-          '  options: const EasyParseOptions(',
+          '  options: const EasyParseOptions(),',
         ),
       );
+    });
+
+    test('migration guide uses pub-compatible singular doc path', () {
+      final readme = readFile('README.md');
+      final changelog = readFile('CHANGELOG.md');
+
+      expect(
+        File('doc/migration/v0_12_migration_guide.md').existsSync(),
+        isTrue,
+        reason: 'migration guide should live under top-level doc/',
+      );
+      expect(
+        readme,
+        contains('[Migration guide](doc/migration/v0_12_migration_guide.md)'),
+      );
+      expect(
+        readme,
+        contains(
+          '[doc/migration/v0_12_migration_guide.md]'
+          '(doc/migration/v0_12_migration_guide.md)',
+        ),
+      );
+      expect(changelog, contains('`doc/migration/v0_12_migration_guide.md`'));
     });
   });
 }

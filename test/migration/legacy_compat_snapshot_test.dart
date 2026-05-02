@@ -77,11 +77,45 @@ void main() {
       () {
         expect(
           () => EasyDateTime.parse('2025-12-01T10:00:00+05:17', strict: false),
-          throwsA(isA<InvalidTimeZoneException>()),
+          throwsA(
+            isA<InvalidTimeZoneException>()
+                .having(
+                  (error) => error.diagnostics?.mode,
+                  'diagnostics.mode',
+                  EasyParseMode.compatible,
+                )
+                .having(
+                  (error) => error.diagnostics?.offsetResolution,
+                  'diagnostics.offsetResolution',
+                  OffsetResolution.region,
+                )
+                .having(
+                  (error) => error.diagnostics?.stage,
+                  'diagnostics.stage',
+                  ParseFailureStage.offsetResolution,
+                ),
+          ),
         );
         expect(
           () => EasyDateTime.parse('2025-12-01T10:00:00+05:17', strict: true),
-          throwsA(isA<InvalidTimeZoneException>()),
+          throwsA(
+            isA<InvalidTimeZoneException>()
+                .having(
+                  (error) => error.diagnostics?.mode,
+                  'diagnostics.mode',
+                  EasyParseMode.isoStrict,
+                )
+                .having(
+                  (error) => error.diagnostics?.offsetResolution,
+                  'diagnostics.offsetResolution',
+                  OffsetResolution.region,
+                )
+                .having(
+                  (error) => error.diagnostics?.stage,
+                  'diagnostics.stage',
+                  ParseFailureStage.offsetResolution,
+                ),
+          ),
         );
 
         expect(

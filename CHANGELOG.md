@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added parse policy types: `EasyParseMode`, `OffsetResolution`, and `EasyParseOptions`.
 - Added structured parse diagnostics metadata for parse failures and offset resolution failures.
-- Added a migration guide for the parsing policy model (`docs/migration/v0_12_migration_guide.md`).
+- Added a migration guide for the parsing policy model (`doc/migration/v0_12_migration_guide.md`).
 
 ### Changed
 

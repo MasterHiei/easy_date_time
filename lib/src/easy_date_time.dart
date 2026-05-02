@@ -448,23 +448,19 @@ class EasyDateTime implements DateTime {
         strict: strict,
         options: options,
       );
-    } on FormatException catch (e) {
-      final mode = _resolveParseMode(strict, options);
+    } on _StagedFormatException catch (e) {
       throw InvalidDateFormatException(
         source: dateTimeString,
         message: e.message,
         offset: e.offset,
-        diagnostics: e is _StagedFormatException
-            ? e.diagnostics
-            : ParseDiagnostics(
-                mode: mode,
-                offsetResolution: _resolveOffsetResolution(
-                  mode,
-                  options: options,
-                  strict: strict,
-                ),
-                stage: ParseFailureStage.parsing,
-              ),
+        diagnostics: e.diagnostics,
+      );
+    } on FormatException catch (e) {
+      // Defensive fallback if a future parse path throws a raw FormatException.
+      throw InvalidDateFormatException(
+        source: dateTimeString,
+        message: e.message,
+        offset: e.offset,
       );
     }
   }
