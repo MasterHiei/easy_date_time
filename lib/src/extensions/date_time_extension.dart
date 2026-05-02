@@ -6,7 +6,7 @@ import '../easy_date_time_config.dart';
 /// Extension on [DateTime] to convert to [EasyDateTime].
 ///
 /// ```dart
-/// final dt = DateTime.now();
+/// final dt = DateTime.utc(2026, 1, 18, 2, 30);
 /// final easyDt = dt.toEasyDateTime(location: getLocation('Asia/Tokyo'));
 /// ```
 extension DateTimeExtension on DateTime {
@@ -16,7 +16,7 @@ extension DateTimeExtension on DateTime {
   /// (set via [EasyDateTime.setDefaultLocation]) or the system's local timezone.
   ///
   /// ```dart
-  /// final easyDt = DateTime.now().toEasyDateTime(
+  /// final easyDt = DateTime.utc(2026, 1, 18, 2, 30).toEasyDateTime(
   ///   location: getLocation('Europe/London'),
   /// );
   /// ```
