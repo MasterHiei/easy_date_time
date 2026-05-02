@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2026-05-03
+
+### Added
+
+- Added parse policy types: `EasyParseMode`, `OffsetResolution`, and `EasyParseOptions`.
+- Added structured parse diagnostics metadata for parse failures and offset resolution failures.
+- Added docs executable snippet tests and migration guide (`docs/migration/v0_12_migration_guide.md`).
+- Added global timezone edge-case and fuzz parsing test coverage.
+- Added CI coverage threshold script: `tool/check_coverage_threshold.dart`.
+
+### Changed
+
+- Updated parse API to support `options`-driven behavior while preserving migration compatibility.
+- Reorganized parsing, migration, timezone, boundary, fuzz, and docs tests by domain structure.
+- Rebuilt multilingual READMEs for fast onboarding and explicit migration/API mapping guidance.
+- Updated CI and Codecov gating to include Chrome tests and a 95% line coverage threshold.
+
+### Deprecated
+
+- Deprecated `strict` parameter in `parse()` and `tryParse()` in favor of `EasyParseOptions.mode`.
+
+### Fixed
+
+- Fixed parse behavior branching to avoid identity-based options detection.
+- Strengthened fixed vs region offset-resolution behavior and diagnostics propagation.
+
 ## [0.11.1] - 2026-01-22
 
 ### Changed
