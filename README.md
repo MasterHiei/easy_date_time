@@ -6,30 +6,38 @@
 [![codecov](https://codecov.io/gh/MasterHiei/easy_date_time/branch/main/graph/badge.svg)](https://codecov.io/gh/MasterHiei/easy_date_time)
 [![License](https://img.shields.io/badge/license-BSD--2--Clause-blue.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
-[中文](https://github.com/MasterHiei/easy_date_time/blob/main/README_zh.md) | [日本語](https://github.com/MasterHiei/easy_date_time/blob/main/README_ja.md)
+A `DateTime`-compatible API for Dart and Flutter with explicit IANA timezone handling and deterministic parse policies.
 
-A `DateTime`-compatible API with first-class IANA timezone support.
+## Why this package
 
-## Why easy_date_time
-
-`DateTime.parse()` normalizes offset inputs to UTC and often changes the wall-clock hour.
-`EasyDateTime.parse()` preserves the original local time context.
+Dart `DateTime.parse()` normalizes offset inputs to UTC. In timezone-heavy applications, this often changes the wall-clock value that users entered.
 
 ```dart
-DateTime.parse('2026-01-18T10:30:00+08:00').hour;   // 2
+DateTime.parse('2026-01-18T10:30:00+08:00').hour;    // 2
 EasyDateTime.parse('2026-01-18T10:30:00+08:00').hour; // 10
 ```
 
-## Quick Start
+`easy_date_time` keeps `DateTime` API compatibility while making timezone behavior explicit.
 
-### 1) Add dependency
+## Documentation
+
+- [Migration guide](docs/migration/v0_12_migration_guide.md)
+- [API reference](https://pub.dev/documentation/easy_date_time/latest/)
+- [Contribution guide](CONTRIBUTING.md)
+
+## Installation
+
+Stable release on pub.dev:
 
 ```yaml
 dependencies:
   easy_date_time: ^0.12.0
 ```
 
-### 2) Initialize timezone database once
+## Requirements
+
+- Dart SDK: `>=3.10.0 <4.0.0`
+- Initialize timezone data once before timezone-aware operations
 
 ```dart
 import 'package:easy_date_time/easy_date_time.dart';
@@ -39,23 +47,33 @@ void main() {
 }
 ```
 
-### 3) Parse and convert
+## Quick start
 
 ```dart
 final source = EasyDateTime.parse('2026-01-18T10:30:00+08:00');
 final ny = source.inLocation(TimeZones.newYork);
 
-print(source.hour);        // 10
-print(source.locationName); // UTC+08:00 (fixed mode default)
-print(ny.locationName);     // America/New_York
+print(source.hour);          // 10
+print(source.locationName);  // UTC+08:00 in fixed mode
+print(ny.locationName);      // America/New_York
 ```
 
-## Core Concepts
+## Parse policy model
 
-- `EasyDateTime` implements `DateTime`.
-- Parse policy is explicit via `EasyParseOptions`.
-- Parsing defaults are `mode: compatible` and `offsetResolution: fixed` when options are provided.
-- Legacy no-options behavior remains available for migration-safe upgrades.
+### Parse mode
+
+| Mode | Purpose | Behavior |
+|---|---|---|
+| `legacy` | Preserve historical behavior | Region-based offset resolution |
+| `compatible` | Default when explicit `options` are passed | Permissive parsing with normalization |
+| `isoStrict` | Enforce strict validation | Rejects calendar overflow and strict-invalid inputs |
+
+### Offset resolution
+
+| Strategy | Resulting location | Typical use |
+|---|---|---|
+| `OffsetResolution.fixed` | Synthetic `UTC±HH:MM` | Preserve exact offset identity |
+| `OffsetResolution.region` | IANA location lookup result | Prefer regional timezone semantics |
 
 ```dart
 final dt = EasyDateTime.parse(
@@ -67,47 +85,33 @@ final dt = EasyDateTime.parse(
 );
 ```
 
-## Common Tasks
+## Common tasks
 
-### Timezone-aware construction
+### Create values with an explicit timezone
 
 ```dart
-final nowInTokyo = EasyDateTime.now(location: TimeZones.tokyo);
+final tokyoNow = EasyDateTime.now(location: TimeZones.tokyo);
 final meeting = EasyDateTime(2026, 5, 3, 9, 30, location: TimeZones.london);
 ```
 
-### DST-safe calendar arithmetic
+### Run DST-safe calendar arithmetic
 
 ```dart
 final ny = TimeZones.newYork;
 final beforeDst = EasyDateTime(2025, 3, 9, 0, 0, location: ny);
 
-final wallClock = beforeDst.addCalendarDays(1);   // 2025-03-10 00:00
+final wallClock = beforeDst.addCalendarDays(1);       // 2025-03-10 00:00
 final physical = beforeDst.add(const Duration(days: 1)); // 2025-03-10 01:00
 ```
 
-### Formatting
+### Format output
 
 ```dart
 final formatted = EasyDateTime.now(location: TimeZones.tokyo)
     .format('yyyy-MM-dd HH:mm:ss xxxxx');
 ```
 
-## Migration Guide (v0.12)
-
-See full guide: [docs/migration/v0_12_migration_guide.md](docs/migration/v0_12_migration_guide.md)
-
-### `strict` to `options`
-
-- `strict: false` -> `EasyParseOptions(mode: EasyParseMode.compatible)`
-- `strict: true` -> `EasyParseOptions(mode: EasyParseMode.isoStrict)`
-
-### Offset resolution behavior
-
-- Legacy/default compatibility path: region inference from offset (`OffsetResolution.region`)
-- New explicit path: fixed synthetic location (`OffsetResolution.fixed`, for example `UTC+08:00`)
-
-## DateTime / timezone API Mapping
+## DateTime API mapping
 
 | Existing API | easy_date_time |
 |---|---|
@@ -118,19 +122,29 @@ See full guide: [docs/migration/v0_12_migration_guide.md](docs/migration/v0_12_m
 | `DateTime.fromMillisecondsSinceEpoch(ms)` | `EasyDateTime.fromMillisecondsSinceEpoch(ms)` |
 | `DateTime.toUtc()` | `EasyDateTime.toUtc()` |
 | `DateTime.toLocal()` | `EasyDateTime.toLocal()` |
-| N/A (`DateTime` has no IANA location model) | `inLocation(TimeZones.xxx)` |
-| N/A | `setDefaultLocation(...)` / `clearDefaultLocation()` |
+| No IANA location model | `inLocation(TimeZones.xxx)` |
+| No global location override | `setDefaultLocation(...)` / `clearDefaultLocation()` |
 
-## FAQ
+## Migration notes for v0.12
 
-### Does it work with `intl`?
+- `strict: false` maps to `EasyParseMode.compatible`
+- `strict: true` maps to `EasyParseMode.isoStrict`
+- `strict` is deprecated in `parse()` and `tryParse()`
 
-Yes. `EasyDateTime` implements `DateTime`, so existing `intl` formatters can consume it directly.
+```dart
+// Before
+EasyDateTime.parse(input, strict: true);
 
-### Is parsing strict by default?
+// After
+EasyDateTime.parse(
+  input,
+  options: const EasyParseOptions(mode: EasyParseMode.isoStrict),
+);
+```
 
-No. Use `EasyParseMode.isoStrict` when strict calendar validation is required.
+For full migration details, see [docs/migration/v0_12_migration_guide.md](docs/migration/v0_12_migration_guide.md).
 
-### Do I have to initialize timezone data?
+## Support
 
-Yes. Call `EasyDateTime.initializeTimeZone()` before using timezone-aware features.
+- Issues: https://github.com/MasterHiei/easy_date_time/issues
+- Pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md)
