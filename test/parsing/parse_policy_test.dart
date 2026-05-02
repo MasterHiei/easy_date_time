@@ -2,9 +2,133 @@ library;
 
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+
+typedef ParsePolicyCase =
+    ({EasyParseMode mode, String input, bool shouldPass, String id});
+
+final parsePolicyCases = <ParsePolicyCase>[
+  (
+    id: 'iso-z',
+    mode: EasyParseMode.legacy,
+    input: '2025-12-01T10:30:00Z',
+    shouldPass: true,
+  ),
+  (
+    id: 'date-only',
+    mode: EasyParseMode.legacy,
+    input: '2025-12-01',
+    shouldPass: true,
+  ),
+  (
+    id: 'overflow-date',
+    mode: EasyParseMode.legacy,
+    input: '2025-02-30',
+    shouldPass: true,
+  ),
+  (
+    id: 'slash-date',
+    mode: EasyParseMode.legacy,
+    input: '2025/12/01',
+    shouldPass: true,
+  ),
+  (
+    id: 'dot-datetime',
+    mode: EasyParseMode.legacy,
+    input: '2025.12.01 10:30:00',
+    shouldPass: true,
+  ),
+  (
+    id: 'invalid-text',
+    mode: EasyParseMode.legacy,
+    input: 'not-a-date',
+    shouldPass: false,
+  ),
+  (
+    id: 'iso-z',
+    mode: EasyParseMode.compatible,
+    input: '2025-12-01T10:30:00Z',
+    shouldPass: true,
+  ),
+  (
+    id: 'date-only',
+    mode: EasyParseMode.compatible,
+    input: '2025-12-01',
+    shouldPass: true,
+  ),
+  (
+    id: 'overflow-date',
+    mode: EasyParseMode.compatible,
+    input: '2025-02-30',
+    shouldPass: true,
+  ),
+  (
+    id: 'slash-date',
+    mode: EasyParseMode.compatible,
+    input: '2025/12/01',
+    shouldPass: true,
+  ),
+  (
+    id: 'dot-datetime',
+    mode: EasyParseMode.compatible,
+    input: '2025.12.01 10:30:00',
+    shouldPass: true,
+  ),
+  (
+    id: 'invalid-text',
+    mode: EasyParseMode.compatible,
+    input: 'not-a-date',
+    shouldPass: false,
+  ),
+  (
+    id: 'iso-z',
+    mode: EasyParseMode.isoStrict,
+    input: '2025-12-01T10:30:00Z',
+    shouldPass: true,
+  ),
+  (
+    id: 'date-only',
+    mode: EasyParseMode.isoStrict,
+    input: '2025-12-01',
+    shouldPass: true,
+  ),
+  (
+    id: 'overflow-date',
+    mode: EasyParseMode.isoStrict,
+    input: '2025-02-30',
+    shouldPass: false,
+  ),
+  (
+    id: 'slash-date',
+    mode: EasyParseMode.isoStrict,
+    input: '2025/12/01',
+    shouldPass: true,
+  ),
+  (
+    id: 'dot-datetime',
+    mode: EasyParseMode.isoStrict,
+    input: '2025.12.01 10:30:00',
+    shouldPass: true,
+  ),
+  (
+    id: 'invalid-text',
+    mode: EasyParseMode.isoStrict,
+    input: 'not-a-date',
+    shouldPass: false,
+  ),
+];
 
 void main() {
+  setUpAll(() {
+    tz.initializeTimeZones();
+    EasyDateTime.initializeTimeZone();
+  });
+
   group('Parse policy defaults', () {
+    test('parse policy matrix includes required baseline coverage', () {
+      expect(parsePolicyCases.length, 18);
+    });
+
     test('EasyParseOptions defaults to compatible mode and fixed offsets', () {
       const options = EasyParseOptions();
 
@@ -83,5 +207,15 @@ void main() {
         ),
       );
     });
+
+    for (final c in parsePolicyCases) {
+      test('mode=${c.mode.name} case=${c.id}', () {
+        final result = EasyDateTime.tryParse(
+          c.input,
+          options: EasyParseOptions(mode: c.mode),
+        );
+        expect(result != null, c.shouldPass);
+      });
+    }
   });
 }
