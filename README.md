@@ -31,7 +31,7 @@ Stable release on pub.dev:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.12.0
+  easy_date_time: ^0.11.1
 ```
 
 ## Requirements
@@ -50,13 +50,18 @@ void main() {
 ## Quick start
 
 ```dart
-final source = EasyDateTime.parse('2026-01-18T10:30:00+08:00');
+final source = EasyDateTime.parse(
+  '2026-01-18T10:30:00+08:00',
+  options: const EasyParseOptions(),
+);
 final ny = source.inLocation(TimeZones.newYork);
 
 print(source.hour);          // 10
 print(source.locationName);  // UTC+08:00 in fixed mode
 print(ny.locationName);      // America/New_York
 ```
+
+If you omit `options`, `parse()` keeps the legacy region-inference path for migration compatibility.
 
 ## Parse policy model
 

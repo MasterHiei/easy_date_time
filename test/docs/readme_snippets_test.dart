@@ -15,9 +15,13 @@ void main() {
   });
 
   test('README quick-start parse sample remains valid', () {
-    final dt = EasyDateTime.parse('2026-01-18T10:30:00+08:00');
+    final dt = EasyDateTime.parse(
+      '2026-01-18T10:30:00+08:00',
+      options: const EasyParseOptions(),
+    );
 
     expect(dt.hour, 10);
+    expect(dt.locationName, 'UTC+08:00');
   });
 
   test('README parse options sample keeps fixed offset location', () {

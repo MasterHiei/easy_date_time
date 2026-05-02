@@ -50,13 +50,18 @@ void main() {
     expect(dt.locationName, 'UTC+14:00');
   });
 
-  test('region resolution for +05:45 maps to Asia/Kathmandu at given instant', () {
-    final dt = EasyDateTime.parse(
-      '2026-06-01T08:00:00+05:45',
-      options: const EasyParseOptions(offsetResolution: OffsetResolution.region),
-    );
+  test(
+    'region resolution for +05:45 maps to Asia/Kathmandu at given instant',
+    () {
+      final dt = EasyDateTime.parse(
+        '2026-06-01T08:00:00+05:45',
+        options: const EasyParseOptions(
+          offsetResolution: OffsetResolution.region,
+        ),
+      );
 
-    expect(dt.timeZoneOffset, const Duration(hours: 5, minutes: 45));
-    expect(dt.locationName, 'Asia/Kathmandu');
-  });
+      expect(dt.timeZoneOffset, const Duration(hours: 5, minutes: 45));
+      expect(dt.locationName, 'Asia/Kathmandu');
+    },
+  );
 }

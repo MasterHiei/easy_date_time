@@ -4,8 +4,12 @@ import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 
-typedef ParsePolicyCase =
-    ({EasyParseMode mode, String input, bool shouldPass, String id});
+typedef ParsePolicyCase = ({
+  EasyParseMode mode,
+  String input,
+  bool shouldPass,
+  String id,
+});
 
 final parsePolicyCases = <ParsePolicyCase>[
   (
