@@ -558,7 +558,10 @@ class EasyDateTime implements DateTime {
   Location get location => _tzDateTime.location;
 
   /// The name of the timezone (e.g., 'Asia/Tokyo').
-  String get locationName => _tzDateTime.location.name;
+  ///
+  /// UTC values retain the package's canonical `UTC` name even when the
+  /// underlying timezone database uses `Etc/UTC` for its UTC singleton.
+  String get locationName => isUtc ? 'UTC' : _tzDateTime.location.name;
 
   /// Whether this datetime is in UTC.
   @override
