@@ -10,6 +10,8 @@ import 'dart:convert';
 
 import 'package:easy_date_time/easy_date_time.dart';
 
+const _jsonParseOptions = EasyParseOptions();
+
 void main() {
   EasyDateTime.initializeTimeZone();
 
@@ -21,7 +23,10 @@ void main() {
   print('Basic toJson/fromJson:');
   final dt = EasyDateTime(2025, 12, 25, 10, 30, 0, 0, 0, TimeZones.tokyo);
   final json = dt.toIso8601String();
-  final restored = EasyDateTime.fromIso8601String(json);
+  final restored = EasyDateTime.fromIso8601String(
+    json,
+    options: _jsonParseOptions,
+  );
 
   print('  Original:  $dt');
   print('  JSON:      $json');
@@ -105,9 +110,15 @@ class Event {
     return Event(
       id: json['id'] as String,
       title: json['title'] as String,
-      startTime: EasyDateTime.fromIso8601String(json['startTime'] as String),
+      startTime: EasyDateTime.fromIso8601String(
+        json['startTime'] as String,
+        options: _jsonParseOptions,
+      ),
       endTime: json['endTime'] != null
-          ? EasyDateTime.fromIso8601String(json['endTime'] as String)
+          ? EasyDateTime.fromIso8601String(
+              json['endTime'] as String,
+              options: _jsonParseOptions,
+            )
           : null,
     );
   }

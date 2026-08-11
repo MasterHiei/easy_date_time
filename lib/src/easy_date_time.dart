@@ -744,11 +744,24 @@ class EasyDateTime implements DateTime {
   ///
   /// This is equivalent to [parse] but with a more explicit name.
   ///
+  /// Pass [options] to retain an exact numeric offset as a fixed offset
+  /// location when deserializing ISO 8601 data.
+  ///
   /// ```dart
   /// final dt = EasyDateTime.fromIso8601String('2025-12-01T10:30:00+0900');
   /// ```
-  factory EasyDateTime.fromIso8601String(String dateTimeString) {
-    return EasyDateTime.parse(dateTimeString);
+  factory EasyDateTime.fromIso8601String(
+    String dateTimeString, {
+    Location? location,
+    @Deprecated('Use options.mode instead.') bool? strict,
+    EasyParseOptions? options,
+  }) {
+    return EasyDateTime.parse(
+      dateTimeString,
+      location: location,
+      strict: strict,
+      options: options,
+    );
   }
 
   // ============================================================

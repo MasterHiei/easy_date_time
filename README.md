@@ -31,7 +31,7 @@ Stable release on pub.dev:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.12.0
+  easy_date_time: ^0.12.1
 ```
 
 ## Requirements
@@ -114,6 +114,15 @@ final physical = beforeDst.add(const Duration(days: 1)); // 2025-03-10 01:00
 ```dart
 final formatted = EasyDateTime.now(location: TimeZones.tokyo)
     .format('yyyy-MM-dd HH:mm:ss xxxxx');
+```
+
+### Preserve a numeric offset when reading ISO 8601 / JSON data
+
+```dart
+final restored = EasyDateTime.fromIso8601String(
+  storedValue,
+  options: const EasyParseOptions(),
+);
 ```
 
 ## DateTime API mapping
