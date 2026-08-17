@@ -79,9 +79,9 @@ dart analyze --fatal-infos
 dart test
 
 # 4. Check test coverage
-dart test --coverage=coverage
 dart pub global activate coverage
-dart pub global run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
+dart pub global run coverage:test_with_coverage --out=coverage
+dart run tool/check_coverage_threshold.dart coverage/lcov.info 95
 
 # (Coverage should be >= 95%)
 ```

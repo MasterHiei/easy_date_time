@@ -18,7 +18,7 @@
 - [ ] All new and existing tests pass locally
 - [ ] I have run `dart analyze --fatal-infos` with no issues
 - [ ] I have run `dart format .` on my changes
-- [ ] I have checked coverage is >= 90%
+- [ ] I have checked coverage is >= 95%
 
 ## Checklist
 
