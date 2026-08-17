@@ -282,8 +282,17 @@ abstract final class TimeZones {
   /// final allZones = TimeZones.availableTimezones;
   /// print('Available: ${allZones.length} timezones');
   /// ```
-  static List<String> get availableTimezones =>
-      timeZoneDatabase.locations.keys.toList();
+  static List<String> get availableTimezones {
+    if (!internalIsTimeZoneInitialized) {
+      throw TimeZoneNotInitializedException(
+        'Timezone database not initialized. '
+        'Call EasyDateTime.initializeTimeZone() before accessing '
+        'TimeZones.availableTimezones.',
+      );
+    }
+
+    return timeZoneDatabase.locations.keys.toList();
+  }
 
   /// Checks if a timezone name is valid.
   ///

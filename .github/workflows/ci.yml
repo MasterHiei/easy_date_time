@@ -61,22 +61,19 @@ jobs:
       - name: Install dependencies
         run: dart pub get
 
-      - name: Run tests
-        run: dart test --coverage=coverage --file-reporter=json:test-results.json
-
-      - name: Run web tests (Chrome)
-        run: dart test -p chrome
-
       - name: Install coverage and test tools
         run: |
           dart pub global activate coverage
           dart pub global activate junitreport
 
+      - name: Run tests with coverage
+        run: dart pub global run coverage:test_with_coverage --out=coverage -- --file-reporter=json:test-results.json
+
+      - name: Run web tests (Chrome)
+        run: dart test -p chrome
+
       - name: Convert test results to JUnit
         run: dart pub global run junitreport:tojunit --input test-results.json --output test-results.xml
-
-      - name: Generate coverage report
-        run: dart pub global run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
 
       - name: Enforce line coverage >=95%
         run: dart run tool/check_coverage_threshold.dart coverage/lcov.info 95

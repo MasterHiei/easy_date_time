@@ -55,6 +55,27 @@ void main() {
       expect(fromConst.minute, 0);
     });
 
+    test('ISO factory forwards fixed offset parse options', () {
+      const options = EasyParseOptions(
+        mode: EasyParseMode.compatible,
+        offsetResolution: OffsetResolution.fixed,
+      );
+      final original = EasyDateTime.parse(
+        '2025-12-01T10:00:00+05:17',
+        options: options,
+      );
+
+      final restored = EasyDateTime.fromIso8601String(
+        original.toIso8601String(),
+        options: options,
+      );
+
+      expect(restored.locationName, 'UTC+05:17');
+      expect(restored.timeZoneOffset, const Duration(hours: 5, minutes: 17));
+      expect(restored.hour, original.hour);
+      expect(restored.minute, original.minute);
+    });
+
     test('region resolution preserves current IANA lookup behavior', () {
       final parsed = EasyDateTime.parse(
         '2025-12-01T10:00:00+09:00',

@@ -79,11 +79,11 @@ dart analyze --fatal-infos
 dart test
 
 # 4. Check test coverage
-dart test --coverage=coverage
 dart pub global activate coverage
-dart pub global run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
+dart pub global run coverage:test_with_coverage --out=coverage
+dart run tool/check_coverage_threshold.dart coverage/lcov.info 95
 
-# (Coverage should be >= 90%)
+# (Coverage should be >= 95%)
 ```
 
 ## Commit Message Guidelines
@@ -111,7 +111,7 @@ Examples:
 When you open a Pull Request, the following automated checks will run:
 1.  **Analyze**: Static analysis with `dart analyze --fatal-infos`.
 2.  **Test (Stable & Coverage)**: Runs all tests on the stable SDK and reports code coverage (uploading to Codecov).
-3.  **Test Compatibility**: Runs tests on the oldest supported SDK (`3.0.0`) and the latest `beta` to ensure backward and forward compatibility.
+3.  **Test Compatibility**: Runs tests on the oldest supported SDK (`3.10.0`) and the latest `beta` to ensure backward and forward compatibility.
 
 All checks must pass before merging.
 
@@ -120,7 +120,7 @@ All checks must pass before merging.
 - Write unit tests for all new features
 - Ensure tests are deterministic and fast
 - Test edge cases and error conditions
-- Maintain high test coverage (>= 80%)
+- Maintain line coverage of at least 95%
 - Use descriptive test names: `test('should_action_when_condition')`
 
 Example test structure:

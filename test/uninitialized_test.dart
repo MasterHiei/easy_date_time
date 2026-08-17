@@ -61,5 +61,15 @@ void main() {
         throwsA(isA<TimeZoneNotInitializedException>()),
       );
     });
+
+    test(
+      'TimeZones.availableTimezones throws TimeZoneNotInitializedException',
+      () {
+        expect(
+          () => TimeZones.availableTimezones,
+          throwsA(isA<TimeZoneNotInitializedException>()),
+        );
+      },
+    );
   });
 }
