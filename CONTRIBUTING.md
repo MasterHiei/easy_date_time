@@ -145,9 +145,9 @@ test('should parse ISO 8601 date with timezone offset', () {
 - Use dartdoc comments (`///`) for all public APIs
 - Include code examples in documentation
 - Update README.md for new features
-- Keep examples simple and clear
+- Keep examples simple, clear, and compilable
 - Document breaking changes in CHANGELOG.md
-- Update relevant guides in `docs/` if present
+- Follow the ownership and generated-document rules in [doc/README.md](doc/README.md)
 
 ## Testing Timezone Code
 
