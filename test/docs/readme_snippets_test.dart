@@ -36,6 +36,42 @@ void main() {
     expect(dt.locationName, 'UTC+08:00');
   });
 
+  test('README explicit location constructor sample remains valid', () {
+    final meeting = EasyDateTime(2026, 5, 3, 9, 30, 0, 0, 0, TimeZones.london);
+
+    expect(meeting.locationName, 'Europe/London');
+    expect(meeting.hour, 9);
+  });
+
+  test(
+    'README calendar arithmetic sample distinguishes calendar and duration',
+    () {
+      final beforeDst = EasyDateTime(
+        2025,
+        3,
+        9,
+        0,
+        0,
+        0,
+        0,
+        0,
+        TimeZones.newYork,
+      );
+
+      expect(beforeDst.addCalendarDays(1).hour, 0);
+      expect(beforeDst.add(const Duration(days: 1)).hour, 1);
+    },
+  );
+
+  test('README compatibility boundary preserves Dart extension behavior', () {
+    DateTime dateTime = EasyDateTime.utc(2026, 1, 18, 10, 30);
+
+    final copied = dateTime.copyWith(isUtc: false);
+
+    expect(copied, isA<DateTime>());
+    expect(copied, isNot(isA<EasyDateTime>()));
+  });
+
   test('README migration mapping strict true equals isoStrict mode', () {
     final legacyStrict = EasyDateTime.tryParse('2026-02-30', strict: true);
     final optionsStrict = EasyDateTime.tryParse(

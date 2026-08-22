@@ -3,10 +3,10 @@ import '../parsing/parse_diagnostics.dart';
 
 /// Exception thrown when an invalid date string is provided for parsing.
 ///
-/// The [parse()] method throws this when the input string doesn't match
+/// The `parse()` method throws this when the input string doesn't match
 /// any supported date format (ISO 8601, YYYY/MM/DD format, etc.).
 ///
-/// **Solution**: Use [tryParse()] to safely handle potentially invalid dates:
+/// **Solution**: Use `tryParse()` to safely handle potentially invalid dates:
 ///
 /// ```dart
 /// final dateStr = getUserInput();

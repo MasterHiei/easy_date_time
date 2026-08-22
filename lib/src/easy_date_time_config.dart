@@ -9,7 +9,7 @@ Location? _globalDefaultLocation;
 ///
 /// Priority:
 /// 1. User-set global default (via [EasyDateTime.setDefaultLocation])
-/// 2. System local timezone
+/// 2. The configured `timezone` package local location
 ///
 /// **Throws [TimeZoneNotInitializedException]** if [EasyDateTime.initializeTimeZone]
 /// has not been called.
@@ -27,7 +27,7 @@ Location get effectiveDefaultLocation {
     return _globalDefaultLocation!;
   }
 
-  // System local timezone
+  // Configured local location. The timezone package does not detect devices.
   return local;
 }
 

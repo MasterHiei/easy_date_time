@@ -16,7 +16,8 @@ part 'easy_date_time_utilities.dart';
 /// [EasyDateTime] implements Dart's [DateTime] interface, extending it with
 /// full IANA timezone support. Unlike [DateTime] which only supports UTC and
 /// local time, [EasyDateTime] can represent any IANA timezone while remaining
-/// fully compatible with all APIs that accept [DateTime].
+/// usable with APIs that accept [DateTime]. Dart extension members still use
+/// the static receiver type and can return a core [DateTime].
 ///
 /// **Key characteristics:**
 /// - Implements [DateTime] — can be used anywhere DateTime is expected
@@ -27,18 +28,26 @@ part 'easy_date_time_utilities.dart';
 /// ## Creating instances
 ///
 /// ```dart
-/// // Current time (uses global default or local time)
+/// // Current time (uses the global default or configured local location)
 /// final now = EasyDateTime.now();
 ///
 /// // Current time in a specific timezone
 /// final shanghai = EasyDateTime.now(location: TimeZones.shanghai);
 ///
-/// // Specific date/time (uses global default or local time)
+/// // Specific date/time (uses the global default or configured local location)
 /// final meeting = EasyDateTime(2025, 12, 1, 14, 30);
 ///
 /// // Specific date/time in a timezone
-/// final chinaTime = EasyDateTime(2025, 12, 1, 14, 30,
-///   location: TimeZones.shanghai,
+/// final chinaTime = EasyDateTime(
+///   2025,
+///   12,
+///   1,
+///   14,
+///   30,
+///   0,
+///   0,
+///   0,
+///   TimeZones.shanghai,
 /// );
 /// ```
 ///
@@ -92,26 +101,32 @@ class EasyDateTime implements DateTime {
   /// Creates an [EasyDateTime] from the given components.
   ///
   /// If [location] is not provided, uses the global default timezone
-  /// (set via [setDefaultLocation]) or the system's local timezone.
+  /// (set via [setDefaultLocation]) or the configured local location.
   ///
   /// ## DST Boundary Behavior
   ///
-  /// - **Spring Forward (Gap):** If you create a time during the "skipped hour"
-  ///   (e.g., 2:30 AM when clocks jump from 2:00→3:00 AM), the time is
-  ///   automatically adjusted forward to the next valid time.
-  /// - **Fall Back (Overlap):** If you create a time during the "repeated hour"
-  ///   (e.g., 1:30 AM that occurs twice), the DST time (before fall back) is used.
+  /// The underlying timezone database resolves local times in DST gaps and
+  /// overlaps. Its choice can differ by region; callers that need a specific
+  /// business policy must not rely on this constructor's implicit resolution.
   ///
   /// **Throws [TimeZoneNotInitializedException]** if [EasyDateTime.initializeTimeZone]
   /// has not been called at app startup.
   ///
   /// ```dart
-  /// // Uses global default or local timezone
+  /// // Uses the global default or configured local location
   /// final dt = EasyDateTime(2025, 12, 25, 10, 30);
   ///
   /// // Explicitly specify timezone
-  /// final dt = EasyDateTime(2025, 12, 25, 10, 30,
-  ///   location: getLocation('Asia/Shanghai'),
+  /// final dt = EasyDateTime(
+  ///   2025,
+  ///   12,
+  ///   25,
+  ///   10,
+  ///   30,
+  ///   0,
+  ///   0,
+  ///   0,
+  ///   getLocation('Asia/Shanghai'),
   /// );
   /// ```
   EasyDateTime(
@@ -142,7 +157,7 @@ class EasyDateTime implements DateTime {
   /// Creates an [EasyDateTime] representing the current time.
   ///
   /// If [location] is not provided, uses the global default timezone
-  /// (set via [setDefaultLocation]) or the system's local timezone.
+  /// (set via [setDefaultLocation]) or the configured local location.
   ///
   /// **Important**: Call [initializeTimeZone] before using this method
   /// if you need proper timezone support.
@@ -151,7 +166,7 @@ class EasyDateTime implements DateTime {
   /// has not been called at app startup.
   ///
   /// ```dart
-  /// // Uses global default or local timezone
+  /// // Uses the global default or configured local location
   /// final now = EasyDateTime.now();
   ///
   /// // Explicitly specify timezone
@@ -216,7 +231,8 @@ class EasyDateTime implements DateTime {
   /// The [dateTime] is interpreted as a moment in time, and the resulting
   /// [EasyDateTime] represents that same moment in the specified [location].
   ///
-  /// If [location] is not provided, uses the global default or local timezone.
+  /// If [location] is not provided, uses the global default or configured local
+  /// location.
   ///
   /// ```dart
   /// final dt = DateTime.utc(2025, 12, 25, 10, 0);
@@ -239,7 +255,8 @@ class EasyDateTime implements DateTime {
   /// ## Parameters
   ///
   /// - [location]: The timezone to display the result in. If not provided,
-  ///   uses the global default (set via [setDefaultLocation]) or local timezone.
+  ///   uses the global default (set via [setDefaultLocation]) or configured
+  ///   local location.
   /// - [isUtc]: If `true`, returns a UTC datetime. This is provided for
   ///   compatibility with [DateTime.fromMillisecondsSinceEpoch].
   ///
@@ -249,15 +266,19 @@ class EasyDateTime implements DateTime {
   /// ## Examples
   ///
   /// ```dart
-  /// // Basic usage (uses default/local timezone)
-  /// final dt = EasyDateTime.fromMillisecondsSinceEpoch(1735689600000);
+  /// const milliseconds = 1735689600000;
+  /// // Basic usage (uses default or configured local location)
+  /// final dt = EasyDateTime.fromMillisecondsSinceEpoch(milliseconds);
   ///
   /// // With explicit UTC (DateTime compatible)
-  /// final utc = EasyDateTime.fromMillisecondsSinceEpoch(ms, isUtc: true);
+  /// final utc = EasyDateTime.fromMillisecondsSinceEpoch(
+  ///   milliseconds,
+  ///   isUtc: true,
+  /// );
   ///
   /// // With explicit timezone
   /// final tokyo = EasyDateTime.fromMillisecondsSinceEpoch(
-  ///   ms,
+  ///   milliseconds,
   ///   location: TimeZones.tokyo,
   /// );
   /// ```
@@ -289,7 +310,8 @@ class EasyDateTime implements DateTime {
   /// ## Parameters
   ///
   /// - [location]: The timezone to display the result in. If not provided,
-  ///   uses the global default (set via [setDefaultLocation]) or local timezone.
+  ///   uses the global default (set via [setDefaultLocation]) or configured
+  ///   local location.
   /// - [isUtc]: If `true`, returns a UTC datetime. This is provided for
   ///   compatibility with [DateTime.fromMillisecondsSinceEpoch].
   ///
@@ -299,7 +321,7 @@ class EasyDateTime implements DateTime {
   /// ## Examples
   ///
   /// ```dart
-  /// // Basic usage (uses default/local timezone)
+  /// // Basic usage (uses default or configured local location)
   /// final dt = EasyDateTime.fromSecondsSinceEpoch(1733644200);
   ///
   /// // With explicit UTC
@@ -337,7 +359,8 @@ class EasyDateTime implements DateTime {
   /// ## Parameters
   ///
   /// - [location]: The timezone to display the result in. If not provided,
-  ///   uses the global default (set via [setDefaultLocation]) or local timezone.
+  ///   uses the global default (set via [setDefaultLocation]) or configured
+  ///   local location.
   /// - [isUtc]: If `true`, returns a UTC datetime. This is provided for
   ///   compatibility with [DateTime.fromMicrosecondsSinceEpoch].
   ///
@@ -347,7 +370,7 @@ class EasyDateTime implements DateTime {
   /// ## Examples
   ///
   /// ```dart
-  /// // Basic usage (uses default/local timezone)
+  /// // Basic usage (uses default or configured local location)
   /// final dt = EasyDateTime.fromMicrosecondsSinceEpoch(1733644200000000);
   ///
   /// // With explicit UTC
@@ -591,11 +614,31 @@ class EasyDateTime implements DateTime {
   ///
   /// ```dart
   /// // New York, Summer (EDT = UTC-4, DST active)
-  /// final summer = EasyDateTime(2025, 7, 15, 12, 0, location: TimeZones.newYork);
+  /// final summer = EasyDateTime(
+  ///   2025,
+  ///   7,
+  ///   15,
+  ///   12,
+  ///   0,
+  ///   0,
+  ///   0,
+  ///   0,
+  ///   TimeZones.newYork,
+  /// );
   /// print(summer.isDst);  // true
   ///
   /// // New York, Winter (EST = UTC-5, no DST)
-  /// final winter = EasyDateTime(2025, 1, 15, 12, 0, location: TimeZones.newYork);
+  /// final winter = EasyDateTime(
+  ///   2025,
+  ///   1,
+  ///   15,
+  ///   12,
+  ///   0,
+  ///   0,
+  ///   0,
+  ///   0,
+  ///   TimeZones.newYork,
+  /// );
   /// print(winter.isDst);  // false
   ///
   /// // Shanghai (no DST)
@@ -628,9 +671,9 @@ class EasyDateTime implements DateTime {
     );
   }
 
-  /// Returns this datetime converted to the system's local timezone.
+  /// Returns this datetime converted to the configured local location.
   ///
-  /// This is consistent with [DateTime.toLocal].
+  /// This uses the `timezone` package's configured local location.
   @override
   EasyDateTime toLocal() {
     return EasyDateTime._(TZDateTime.from(_tzDateTime.toLocal(), local));
@@ -1174,8 +1217,8 @@ class EasyDateTime implements DateTime {
 
   /// Sets the global default timezone for all [EasyDateTime] operations.
   ///
-  /// This is **optional**. If not set, [EasyDateTime] uses the system's
-  /// local timezone.
+  /// This is **optional**. If not set, [EasyDateTime] uses the configured
+  /// local location.
   ///
   /// ```dart
   /// EasyDateTime.setDefaultLocation(TimeZones.shanghai);
@@ -1191,14 +1234,14 @@ class EasyDateTime implements DateTime {
 
   /// Clears the global default timezone.
   ///
-  /// After calling this, [EasyDateTime] will use the system's local timezone.
+  /// After calling this, [EasyDateTime] will use the configured local location.
   static void clearDefaultLocation() => config.internalClearDefaultLocation();
 
   /// Gets the effective default location for EasyDateTime operations.
   ///
   /// Priority:
   /// 1. User-set global default (via [setDefaultLocation])
-  /// 2. System local timezone
+  /// 2. Configured local location
   ///
   /// **Throws [TimeZoneNotInitializedException]** if [initializeTimeZone]
   /// has not been called.

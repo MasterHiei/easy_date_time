@@ -7,7 +7,7 @@ void main() {
   // Initialize timezone database for IANA support.
   EasyDateTime.initializeTimeZone();
 
-  // Create instance using system local timezone or global default.
+  // Create an instance using the configured local location or global default.
   final now = EasyDateTime.now();
   print('Current time (Local): $now');
 

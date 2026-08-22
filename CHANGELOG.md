@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.2] - 2026-08-22
+
+### Fixed
+
+- Corrected public `EasyDateTime` constructor examples to pass `Location`
+  positionally.
+- Corrected `isoStrict` and fixed-versus-region offset-resolution descriptions.
+
+### Changed
+
+- Clarified configured local location behavior, implicit DST gap and overlap
+  resolution, and the `DateTime`-typed `copyWith()` compatibility boundary.
+
 ## [0.12.1] - 2026-08-11
 
 ### Fixed
@@ -115,12 +128,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `addCalendarDays(int days)`: Adds calendar days preserving local time (DST-safe).
-- `subtractCalendarDays(int days)`: Subtracts calendar days preserving local time (DST-safe).
+- `addCalendarDays(int days)`: Adds calendar days using local calendar semantics across DST transitions.
+- `subtractCalendarDays(int days)`: Subtracts calendar days using local calendar semantics across DST transitions.
 
 ### Changed
 
-- `tomorrow` / `yesterday`: Now use calendar day semantics instead of physical time (DST-safe).
+- `tomorrow` / `yesterday`: Now use calendar-day semantics instead of physical time across DST transitions.
 
 ## [0.5.2] - 2025-12-27
 

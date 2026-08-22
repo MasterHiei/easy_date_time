@@ -41,7 +41,7 @@ void main() {
   print('');
 
   // --------------------------------------------------------
-  // Calendar day arithmetic (DST-safe)
+  // Calendar day arithmetic (uses implicit resolution at DST transitions)
   // --------------------------------------------------------
   print('Calendar day arithmetic:');
   final march1 = EasyDateTime(2025, 3, 1, 12, 30);

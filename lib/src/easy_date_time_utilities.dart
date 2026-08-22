@@ -94,12 +94,14 @@ extension EasyDateTimeUtilities on EasyDateTime {
   /// Adds [days] calendar days to this datetime, preserving the time of day.
   ///
   /// Unlike [add] with `Duration(days: N)` which adds exactly N×24 hours,
-  /// this method adds calendar days while keeping the same local time.
-  /// This is DST-safe: on days with 23 or 25 hours, the time is preserved.
+  /// this method adds calendar days while keeping the same local time when it
+  /// is valid. A resulting gap or overlap uses the current implicit timezone
+  /// resolution.
   ///
   /// ```dart
   /// // DST spring forward (2025-03-09 in New York, 23-hour day):
-  /// final dt = EasyDateTime(2025, 3, 9, 0, 0, location: ny);
+  /// final ny = TimeZones.newYork;
+  /// final dt = EasyDateTime(2025, 3, 9, 0, 0, 0, 0, 0, ny);
   ///
   /// dt.addCalendarDays(1);       // 2025-03-10 00:00 ✓ (same time)
   /// dt.add(Duration(days: 1));   // 2025-03-10 01:00   (24h later)
@@ -116,11 +118,13 @@ extension EasyDateTimeUtilities on EasyDateTime {
   ///
   /// Unlike [subtract] with `Duration(days: N)` which subtracts exactly
   /// N×24 hours, this method subtracts calendar days while keeping the
-  /// same local time. This is DST-safe.
+  /// same local time when it is valid. A resulting gap or overlap uses the
+  /// current implicit timezone resolution.
   ///
   /// ```dart
   /// // DST fall back (2025-11-02 in New York, 25-hour day):
-  /// final dt = EasyDateTime(2025, 11, 3, 0, 0, location: ny);
+  /// final ny = TimeZones.newYork;
+  /// final dt = EasyDateTime(2025, 11, 3, 0, 0, 0, 0, 0, ny);
   ///
   /// dt.subtractCalendarDays(1);     // 2025-11-02 00:00 ✓ (same time)
   /// dt.subtract(Duration(days: 1)); // 2025-11-02 01:00   (24h earlier)
@@ -133,8 +137,8 @@ extension EasyDateTimeUtilities on EasyDateTime {
 
   /// Returns the next calendar day at the same local time.
   ///
-  /// Uses calendar day arithmetic, not physical time. On DST boundary days,
-  /// the time of day is preserved even though the day may have 23 or 25 hours.
+  /// Uses calendar day arithmetic, not physical time. A resulting DST gap or
+  /// overlap uses the current implicit timezone resolution.
   ///
   /// Equivalent to `addCalendarDays(1)`.
   ///
@@ -145,8 +149,8 @@ extension EasyDateTimeUtilities on EasyDateTime {
 
   /// Returns the previous calendar day at the same local time.
   ///
-  /// Uses calendar day arithmetic, not physical time. On DST boundary days,
-  /// the time of day is preserved even though the day may have 23 or 25 hours.
+  /// Uses calendar day arithmetic, not physical time. A resulting DST gap or
+  /// overlap uses the current implicit timezone resolution.
   ///
   /// Equivalent to `subtractCalendarDays(1)`.
   ///
