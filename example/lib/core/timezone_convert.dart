@@ -47,7 +47,7 @@ void main() {
   print('');
 
   // --------------------------------------------------------
-  // toLocal() - Convert to system local
+  // toLocal() - Convert to the configured local location
   // --------------------------------------------------------
   print('toLocal():');
   final local = shanghai.toLocal();

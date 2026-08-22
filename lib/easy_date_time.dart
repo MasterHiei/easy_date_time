@@ -11,7 +11,7 @@
 /// void main() {
 ///   EasyDateTime.initializeTimeZone();  // Required - call once at startup
 ///
-///   final now = EasyDateTime.now();  // Local time
+///   final now = EasyDateTime.now();  // Configured local location
 ///   final tokyo = EasyDateTime.now(location: TimeZones.tokyo);
 ///
 ///   // Parse with timezone preserved
@@ -26,7 +26,7 @@
 /// - **Time Preservation**: `parse()` preserves original time values
 /// - **Operators**: `+`, `-`, `<`, `>`, `==` for intuitive operations
 /// - **JSON Serialization**: ISO 8601 format, works with json_serializable
-/// - **Immutable**: Thread-safe, works with riverpod/bloc/freezed
+/// - **Immutable**: Suitable for value-oriented application state
 library;
 
 export 'package:timezone/timezone.dart' show Location, getLocation;

@@ -22,6 +22,7 @@ EasyDateTime.parse('2026-01-18T10:30:00+08:00').hour; // 10
 ## Documentation
 
 - [Migration guide](doc/migration/v0_12_migration_guide.md)
+- [Project documentation guide](doc/README.md)
 - [API reference](https://pub.dev/documentation/easy_date_time/latest/)
 - [Contribution guide](CONTRIBUTING.md)
 
@@ -31,7 +32,7 @@ Stable release on pub.dev:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.12.1
+  easy_date_time: ^0.12.2
 ```
 
 ## Requirements
@@ -71,7 +72,7 @@ If you omit `options`, `parse()` keeps the legacy region-inference path for migr
 |---|---|---|
 | `legacy` | Preserve historical behavior | Region-based offset resolution |
 | `compatible` | Default when explicit `options` are passed | Permissive parsing with normalization |
-| `isoStrict` | Enforce strict validation | Rejects calendar overflow and strict-invalid inputs |
+| `isoStrict` | Strict calendar validation | Rejects invalid calendar dates; it is not ISO-only parsing |
 
 ### Offset resolution
 
@@ -96,18 +97,31 @@ final dt = EasyDateTime.parse(
 
 ```dart
 final tokyoNow = EasyDateTime.now(location: TimeZones.tokyo);
-final meeting = EasyDateTime(2026, 5, 3, 9, 30, location: TimeZones.london);
+final meeting = EasyDateTime(
+  2026,
+  5,
+  3,
+  9,
+  30,
+  0,
+  0,
+  0,
+  TimeZones.london,
+);
 ```
 
-### Run DST-safe calendar arithmetic
+### Run calendar arithmetic across DST transitions
 
 ```dart
 final ny = TimeZones.newYork;
-final beforeDst = EasyDateTime(2025, 3, 9, 0, 0, location: ny);
+final beforeDst = EasyDateTime(2025, 3, 9, 0, 0, 0, 0, 0, ny);
 
 final wallClock = beforeDst.addCalendarDays(1);       // 2025-03-10 00:00
 final physical = beforeDst.add(const Duration(days: 1)); // 2025-03-10 01:00
 ```
+
+If a calculated local time falls in a DST gap or overlap, the timezone
+database applies its implicit, region-specific resolution.
 
 ### Format output
 
@@ -138,6 +152,13 @@ final restored = EasyDateTime.fromIso8601String(
 | `DateTime.toLocal()` | `EasyDateTime.toLocal()` |
 | No IANA location model | `inLocation(TimeZones.xxx)` |
 | No global location override | `setDefaultLocation(...)` / `clearDefaultLocation()` |
+
+### Compatibility boundary
+
+`EasyDateTime` can be passed to APIs that accept `DateTime`. Dart extension
+methods dispatch from the static receiver type: calling `copyWith()` through a
+`DateTime` reference returns a core `DateTime`, so use `EasyDateTime` APIs when
+an IANA location must remain available.
 
 ## Migration notes for v0.12
 

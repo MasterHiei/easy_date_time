@@ -12,19 +12,19 @@ void main() {
   setUpAll(() {
     tz.initializeTimeZones();
     EasyDateTime.initializeTimeZone();
-    // Get local timezone reference after initialization
+    // Get the configured local location after initialization.
     localTimeZone = local;
   });
 
   tearDown(() {
-    // Reset global default after each test to local timezone
+    // Reset the global default after each test to the configured local location.
     EasyDateTime.clearDefaultLocation();
   });
 
   group('EasyDateTime Core', () {
     group('Constructors', () {
       test(
-        'EasyDateTime(y, m, d...) uses default location (local if unset)',
+        'EasyDateTime(y, m, d...) uses configured local location if unset',
         () {
           final dt = EasyDateTime(2025, 12, 1, 10, 30, 45);
 
@@ -34,7 +34,7 @@ void main() {
           expect(dt.hour, 10);
           expect(dt.minute, 30);
           expect(dt.second, 45);
-          // Default is local timezone
+          // Default is the configured local location.
           expect(dt.location, localTimeZone);
         },
       );
@@ -91,7 +91,7 @@ void main() {
         final utcDt = DateTime.utc(2025, 12, 1, 0, 0);
         final easyDt = EasyDateTime.fromDateTime(utcDt);
 
-        // Converts to local timezone
+        // Converts to the configured local location.
         expect(easyDt.location, localTimeZone);
         expect(easyDt.millisecondsSinceEpoch, utcDt.millisecondsSinceEpoch);
       });
@@ -375,13 +375,16 @@ void main() {
         expect(utc.day, 1);
       });
 
-      test('toLocal() converts to system local timezone preserving moment', () {
-        final utc = EasyDateTime.utc(2025, 12, 1, 12, 0);
-        final local = utc.toLocal();
+      test(
+        'toLocal() converts to the configured local location preserving moment',
+        () {
+          final utc = EasyDateTime.utc(2025, 12, 1, 12, 0);
+          final local = utc.toLocal();
 
-        // Same moment, but in local timezone
-        expect(local.millisecondsSinceEpoch, utc.millisecondsSinceEpoch);
-      });
+          // Same moment, represented in the configured local location.
+          expect(local.millisecondsSinceEpoch, utc.millisecondsSinceEpoch);
+        },
+      );
 
       test('toDateTime() converts to equivalent standard DateTime', () {
         final tokyo = getLocation('Asia/Tokyo');
@@ -470,11 +473,14 @@ void main() {
     });
 
     group('Default value behavior', () {
-      test('now() uses local timezone when no location specified', () {
-        final now = EasyDateTime.now();
-        expect(now, isNotNull);
-        expect(now.location, isNotNull);
-      });
+      test(
+        'now() uses configured local location when no location is specified',
+        () {
+          final now = EasyDateTime.now();
+          expect(now, isNotNull);
+          expect(now.location, isNotNull);
+        },
+      );
 
       test(
         'fromDateTime() uses default timezone when location not provided',

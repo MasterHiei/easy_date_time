@@ -6,16 +6,18 @@ enum EasyParseMode {
   /// Preserve the current permissive parsing behavior.
   compatible,
 
-  /// Apply strict ISO parsing rules.
+  /// Apply strict calendar validation with consistent date separators.
+  ///
+  /// This mode is not limited to ISO 8601 input.
   isoStrict,
 }
 
 /// How timezone offsets should be resolved during parsing.
 enum OffsetResolution {
-  /// Resolve offsets to a matching fixed IANA location when possible.
+  /// Preserve the numeric offset as a synthetic `UTC±HH:MM` location.
   fixed,
 
-  /// Preserve or resolve offsets using region-based behavior.
+  /// Infer an IANA region from the numeric offset when possible.
   region,
 }
 

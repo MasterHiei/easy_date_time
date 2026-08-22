@@ -131,7 +131,7 @@ String _formatTimezoneOffsetOrZ(EasyDateTime date) {
 
 /// Predefined date/time format patterns.
 ///
-/// Use these constants with [EasyDateTime.format] for common formats:
+/// Use these constants with [EasyDateTimeFormatting.format] for common formats:
 ///
 /// ```dart
 /// final dt = EasyDateTime.now();
@@ -309,7 +309,7 @@ extension EasyDateTimeFormatting on EasyDateTime {
 
 /// A pre-compiled date formatter for high-performance scenarios.
 ///
-/// Unlike [EasyDateTime.format] which parses the pattern on every call,
+/// Unlike [EasyDateTimeFormatting.format] which parses the pattern on every call,
 /// [EasyDateTimeFormatter] parses the pattern once during initialization.
 /// This provides significant performance benefits in loops or hot paths.
 ///
