@@ -21,10 +21,7 @@ final class CoverageCheckResult {
 }
 
 /// Evaluates the coverage CLI [args] without terminating the current process.
-CoverageCheckResult checkCoverage(
-  List<String> args, {
-  Directory? currentDirectory,
-}) {
+CoverageCheckResult checkCoverage(List<String> args) {
   if (args.length != 2) {
     return const CoverageCheckResult(
       exitCode: 64,
@@ -44,8 +41,7 @@ CoverageCheckResult checkCoverage(
 
   final min = double.parse(args[1]);
   final lines = file.readAsLinesSync();
-  final packageRoot = currentDirectory ?? Directory.current;
-  final packageLibPath = '${packageRoot.absolute.path}/lib'.replaceAll(
+  final packageLibPath = '${Directory.current.absolute.path}/lib'.replaceAll(
     '\\',
     '/',
   );
