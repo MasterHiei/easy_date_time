@@ -39,8 +39,9 @@ operational details, or claims that cannot be verified from the repository.
 2. Make the smallest coherent change; do not add speculative abstractions.
 3. Run the narrowest relevant checks, then inspect the final diff.
 4. For public API, behavior, or terminology changes, update the sources named
-   in `doc/README.md`. Do not add design records or plans to the public
-   repository unless the user explicitly approves their publication.
+   in `doc/README.md`. Do not add plans to the public repository. Add an ADR
+   only for an accepted, durable decision that meets the criteria in
+   `doc/agents/domain.md` and has explicit maintainer approval.
 
 ## Git safety
 
@@ -50,3 +51,15 @@ operational details, or claims that cannot be verified from the repository.
   destructive filesystem commands unless the user has explicitly requested the
   exact operation.
 - Generated `doc/api/` output is ignored. Do not edit or stage it.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and specs for this repo live in GitHub Issues. See
+`doc/agents/issue-tracker.md`.
+
+### Domain docs
+
+This is a single-context repository. Read `CONTEXT.md` for domain vocabulary
+and `doc/README.md` for documentation authority. See `doc/agents/domain.md`.
