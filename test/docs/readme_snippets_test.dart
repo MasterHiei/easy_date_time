@@ -73,6 +73,7 @@ void main() {
   });
 
   test('README migration mapping strict true equals isoStrict mode', () {
+    // ignore: deprecated_member_use_from_same_package
     final legacyStrict = EasyDateTime.tryParse('2026-02-30', strict: true);
     final optionsStrict = EasyDateTime.tryParse(
       '2026-02-30',

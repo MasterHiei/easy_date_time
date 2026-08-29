@@ -113,6 +113,7 @@ void main() {
 
     test('ISO factory forwards strict parsing behavior', () {
       expect(
+        // ignore: deprecated_member_use_from_same_package
         () => EasyDateTime.fromIso8601String('2025-02-30', strict: true),
         throwsA(
           isA<InvalidDateFormatException>().having(

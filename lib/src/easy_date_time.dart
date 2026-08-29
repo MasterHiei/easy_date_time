@@ -805,6 +805,8 @@ class EasyDateTime implements DateTime {
     return EasyDateTime.parse(
       dateTimeString,
       location: location,
+      // Preserve the deprecated argument as part of the legacy factory API.
+      // ignore: deprecated_member_use_from_same_package
       strict: strict,
       options: options,
     );
