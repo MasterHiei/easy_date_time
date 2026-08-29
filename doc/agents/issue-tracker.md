@@ -23,8 +23,8 @@ not grant that authorization.
 ## Specification source
 
 Use GitHub Issues as the durable source for repository specifications. A pull
-request should link the relevant issue when one exists; it is not a replacement
-for missing requirements.
+request should link the relevant issue when one exists; it does not supply
+missing requirements.
 
 ## Skill routing
 

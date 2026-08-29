@@ -3,7 +3,7 @@ library;
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
 
-/// Tests for PR #7 changes: DateTime compatibility constants and static methods.
+/// Tests for DateTime-aligned constants and static configuration methods.
 ///
 /// These tests verify that:
 /// 1. Weekday and month constants match DateTime's constants.
@@ -17,7 +17,7 @@ void main() {
     EasyDateTime.clearDefaultLocation();
   });
 
-  group('DateTime Compatibility Constants', () {
+  group('DateTime-Aligned Constants', () {
     group('Weekday constants', () {
       final constants = [
         (
@@ -142,7 +142,7 @@ void main() {
     });
   });
 
-  group('DateTime Interface Compliance', () {
+  group('DateTime Interoperability', () {
     test('EasyDateTime is assignable to DateTime', () {
       final easyDt = EasyDateTime.utc(2025, 12, 1, 10, 30);
       // EasyDateTime implements DateTime.

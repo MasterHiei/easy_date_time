@@ -1,5 +1,5 @@
 name: easy_date_time
-description: A DateTime-compatible enhancement with explicit IANA timezone support.
+description: An enhanced DateTime implementation with explicit IANA timezone support.
 version: 0.12.3
 homepage: https://github.com/MasterHiei/easy_date_time
 repository: https://github.com/MasterHiei/easy_date_time

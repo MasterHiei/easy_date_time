@@ -260,7 +260,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- DateTime compatibility constants: `monday`-`sunday`, `january`-`december`, `daysPerWeek`, `monthsPerYear`.
+- DateTime-aligned constants: `monday`-`sunday`, `january`-`december`, `daysPerWeek`, `monthsPerYear`.
 - Static methods: `EasyDateTime.setDefaultLocation()`, `.getDefaultLocation()`, `.clearDefaultLocation()`, `.effectiveDefaultLocation`, `.initializeTimeZone()`, `.isTimeZoneInitialized`.
 
 ### Changed

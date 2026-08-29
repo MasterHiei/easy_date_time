@@ -6,7 +6,8 @@
 [![codecov](https://codecov.io/gh/MasterHiei/easy_date_time/branch/main/graph/badge.svg)](https://codecov.io/gh/MasterHiei/easy_date_time)
 [![License](https://img.shields.io/badge/license-BSD--2--Clause-blue.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
-A `DateTime`-compatible API for Dart and Flutter with explicit IANA timezone handling and deterministic parse policies.
+An enhanced `DateTime` implementation for Dart and Flutter with explicit IANA
+timezone handling and deterministic parse policies.
 
 ## Why this package
 
@@ -17,7 +18,8 @@ DateTime.parse('2026-01-18T10:30:00+08:00').hour;    // 2
 EasyDateTime.parse('2026-01-18T10:30:00+08:00').hour; // 10
 ```
 
-`easy_date_time` keeps `DateTime` API compatibility while making timezone behavior explicit.
+`EasyDateTime` implements `DateTime`, so its values can be supplied to APIs
+that accept `DateTime`, while timezone behavior remains explicit.
 
 ## Documentation
 

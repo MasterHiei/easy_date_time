@@ -54,5 +54,5 @@ void main() async {
   print('Why it works:');
   print('  EasyDateTime implements DateTime interface');
   print('  DateFormat.format() accepts DateTime parameter');
-  print('  → EasyDateTime can be used directly!');
+  print('  → EasyDateTime can be supplied directly');
 }

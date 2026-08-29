@@ -1,6 +1,6 @@
 // ignore_for_file: avoid_print
 
-/// DateTime Compatibility Example
+/// DateTime Interoperability Example
 ///
 /// Demonstrates: EasyDateTime interoperability with DateTime APIs.
 /// Run: dart run example/lib/core/datetime_compatibility.dart
@@ -11,7 +11,7 @@ import 'package:easy_date_time/easy_date_time.dart';
 void main() {
   EasyDateTime.initializeTimeZone();
 
-  print('=== DateTime Compatibility ===\n');
+  print('=== DateTime Interoperability ===\n');
 
   // --------------------------------------------------------
   // EasyDateTime implements DateTime

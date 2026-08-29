@@ -44,7 +44,7 @@ No code generation needed. Run directly:
 | [timezone_convert.dart](lib/core/timezone_convert.dart) | Timezone conversion |
 | [arithmetic.dart](lib/core/arithmetic.dart) | Date arithmetic |
 | [date_utils.dart](lib/core/date_utils.dart) | isToday, startOfDay, startOf/endOf |
-| [datetime_compatibility.dart](lib/core/datetime_compatibility.dart) | DateTime interface compatibility |
+| [datetime_compatibility.dart](lib/core/datetime_compatibility.dart) | DateTime parameter interoperability and static extension behavior |
 | [json_serialization.dart](lib/core/json_serialization.dart) | JSON serialization |
 | [formatting.dart](lib/core/formatting.dart) | Output formats using format() and DateTimeFormats |
 | [formatter_example.dart](lib/core/formatter_example.dart) | Pre-compiled formatter for performance |

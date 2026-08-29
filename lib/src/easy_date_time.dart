@@ -13,14 +13,13 @@ part 'easy_date_time_utilities.dart';
 
 /// A timezone-aware DateTime implementation.
 ///
-/// [EasyDateTime] implements Dart's [DateTime] interface, extending it with
-/// full IANA timezone support. Unlike [DateTime] which only supports UTC and
-/// local time, [EasyDateTime] can represent any IANA timezone while remaining
-/// usable with APIs that accept [DateTime]. Dart extension members still use
-/// the static receiver type and can return a core [DateTime].
+/// [EasyDateTime] implements Dart's [DateTime] interface and adds full IANA
+/// timezone support. Its values can be supplied to APIs that accept [DateTime].
+/// This does not change static extension dispatch: extension members use the
+/// receiver's static type and can return a core [DateTime].
 ///
 /// **Key characteristics:**
-/// - Implements [DateTime] — can be used anywhere DateTime is expected
+/// - Implements [DateTime] and can be supplied to [DateTime]-typed parameters
 /// - Supports any IANA timezone (Asia/Tokyo, America/New_York, etc.)
 /// - Preserves original time values when parsing (no implicit UTC conversion)
 /// - Immutable and safe to pass between isolates
@@ -270,7 +269,7 @@ class EasyDateTime implements DateTime {
   /// // Basic usage (uses default or configured local location)
   /// final dt = EasyDateTime.fromMillisecondsSinceEpoch(milliseconds);
   ///
-  /// // With explicit UTC (DateTime compatible)
+  /// // With explicit UTC (matching DateTime UTC construction)
   /// final utc = EasyDateTime.fromMillisecondsSinceEpoch(
   ///   milliseconds,
   ///   isUtc: true,
@@ -1144,10 +1143,10 @@ class EasyDateTime implements DateTime {
   }
 
   // ============================================================
-  // DateTime Compatibility Constants
+  // DateTime-Aligned Constants
   // ============================================================
 
-  /// Weekday constants for 'drop in' compatibility with [DateTime].
+  /// Weekday constants matching [DateTime].
   ///
   /// These values follow ISO 8601 standard:
   /// - [monday] = 1
@@ -1175,7 +1174,7 @@ class EasyDateTime implements DateTime {
   /// Number of days per week.
   static const int daysPerWeek = DateTime.daysPerWeek;
 
-  /// Month constants for 'drop in' compatibility with [DateTime].
+  /// Month constants matching [DateTime].
   ///
   /// Values range from 1 ([january]) to 12 ([december]).
   static const int january = DateTime.january;
