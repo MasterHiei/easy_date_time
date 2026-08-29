@@ -5,18 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.3] - 2026-08-30
+
+### Changed
+
+- Verified compatibility with Dart 3.13 while retaining Dart 3.10 as the
+  minimum supported SDK.
+
 ## [0.12.2] - 2026-08-22
 
 ### Fixed
 
 - Corrected public `EasyDateTime` constructor examples to pass `Location`
   positionally.
-- Corrected `isoStrict` and fixed-versus-region offset-resolution descriptions.
+- Corrected `isoStrict` semantics and how `fixed` and `region` resolve numeric
+  offsets.
 
 ### Changed
 
-- Clarified configured local location behavior, implicit DST gap and overlap
-  resolution, and the `DateTime`-typed `copyWith()` compatibility boundary.
+- Clarified the configured local location used when no location is supplied,
+  including implicit DST gap and overlap resolution.
+- Clarified that `copyWith()` called through a `DateTime` reference uses
+  `DateTime.copyWith()`.
 
 ## [0.12.1] - 2026-08-11
 
@@ -24,31 +34,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `fromIso8601String()` now accepts parse options, allowing fixed-offset ISO
   values to round-trip without region inference.
-- `TimeZones.availableTimezones` now reports an uninitialized timezone database
-  consistently with the rest of the timezone catalog API.
-- UTC values now retain `UTC` as their public location name with the latest
-  compatible `timezone` data.
+- `TimeZones.availableTimezones` now throws
+  `TimeZoneNotInitializedException` before timezone initialization.
+- UTC values now report `UTC` as their public location name even when the
+  underlying timezone database uses `Etc/UTC`.
 
 ## [0.12.0] - 2026-05-03
 
 ### Added
 
-- Added parse policy types: `EasyParseMode`, `OffsetResolution`, and `EasyParseOptions`.
-- Added structured parse diagnostics metadata for parse failures and offset resolution failures.
-- Added a migration guide for the parsing policy model (`doc/migration/v0_12_migration_guide.md`).
+- Added `EasyParseOptions`, `EasyParseMode`, and `OffsetResolution` to select
+  parsing and numeric-offset resolution policies.
+- Added `ParseDiagnostics` and `ParseFailureStage` to parsing failures.
+- Added [`doc/migration/v0_12_migration_guide.md`]
+  (doc/migration/v0_12_migration_guide.md) for migration to the parsing policy
+  model.
 
 ### Changed
 
-- Updated the parse API to support `options`-driven behavior while preserving the legacy default parse path for migration compatibility.
+- `parse()` and `tryParse()` now accept `options`; calls without options retain
+  the legacy parse path for migration compatibility.
 
 ### Deprecated
 
-- Deprecated `strict` parameter in `parse()` and `tryParse()` in favor of `EasyParseOptions.mode`.
+- Deprecated the `strict` parameter in `parse()` and `tryParse()` in favor of
+  `EasyParseOptions.mode`.
 
 ### Fixed
 
-- Fixed parse behavior branching to avoid identity-based options detection.
-- Strengthened fixed vs region offset-resolution behavior and diagnostics propagation.
+- Fixed runtime-created `EasyParseOptions` to use the same policy as equivalent
+  const options.
+- Fixed offset-resolution failures to retain policy-aware diagnostics.
 
 ## [0.11.1] - 2026-01-22
 
@@ -175,7 +191,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `EasyDateTime` now **implements `DateTime`** — true drop-in replacement for any `DateTime` API.
+- `EasyDateTime` now implements `DateTime`, allowing it to be supplied to APIs
+  that accept `DateTime`.
 - `startOf(DateTimeUnit)` / `endOf(DateTimeUnit)`: Truncate to time unit boundaries.
 - `DateTimeUnit` enum: year, month, day, hour, minute, second.
 
@@ -252,7 +269,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- DateTime compatibility constants: `monday`-`sunday`, `january`-`december`, `daysPerWeek`, `monthsPerYear`.
+- DateTime-aligned constants: `monday`-`sunday`, `january`-`december`, `daysPerWeek`, `monthsPerYear`.
 - Static methods: `EasyDateTime.setDefaultLocation()`, `.getDefaultLocation()`, `.clearDefaultLocation()`, `.effectiveDefaultLocation`, `.initializeTimeZone()`, `.isTimeZoneInitialized`.
 
 ### Changed

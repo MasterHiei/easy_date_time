@@ -2,15 +2,16 @@
 
 This package models date-time values that retain explicit timezone semantics.
 Its parsing vocabulary distinguishes exact numeric offsets from IANA regions,
-while its public values remain compatible with Dart's `DateTime` contract.
+while its public values implement Dart's `DateTime` interface.
 
 ## Language
 
-**DateTime-compatible enhancement**:
+**Enhanced DateTime implementation**:
 An additive value that can be supplied to APIs accepting `DateTime`, while
 offering explicit timezone and calendar semantics. Dart extension dispatch
 still follows the static receiver type.
-_Avoid_: new temporal type system, `DateTime` fork
+_Avoid_: claims that erase static-dispatch or return-type differences, new
+temporal type system, `DateTime` fork
 
 **Instant-preserving conversion**:
 Viewing one instant in a different IANA location, which changes local fields as

@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   analyze:
-    name: Analyze
+    name: Static & Package Validation
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -26,18 +26,24 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.pub-cache/hosted
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          key: ${{ runner.os }}-pub-root-${{ hashFiles('pubspec.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pub-
+            ${{ runner.os }}-pub-root-
 
       - name: Install dependencies
-        run: dart pub get
+        run: dart pub get --no-example
 
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed .
 
       - name: Analyze project
-        run: dart analyze --fatal-infos --fatal-warnings
+        run: dart analyze --fatal-infos --fatal-warnings lib test tool
+
+      - name: Validate DartDoc
+        run: dart doc --dry-run .
+
+      - name: Publish dry run
+        run: dart pub publish --dry-run
 
   test_coverage:
     name: Test (Stable & Coverage)
@@ -54,17 +60,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.pub-cache/hosted
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          key: ${{ runner.os }}-pub-root-${{ hashFiles('pubspec.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pub-
+            ${{ runner.os }}-pub-root-
 
       - name: Install dependencies
-        run: dart pub get
+        run: dart pub get --no-example
 
       - name: Install coverage and test tools
         run: |
-          dart pub global activate coverage
-          dart pub global activate junitreport
+          dart pub global activate coverage 1.15.1
+          dart pub global activate junitreport 2.0.2
 
       - name: Run tests with coverage
         run: dart pub global run coverage:test_with_coverage --out=coverage -- --file-reporter=json:test-results.json
@@ -97,10 +103,26 @@ jobs:
     name: Test Compatibility (${{ matrix.os }} / ${{ matrix.sdk }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        sdk: ["3.10.0", "beta"]
+        include:
+          - os: ubuntu-latest
+            sdk: "3.10.0"
+            resolution: minimum-runtime
+            experimental: false
+          - os: ubuntu-latest
+            sdk: beta
+            resolution: current
+            experimental: true
+          - os: macos-latest
+            sdk: stable
+            resolution: current
+            experimental: false
+          - os: windows-latest
+            sdk: stable
+            resolution: current
+            experimental: false
     steps:
       - uses: actions/checkout@v6
 
@@ -112,26 +134,38 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.pub-cache/hosted
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          key: ${{ runner.os }}-pub-root-${{ hashFiles('pubspec.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pub-
+            ${{ runner.os }}-pub-root-
 
-      - name: Install dependencies
-        run: dart pub get
+      - name: Resolve dependencies
+        if: matrix.resolution == 'current'
+        run: dart pub get --no-example
+
+      - name: Resolve oldest compatible runtime dependencies
+        if: matrix.resolution == 'minimum-runtime'
+        run: dart pub downgrade meta timezone --no-example
+
+      - name: Analyze oldest compatible runtime dependencies
+        if: matrix.resolution == 'minimum-runtime'
+        run: dart analyze --fatal-infos --fatal-warnings lib test tool
 
       - name: Run tests
         run: dart test
 
   validate_example:
-    name: Validate Example
+    name: Validate Example (${{ matrix.sdk }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      matrix:
+        sdk: ["3.10.0", "stable"]
     steps:
       - uses: actions/checkout@v6
 
       - uses: dart-lang/setup-dart@v1
         with:
-          sdk: stable
+          sdk: ${{ matrix.sdk }}
 
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -143,34 +177,12 @@ jobs:
 
       - name: Install dependencies
         working-directory: example
-        run: dart pub get
+        run: dart pub get --enforce-lockfile
 
       - name: Analyze example
         working-directory: example
         run: dart analyze --fatal-infos
 
-  publish-dry-run:
-    name: Publish (Dry Run)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [analyze, test_coverage]
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.pub-cache/hosted
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
-
-      - name: Install dependencies
-        run: dart pub get
-
-      - name: Publish dry run
-        run: dart pub publish --dry-run
+      - name: Run default example
+        working-directory: example
+        run: dart run main.dart

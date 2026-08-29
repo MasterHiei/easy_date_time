@@ -1,8 +1,8 @@
 // ignore_for_file: avoid_print
 
-/// DateTime Compatibility Example
+/// DateTime Interoperability Example
 ///
-/// Demonstrates: EasyDateTime as DateTime drop-in replacement.
+/// Demonstrates: EasyDateTime interoperability with DateTime APIs.
 /// Run: dart run example/lib/core/datetime_compatibility.dart
 library;
 
@@ -11,7 +11,7 @@ import 'package:easy_date_time/easy_date_time.dart';
 void main() {
   EasyDateTime.initializeTimeZone();
 
-  print('=== DateTime Compatibility ===\n');
+  print('=== DateTime Interoperability ===\n');
 
   // --------------------------------------------------------
   // EasyDateTime implements DateTime
@@ -26,6 +26,8 @@ void main() {
   // Works with functions expecting DateTime
   final year = extractYear(easyDt);
   print('  extractYear(easyDt): $year');
+  final coreCopy = dt.copyWith(isUtc: false);
+  print('  DateTime-typed copyWith returns: ${coreCopy.runtimeType}');
   print('');
 
   // --------------------------------------------------------

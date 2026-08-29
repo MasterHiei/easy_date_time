@@ -20,8 +20,11 @@ void main() {
   print('New York time (America/New_York): $newYork');
   print('Is same moment: ${tokyo.isAtSameMomentAs(newYork)}');
 
-  // Parse ISO 8601 string while preserving original offset and local time.
-  final parsed = EasyDateTime.parse('2026-01-18T10:30:00+08:00');
+  // Parse ISO 8601 while preserving the numeric offset and local time.
+  final parsed = EasyDateTime.parse(
+    '2026-01-18T10:30:00+08:00',
+    options: const EasyParseOptions(),
+  );
   print('\nParsed: 2026-01-18T10:30:00+08:00');
   print('Hour: ${parsed.hour}');
   print('Location: ${parsed.locationName}');

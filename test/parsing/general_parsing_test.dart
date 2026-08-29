@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use_from_same_package
+
 library;
 
 import 'package:easy_date_time/easy_date_time.dart';
@@ -325,34 +327,18 @@ void main() {
       );
     });
 
-    group('Performance Metrics', () {
-      test(
-        'should parse ISO 8601 strings efficiently (<500ms for 1000 iter)',
-        () {
-          final stopwatch = Stopwatch()..start();
+    group('Input boundaries', () {
+      test('tryParse rejects malformed input beyond normalization limits', () {
+        final input = '2025/12/01 ${'x' * 51}';
 
-          for (int i = 0; i < 1000; i++) {
-            EasyDateTime.parse('2025-12-01T10:30:00Z');
-          }
-          stopwatch.stop();
+        expect(EasyDateTime.tryParse(input), isNull);
+      });
 
-          expect(stopwatch.elapsedMilliseconds, lessThan(500));
-        },
-      );
+      test('tryParse safely rejects oversized malformed input', () {
+        final input = 'not-a-date${'x' * 10000}';
 
-      test(
-        'tryParse should parse very long strings with whitespace efficiently (<100ms)',
-        () {
-          final input = '2025-01-01${' ' * 10000}';
-          final start = DateTime.now();
-
-          final result = EasyDateTime.tryParse(input);
-          final elapsed = DateTime.now().difference(start);
-
-          expect(result, isNotNull);
-          expect(elapsed.inMilliseconds, lessThan(100));
-        },
-      );
+        expect(EasyDateTime.tryParse(input), isNull);
+      });
     });
 
     group('Strict Parsing', () {

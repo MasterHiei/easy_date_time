@@ -34,7 +34,7 @@ void main() {
       expect(match!.group(1), version);
     });
 
-    test('CHANGELOG top section is unreleased or matches pubspec version', () {
+    test('CHANGELOG top section matches pubspec version', () {
       final version = packageVersion();
       final changelog = readFile('CHANGELOG.md');
       final match = RegExp(
@@ -43,7 +43,7 @@ void main() {
       ).firstMatch(changelog);
 
       expect(match, isNotNull, reason: 'CHANGELOG must have a top section');
-      expect(match!.group(1), anyOf('Unreleased', version));
+      expect(match!.group(1), version);
     });
   });
 

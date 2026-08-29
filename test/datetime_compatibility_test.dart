@@ -3,7 +3,7 @@ library;
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
 
-/// Tests for PR #7 changes: DateTime compatibility constants and static methods.
+/// Tests for DateTime-aligned constants and static configuration methods.
 ///
 /// These tests verify that:
 /// 1. Weekday and month constants match DateTime's constants.
@@ -17,47 +17,56 @@ void main() {
     EasyDateTime.clearDefaultLocation();
   });
 
-  group('DateTime Compatibility Constants', () {
+  group('DateTime-Aligned Constants', () {
     group('Weekday constants', () {
-      test('monday matches DateTime.monday', () {
-        expect(EasyDateTime.monday, DateTime.monday);
-        expect(EasyDateTime.monday, 1);
-      });
+      final constants = [
+        (
+          name: 'monday',
+          actual: EasyDateTime.monday,
+          expected: DateTime.monday,
+        ),
+        (
+          name: 'tuesday',
+          actual: EasyDateTime.tuesday,
+          expected: DateTime.tuesday,
+        ),
+        (
+          name: 'wednesday',
+          actual: EasyDateTime.wednesday,
+          expected: DateTime.wednesday,
+        ),
+        (
+          name: 'thursday',
+          actual: EasyDateTime.thursday,
+          expected: DateTime.thursday,
+        ),
+        (
+          name: 'friday',
+          actual: EasyDateTime.friday,
+          expected: DateTime.friday,
+        ),
+        (
+          name: 'saturday',
+          actual: EasyDateTime.saturday,
+          expected: DateTime.saturday,
+        ),
+        (
+          name: 'sunday',
+          actual: EasyDateTime.sunday,
+          expected: DateTime.sunday,
+        ),
+        (
+          name: 'daysPerWeek',
+          actual: EasyDateTime.daysPerWeek,
+          expected: DateTime.daysPerWeek,
+        ),
+      ];
 
-      test('tuesday matches DateTime.tuesday', () {
-        expect(EasyDateTime.tuesday, DateTime.tuesday);
-        expect(EasyDateTime.tuesday, 2);
-      });
-
-      test('wednesday matches DateTime.wednesday', () {
-        expect(EasyDateTime.wednesday, DateTime.wednesday);
-        expect(EasyDateTime.wednesday, 3);
-      });
-
-      test('thursday matches DateTime.thursday', () {
-        expect(EasyDateTime.thursday, DateTime.thursday);
-        expect(EasyDateTime.thursday, 4);
-      });
-
-      test('friday matches DateTime.friday', () {
-        expect(EasyDateTime.friday, DateTime.friday);
-        expect(EasyDateTime.friday, 5);
-      });
-
-      test('saturday matches DateTime.saturday', () {
-        expect(EasyDateTime.saturday, DateTime.saturday);
-        expect(EasyDateTime.saturday, 6);
-      });
-
-      test('sunday matches DateTime.sunday', () {
-        expect(EasyDateTime.sunday, DateTime.sunday);
-        expect(EasyDateTime.sunday, 7);
-      });
-
-      test('daysPerWeek matches DateTime.daysPerWeek', () {
-        expect(EasyDateTime.daysPerWeek, DateTime.daysPerWeek);
-        expect(EasyDateTime.daysPerWeek, 7);
-      });
+      for (final constant in constants) {
+        test('${constant.name} matches DateTime', () {
+          expect(constant.actual, constant.expected);
+        });
+      }
 
       test('weekday property returns correct constant', () {
         final monday = EasyDateTime.utc(2025, 12, 1);
@@ -69,70 +78,59 @@ void main() {
     });
 
     group('Month constants', () {
-      test('january matches DateTime.january', () {
-        expect(EasyDateTime.january, DateTime.january);
-        expect(EasyDateTime.january, 1);
-      });
+      final constants = [
+        (
+          name: 'january',
+          actual: EasyDateTime.january,
+          expected: DateTime.january,
+        ),
+        (
+          name: 'february',
+          actual: EasyDateTime.february,
+          expected: DateTime.february,
+        ),
+        (name: 'march', actual: EasyDateTime.march, expected: DateTime.march),
+        (name: 'april', actual: EasyDateTime.april, expected: DateTime.april),
+        (name: 'may', actual: EasyDateTime.may, expected: DateTime.may),
+        (name: 'june', actual: EasyDateTime.june, expected: DateTime.june),
+        (name: 'july', actual: EasyDateTime.july, expected: DateTime.july),
+        (
+          name: 'august',
+          actual: EasyDateTime.august,
+          expected: DateTime.august,
+        ),
+        (
+          name: 'september',
+          actual: EasyDateTime.september,
+          expected: DateTime.september,
+        ),
+        (
+          name: 'october',
+          actual: EasyDateTime.october,
+          expected: DateTime.october,
+        ),
+        (
+          name: 'november',
+          actual: EasyDateTime.november,
+          expected: DateTime.november,
+        ),
+        (
+          name: 'december',
+          actual: EasyDateTime.december,
+          expected: DateTime.december,
+        ),
+        (
+          name: 'monthsPerYear',
+          actual: EasyDateTime.monthsPerYear,
+          expected: DateTime.monthsPerYear,
+        ),
+      ];
 
-      test('february matches DateTime.february', () {
-        expect(EasyDateTime.february, DateTime.february);
-        expect(EasyDateTime.february, 2);
-      });
-
-      test('march matches DateTime.march', () {
-        expect(EasyDateTime.march, DateTime.march);
-        expect(EasyDateTime.march, 3);
-      });
-
-      test('april matches DateTime.april', () {
-        expect(EasyDateTime.april, DateTime.april);
-        expect(EasyDateTime.april, 4);
-      });
-
-      test('may matches DateTime.may', () {
-        expect(EasyDateTime.may, DateTime.may);
-        expect(EasyDateTime.may, 5);
-      });
-
-      test('june matches DateTime.june', () {
-        expect(EasyDateTime.june, DateTime.june);
-        expect(EasyDateTime.june, 6);
-      });
-
-      test('july matches DateTime.july', () {
-        expect(EasyDateTime.july, DateTime.july);
-        expect(EasyDateTime.july, 7);
-      });
-
-      test('august matches DateTime.august', () {
-        expect(EasyDateTime.august, DateTime.august);
-        expect(EasyDateTime.august, 8);
-      });
-
-      test('september matches DateTime.september', () {
-        expect(EasyDateTime.september, DateTime.september);
-        expect(EasyDateTime.september, 9);
-      });
-
-      test('october matches DateTime.october', () {
-        expect(EasyDateTime.october, DateTime.october);
-        expect(EasyDateTime.october, 10);
-      });
-
-      test('november matches DateTime.november', () {
-        expect(EasyDateTime.november, DateTime.november);
-        expect(EasyDateTime.november, 11);
-      });
-
-      test('december matches DateTime.december', () {
-        expect(EasyDateTime.december, DateTime.december);
-        expect(EasyDateTime.december, 12);
-      });
-
-      test('monthsPerYear matches DateTime.monthsPerYear', () {
-        expect(EasyDateTime.monthsPerYear, DateTime.monthsPerYear);
-        expect(EasyDateTime.monthsPerYear, 12);
-      });
+      for (final constant in constants) {
+        test('${constant.name} matches DateTime', () {
+          expect(constant.actual, constant.expected);
+        });
+      }
 
       test('month property returns correct constant', () {
         final january = EasyDateTime.utc(2025, 1, 15);
@@ -144,7 +142,7 @@ void main() {
     });
   });
 
-  group('DateTime Interface Compliance', () {
+  group('DateTime Interoperability', () {
     test('EasyDateTime is assignable to DateTime', () {
       final easyDt = EasyDateTime.utc(2025, 12, 1, 10, 30);
       // EasyDateTime implements DateTime.
@@ -191,6 +189,47 @@ void main() {
       expect(dt.microsecondsSinceEpoch, isA<int>());
       expect(dt.timeZoneOffset, isA<Duration>());
       expect(dt.timeZoneName, isA<String>());
+    });
+
+    test('epoch factories preserve the requested UTC instant', () {
+      const milliseconds = 1_735_689_600_123;
+      const microseconds = milliseconds * Duration.microsecondsPerMillisecond;
+
+      final fromMilliseconds = EasyDateTime.fromMillisecondsSinceEpoch(
+        milliseconds,
+        isUtc: true,
+      );
+      final fromSeconds = EasyDateTime.fromSecondsSinceEpoch(
+        milliseconds ~/ Duration.millisecondsPerSecond,
+        isUtc: true,
+      );
+      final fromMicroseconds = EasyDateTime.fromMicrosecondsSinceEpoch(
+        microseconds,
+        isUtc: true,
+      );
+
+      expect(fromMilliseconds.microsecondsSinceEpoch, microseconds);
+      expect(fromMicroseconds.microsecondsSinceEpoch, microseconds);
+      expect(
+        fromSeconds.microsecondsSinceEpoch,
+        (milliseconds ~/ Duration.millisecondsPerSecond) *
+            Duration.microsecondsPerSecond,
+      );
+      expect(fromMilliseconds.isUtc, isTrue);
+      expect(fromSeconds.isUtc, isTrue);
+      expect(fromMicroseconds.isUtc, isTrue);
+    });
+
+    test('DateTime-typed copyWith returns a core DateTime', () {
+      DateTime value = EasyDateTime.utc(2025, 12, 1, 10, 30);
+
+      final copied = value.copyWith(isUtc: false);
+
+      expect(copied, isA<DateTime>());
+      expect(copied, isNot(isA<EasyDateTime>()));
+      expect(copied.isUtc, isFalse);
+      expect(copied.year, 2025);
+      expect(copied.hour, 10);
     });
 
     test('operator == handles DateTime comparison', () {

@@ -1,7 +1,7 @@
 /// A timezone-aware DateTime library for Dart.
 ///
-/// This library provides [EasyDateTime], a drop-in replacement for Dart's
-/// [DateTime] that supports timezone-aware operations.
+/// This library provides [EasyDateTime], an enhanced [DateTime] implementation
+/// with explicit IANA timezone support.
 ///
 /// ## Quick Start
 ///

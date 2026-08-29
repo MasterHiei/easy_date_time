@@ -15,19 +15,15 @@
 <!-- Describe the tests you ran -->
 
 - [ ] I have added tests that prove my fix is effective or my feature works
-- [ ] All new and existing tests pass locally
-- [ ] I have run `dart analyze --fatal-infos` with no issues
-- [ ] I have run `dart format .` on my changes
-- [ ] I have checked coverage is >= 95%
+- [ ] I have run the relevant tests, analysis, and documentation checks
+- [ ] I have checked formatting without rewriting unrelated files
 
 ## Checklist
 
 - [ ] My code follows the style guidelines of this project
 - [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] I have updated the CHANGELOG.md file
-- [ ] My changes generate no new warnings
+- [ ] I have documented non-obvious constraints where needed
+- [ ] I have updated affected public documentation
 
 ### Date/Time Logic Changes (if applicable)
-- [ ] I have added **Boundary Tests** for DST transitions (Spring Forward/Fall Back) if my changes involve time calculation.
+- [ ] I have added boundary tests for DST transitions when changing local date/time construction or rewriting.

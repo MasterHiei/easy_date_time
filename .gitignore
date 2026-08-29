@@ -33,5 +33,5 @@ migrate_working_dir/
 /coverage/
 
 # Agent related
-.agent/
+.agents/
 .worktrees/
