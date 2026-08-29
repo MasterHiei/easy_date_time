@@ -1,6 +1,7 @@
 # EasyDateTime Examples
 
-Complete runnable examples with all dependencies.
+Runnable package examples. CI analyzes all examples and runs the default
+`main.dart` entry point.
 
 ## Setup
 
@@ -9,7 +10,8 @@ cd example
 dart pub get
 ~~~
 
-For freezed/retrofit examples, run code generation:
+Generated sources for the Freezed and Retrofit examples are committed. Regenerate
+them only after changing their annotated models:
 ~~~bash
 dart run build_runner build
 ~~~
@@ -19,8 +21,16 @@ dart run build_runner build
 ```
 lib/
 ├── core/           # Core usage (no code generation)
-└── integrations/   # Third-party integrations (requires code generation)
+└── integrations/   # Third-party integrations
 ```
+
+## Default Example
+
+pub.dev displays [`main.dart`](main.dart) as the package's default example:
+
+~~~bash
+dart run main.dart
+~~~
 
 ## Core Examples
 
@@ -46,8 +56,6 @@ dart run lib/core/basic_usage.dart
 ~~~
 
 ## Integration Examples
-
-Requires `dart run build_runner build` first:
 
 | File | Description |
 |------|-------------|

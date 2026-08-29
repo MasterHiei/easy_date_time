@@ -2,10 +2,6 @@
 
 Thank you for considering contributing to easy_date_time! We welcome contributions from the community.
 
-## Code of Conduct
-
-This project adheres to a Code of Conduct that all contributors are expected to follow. Please be respectful and constructive in all interactions.
-
 ## How to Contribute
 
 ### Reporting Bugs
@@ -27,13 +23,11 @@ Feature requests are welcome! Please:
 
 ### Submitting Pull Requests
 
-1. **Fork the repository** and create your branch from `main`
-2. **Write tests** for your changes
-3. **Follow the code style** - run `dart analyze` and `dart format`
-4. **Update documentation** if you're changing APIs
-5. **Add a changelog entry** in CHANGELOG.md under `[Unreleased]`
-6. **Ensure tests pass** - run `dart test`
-7. **Submit your PR** with a clear description
+1. Fork the repository and create a branch from `main`.
+2. Make one focused change with matching tests.
+3. Update affected public documentation and examples.
+4. Run the relevant verification commands.
+5. Submit a PR that explains the behavior change and evidence.
 
 ## Development Setup
 
@@ -51,39 +45,33 @@ dart test
 # Run analyzer
 dart analyze
 
-# Format code
-dart format .
+# Check formatting without rewriting unrelated files
+dart format --output=none --set-exit-if-changed .
 ```
 
 ## Code Style
 
 - Follow [Effective Dart](https://dart.dev/effective-dart) guidelines
-- Use `dart format` for consistent formatting
-- Write clear, descriptive comments for public APIs
+- Format only the paths you changed when a formatting fix is needed
+- Document public APIs and non-obvious constraints where they affect usage
 - Keep functions focused and concise
 - Add tests for new functionality
 - Use descriptive variable and function names
 
-## Pre-commit Checks
+## Verification
 
-Before committing, ensure:
+Run the narrowest checks that cover the change. CI runs the full coverage and
+compatibility matrix.
 
 ```bash
-# 1. Format code
-dart format .
-
-# 2. Run analyzer
+# Analyze the package
 dart analyze --fatal-infos
 
-# 3. Run all tests
+# Run relevant tests; use `dart test` for a full local suite
 dart test
 
-# 4. Check test coverage
-dart pub global activate coverage
-dart pub global run coverage:test_with_coverage --out=coverage
-dart run tool/check_coverage_threshold.dart coverage/lcov.info 95
-
-# (Coverage should be >= 95%)
+# Validate public DartDoc when it changes
+dart doc --dry-run .
 ```
 
 ## Commit Message Guidelines
@@ -109,19 +97,20 @@ Examples:
 
 ### CI Checks
 When you open a Pull Request, the following automated checks will run:
-1.  **Analyze**: Static analysis with `dart analyze --fatal-infos`.
-2.  **Test (Stable & Coverage)**: Runs all tests on the stable SDK and reports code coverage (uploading to Codecov).
-3.  **Test Compatibility**: Runs tests on the oldest supported SDK (`3.10.0`) and the latest `beta` to ensure backward and forward compatibility.
+1. **Static and package validation**: formatting, analysis, DartDoc, and a publish dry run.
+2. **Test (Stable & Coverage)**: the stable test suite and coverage reporting.
+3. **Test Compatibility**: the oldest compatible runtime dependencies on Dart `3.10.0`, stable on macOS and Windows, and an advisory beta check on Ubuntu.
+4. **Validate Example**: locked dependency analysis and default-example execution on Dart `3.10.0` and stable.
 
-All checks must pass before merging.
+All blocking checks must pass before merging. The beta check is an early warning
+for the next SDK and does not define the supported SDK range.
 
 ## Testing
 
-- Write unit tests for all new features
+- Write focused tests for changed behavior
 - Ensure tests are deterministic and fast
 - Test edge cases and error conditions
-- Maintain line coverage of at least 95%
-- Use descriptive test names: `test('should_action_when_condition')`
+- Use descriptive test names that state the observable behavior
 
 Example test structure:
 
@@ -142,12 +131,14 @@ test('should parse ISO 8601 date with timezone offset', () {
 
 ## Documentation
 
-- Use dartdoc comments (`///`) for all public APIs
-- Include code examples in documentation
-- Update README.md for new features
-- Keep examples simple, clear, and compilable
-- Document breaking changes in CHANGELOG.md
+- Use DartDoc for public API behavior, constraints, and exceptions
+- Include examples when they make an API easier to use correctly
+- Update README.md, migration guides, and examples when their promised behavior changes
+- Keep examples simple, clear, and compilable or runnable
 - Follow the ownership and generated-document rules in [doc/README.md](doc/README.md)
+
+Release maintainers update [CHANGELOG.md](CHANGELOG.md) when preparing a
+release with user-visible changes.
 
 ## Testing Timezone Code
 
@@ -169,10 +160,6 @@ tearDown(() {
   }
 });
 ```
-
-## Reporting Security Issues
-
-Do not open public issues for security vulnerabilities. Instead, email security concerns to the maintainers directly.
 
 ## Questions?
 
