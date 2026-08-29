@@ -871,6 +871,10 @@ class EasyDateTime implements DateTime {
   ///
   /// For month/year changes that should clamp to valid dates, use
   /// [copyWithClamped] instead.
+  ///
+  /// When the receiver is statically typed as [DateTime], Dart selects its
+  /// `copyWith()` extension and returns a core [DateTime]. Keep the receiver
+  /// typed as [EasyDateTime] when its [location] must remain available.
   EasyDateTime copyWith({
     Location? location,
     int? year,

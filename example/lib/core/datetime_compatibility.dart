@@ -2,7 +2,7 @@
 
 /// DateTime Compatibility Example
 ///
-/// Demonstrates: EasyDateTime as DateTime drop-in replacement.
+/// Demonstrates: EasyDateTime interoperability with DateTime APIs.
 /// Run: dart run example/lib/core/datetime_compatibility.dart
 library;
 
@@ -26,6 +26,8 @@ void main() {
   // Works with functions expecting DateTime
   final year = extractYear(easyDt);
   print('  extractYear(easyDt): $year');
+  final coreCopy = dt.copyWith(isUtc: false);
+  print('  DateTime-typed copyWith returns: ${coreCopy.runtimeType}');
   print('');
 
   // --------------------------------------------------------

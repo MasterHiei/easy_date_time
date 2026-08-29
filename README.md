@@ -22,7 +22,6 @@ EasyDateTime.parse('2026-01-18T10:30:00+08:00').hour; // 10
 ## Documentation
 
 - [Migration guide](doc/migration/v0_12_migration_guide.md)
-- [Project documentation guide](doc/README.md)
 - [API reference](https://pub.dev/documentation/easy_date_time/latest/)
 - [Contribution guide](CONTRIBUTING.md)
 
@@ -32,7 +31,7 @@ Stable release on pub.dev:
 
 ```yaml
 dependencies:
-  easy_date_time: ^0.12.2
+  easy_date_time: ^0.12.3
 ```
 
 ## Requirements
