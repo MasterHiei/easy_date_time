@@ -1,5 +1,6 @@
 library;
 
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:easy_date_time/easy_date_time.dart';
@@ -20,7 +21,11 @@ void main() {
       final chars = List.generate(len, (_) => random.nextInt(95) + 32);
       final input = String.fromCharCodes(chars);
 
-      expect(() => EasyDateTime.tryParse(input), returnsNormally);
+      expect(
+        () => EasyDateTime.tryParse(input),
+        returnsNormally,
+        reason: 'seed=42 case=$i input=${jsonEncode(input)}',
+      );
     }
   });
 
@@ -32,7 +37,11 @@ void main() {
       final chars = List.generate(len, (_) => random.nextInt(0x10000));
       final input = String.fromCharCodes(chars);
 
-      expect(() => EasyDateTime.tryParse(input), returnsNormally);
+      expect(
+        () => EasyDateTime.tryParse(input),
+        returnsNormally,
+        reason: 'seed=7 case=$i input=${jsonEncode(input)}',
+      );
     }
   });
 }

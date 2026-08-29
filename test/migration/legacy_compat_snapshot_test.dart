@@ -12,37 +12,51 @@ void main() {
   });
 
   group('Legacy compatibility snapshot', () {
-    test('default parse path matches legacy region-based behavior', () {
-      const input = '2025-12-01T10:00:00+09:00';
+    final endpoints =
+        <
+          ({
+            String name,
+            EasyDateTime? Function(EasyParseOptions? options) invoke,
+          })
+        >[
+          (
+            name: 'parse',
+            invoke: (options) => EasyDateTime.parse(
+              '2025-12-01T10:00:00+09:00',
+              options: options,
+            ),
+          ),
+          (
+            name: 'tryParse',
+            invoke: (options) => EasyDateTime.tryParse(
+              '2025-12-01T10:00:00+09:00',
+              options: options,
+            ),
+          ),
+          (
+            name: 'fromIso8601String',
+            invoke: (options) => EasyDateTime.fromIso8601String(
+              '2025-12-01T10:00:00+09:00',
+              options: options,
+            ),
+          ),
+        ];
 
-      final legacy = EasyDateTime.parse(
-        input,
-        options: const EasyParseOptions(mode: EasyParseMode.legacy),
-      );
-      final current = EasyDateTime.parse(input);
+    for (final endpoint in endpoints) {
+      test('default ${endpoint.name} path matches legacy region behavior', () {
+        final legacy = endpoint.invoke(
+          const EasyParseOptions(mode: EasyParseMode.legacy),
+        );
+        final current = endpoint.invoke(null);
 
-      expect(current.locationName, legacy.locationName);
-      expect(current.timeZoneOffset, legacy.timeZoneOffset);
-      expect(current.hour, legacy.hour);
-      expect(current.microsecondsSinceEpoch, legacy.microsecondsSinceEpoch);
-    });
-
-    test('default tryParse path matches legacy region-based behavior', () {
-      const input = '2025-12-01T10:00:00-05:00';
-
-      final legacy = EasyDateTime.tryParse(
-        input,
-        options: const EasyParseOptions(mode: EasyParseMode.legacy),
-      );
-      final current = EasyDateTime.tryParse(input);
-
-      expect(current, isNotNull);
-      expect(legacy, isNotNull);
-      expect(current!.locationName, legacy!.locationName);
-      expect(current.timeZoneOffset, legacy.timeZoneOffset);
-      expect(current.hour, legacy.hour);
-      expect(current.microsecondsSinceEpoch, legacy.microsecondsSinceEpoch);
-    });
+        expect(current, isNotNull);
+        expect(legacy, isNotNull);
+        expect(current!.locationName, legacy!.locationName);
+        expect(current.timeZoneOffset, legacy.timeZoneOffset);
+        expect(current.hour, legacy.hour);
+        expect(current.microsecondsSinceEpoch, legacy.microsecondsSinceEpoch);
+      });
+    }
 
     test('strict overrides options mode mapping for parse and tryParse', () {
       expect(
@@ -70,6 +84,18 @@ void main() {
         ),
         isNull,
       );
+
+      expect(
+        () => EasyDateTime.fromIso8601String('2025-02-30', strict: true),
+        throwsFormatException,
+      );
+      final factoryPermissive = EasyDateTime.fromIso8601String(
+        '2025-02-30',
+        strict: false,
+        options: const EasyParseOptions(mode: EasyParseMode.isoStrict),
+      );
+      expect(factoryPermissive.month, 3);
+      expect(factoryPermissive.day, 2);
     });
 
     test(

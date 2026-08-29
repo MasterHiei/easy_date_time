@@ -3,6 +3,7 @@ library;
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' show TZDateTime;
 
 void main() {
   setUpAll(() {
@@ -14,10 +15,89 @@ void main() {
     EasyDateTime.clearDefaultLocation();
   });
 
-  test('Lord Howe half-hour DST shift remains correct', () {
+  test('fixed +11:00 input preserves its numeric offset', () {
     final dt = EasyDateTime.parse('2025-10-05T02:15:00+11:00');
 
     expect(dt.timeZoneOffset, const Duration(hours: 11));
+  });
+
+  test('Lord Howe distinguishes calendar days from 24-hour durations', () {
+    final lordHowe = getLocation('Australia/Lord_Howe');
+    final beforeTransition = EasyDateTime(2025, 10, 5, 0, 0, 0, 0, 0, lordHowe);
+
+    final calendarDay = beforeTransition.addCalendarDays(1);
+    final physicalDay = beforeTransition.add(const Duration(days: 1));
+
+    final expectedCalendarDay = TZDateTime(lordHowe, 2025, 10, 6);
+    expect(
+      calendarDay.microsecondsSinceEpoch,
+      expectedCalendarDay.microsecondsSinceEpoch,
+    );
+    expect(calendarDay.hour, 0);
+    expect(calendarDay.minute, 0);
+    expect(physicalDay.day, 6);
+    expect(physicalDay.hour, 0);
+    expect(physicalDay.minute, 30);
+    expect(
+      physicalDay.microsecondsSinceEpoch -
+          beforeTransition.microsecondsSinceEpoch,
+      const Duration(days: 1).inMicroseconds,
+    );
+  });
+
+  test('gap and overlap construction follows timezone package resolution', () {
+    final newYork = getLocation('America/New_York');
+    final cases = [
+      (name: 'gap', month: 3, day: 9, hour: 2, minute: 30),
+      (name: 'overlap', month: 11, day: 2, hour: 1, minute: 30),
+    ];
+
+    for (final c in cases) {
+      final expected = TZDateTime(
+        newYork,
+        2025,
+        c.month,
+        c.day,
+        c.hour,
+        c.minute,
+      );
+      final actual = EasyDateTime(
+        2025,
+        c.month,
+        c.day,
+        c.hour,
+        c.minute,
+        0,
+        0,
+        0,
+        newYork,
+      );
+
+      expect(actual.microsecondsSinceEpoch, expected.microsecondsSinceEpoch);
+      expect(actual.hour, expected.hour, reason: c.name);
+      expect(actual.minute, expected.minute, reason: c.name);
+      expect(actual.timeZoneOffset, expected.timeZoneOffset, reason: c.name);
+    }
+  });
+
+  test('inLocation preserves the instant while changing local fields', () {
+    final shanghai = EasyDateTime(
+      2025,
+      12,
+      7,
+      20,
+      0,
+      0,
+      0,
+      0,
+      TimeZones.shanghai,
+    );
+
+    final newYork = shanghai.inLocation(TimeZones.newYork);
+
+    expect(newYork.microsecondsSinceEpoch, shanghai.microsecondsSinceEpoch);
+    expect(newYork.locationName, 'America/New_York');
+    expect(newYork.hour, 7);
   });
 
   test('Chatham +12:45 offset fixed mode remains +12:45', () {

@@ -76,6 +76,54 @@ void main() {
       expect(restored.minute, original.minute);
     });
 
+    test('explicit location takes precedence over an input offset', () {
+      const input = '2025-12-01T10:00:00+08:00';
+      const options = EasyParseOptions(
+        mode: EasyParseMode.compatible,
+        offsetResolution: OffsetResolution.fixed,
+      );
+      final newYork = getLocation('America/New_York');
+      final expectedInstant = DateTime.parse(input).microsecondsSinceEpoch;
+
+      final parsed = EasyDateTime.parse(
+        input,
+        location: newYork,
+        options: options,
+      );
+      final tried = EasyDateTime.tryParse(
+        input,
+        location: newYork,
+        options: options,
+      );
+      final restored = EasyDateTime.fromIso8601String(
+        input,
+        location: newYork,
+        options: options,
+      );
+
+      for (final value in [parsed, tried!, restored]) {
+        expect(value.locationName, 'America/New_York');
+        expect(value.microsecondsSinceEpoch, expectedInstant);
+        expect(value.year, 2025);
+        expect(value.month, 11);
+        expect(value.day, 30);
+        expect(value.hour, 21);
+      }
+    });
+
+    test('ISO factory forwards strict parsing behavior', () {
+      expect(
+        () => EasyDateTime.fromIso8601String('2025-02-30', strict: true),
+        throwsA(
+          isA<InvalidDateFormatException>().having(
+            (error) => error.diagnostics.mode,
+            'diagnostics.mode',
+            EasyParseMode.isoStrict,
+          ),
+        ),
+      );
+    });
+
     test('region resolution preserves current IANA lookup behavior', () {
       final parsed = EasyDateTime.parse(
         '2025-12-01T10:00:00+09:00',
