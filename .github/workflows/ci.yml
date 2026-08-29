@@ -37,7 +37,7 @@ jobs:
         run: dart format --output=none --set-exit-if-changed .
 
       - name: Analyze project
-        run: dart analyze --fatal-infos --fatal-warnings
+        run: dart analyze --fatal-infos --fatal-warnings lib test tool
 
       - name: Validate DartDoc
         run: dart doc --dry-run .
@@ -148,7 +148,7 @@ jobs:
 
       - name: Analyze oldest compatible runtime dependencies
         if: matrix.resolution == 'minimum-runtime'
-        run: dart analyze --fatal-infos --fatal-warnings
+        run: dart analyze --fatal-infos --fatal-warnings lib test tool
 
       - name: Run tests
         run: dart test

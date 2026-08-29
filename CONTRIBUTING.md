@@ -65,7 +65,7 @@ compatibility matrix.
 
 ```bash
 # Analyze the package
-dart analyze --fatal-infos
+dart analyze --fatal-infos --fatal-warnings lib test tool
 
 # Run relevant tests; use `dart test` for a full local suite
 dart test
@@ -99,7 +99,9 @@ Examples:
 When you open a Pull Request, the following automated checks will run:
 1. **Static and package validation**: formatting, analysis, DartDoc, and a publish dry run.
 2. **Test (Stable & Coverage)**: the stable test suite and coverage reporting.
-3. **Test Compatibility**: the oldest compatible runtime dependencies on Dart `3.10.0`, stable on macOS and Windows, and an advisory beta check on Ubuntu.
+3. **Test Compatibility**: the oldest direct runtime dependency versions
+   resolvable with the development toolchain on Dart `3.10.0`, stable on macOS
+   and Windows, and an advisory beta check on Ubuntu.
 4. **Validate Example**: locked dependency analysis and default-example execution on Dart `3.10.0` and stable.
 
 All blocking checks must pass before merging. The beta check is an early warning
