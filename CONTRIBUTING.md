@@ -95,17 +95,15 @@ Examples:
 - `fix: handle leap year edge cases correctly`
 - `docs: improve timezone handling guide`
 
-### CI Checks
-When you open a Pull Request, the following automated checks will run:
-1. **Static and package validation**: formatting, analysis, DartDoc, and a publish dry run.
-2. **Test (Stable & Coverage)**: the stable test suite and coverage reporting.
-3. **Test Compatibility**: the oldest direct runtime dependency versions
-   resolvable with the development toolchain on Dart `3.10.0`, stable on macOS
-   and Windows, and an advisory beta check on Ubuntu.
-4. **Validate Example**: locked dependency analysis and default-example execution on Dart `3.10.0` and stable.
+## CI Checks
 
-All blocking checks must pass before merging. The beta check is an early warning
-for the next SDK and does not define the supported SDK range.
+Wait for `Required CI` to pass before merging a pull request to `main`. It
+covers package and example checks, VM and Chrome tests, and at least 95% line
+coverage in `lib/`. Compatibility tests run on Dart 3.10.0 with the lowest
+resolvable versions of `meta` and `timezone`, and on Dart stable on macOS and
+Windows.
+
+`Dart Beta` runs separately on `main` to catch issues with the next SDK.
 
 ## Testing
 
@@ -141,6 +139,13 @@ test('should parse ISO 8601 date with timezone offset', () {
 
 Release maintainers update [CHANGELOG.md](CHANGELOG.md) when preparing a
 release with user-visible changes.
+
+## Publishing a Release
+
+1. Wait for `Required CI` to pass on the `main` commit you intend to release.
+2. Push a `v<version>` tag that matches the version in `pubspec.yaml` at that
+   commit. Treat release tags as immutable.
+3. Check the publish workflow, then verify the version on pub.dev.
 
 ## Testing Timezone Code
 

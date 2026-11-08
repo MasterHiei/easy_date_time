@@ -15,6 +15,89 @@ void main() {
   });
 
   group('Calendar Properties', () {
+    for (final (zone, year, month, day, hour, minute, second, ordinal, week)
+        in [
+          ('America/New_York', 2025, 6, 16, 12, 0, 0, 167, 25),
+          ('Europe/Berlin', 2025, 6, 16, 12, 0, 0, 167, 25),
+          ('Australia/Lord_Howe', 2025, 10, 5, 12, 0, 0, 278, 40),
+          ('Australia/Lord_Howe', 2025, 10, 6, 12, 0, 0, 279, 41),
+          ('Pacific/Apia', 2011, 12, 31, 12, 0, 0, 365, 52),
+          ('Pacific/Kiritimati', 1995, 1, 1, 12, 0, 0, 1, 52),
+          ('America/New_York', 2025, 6, 16, 0, 0, 0, 167, 25),
+          ('America/New_York', 2025, 6, 16, 23, 59, 59, 167, 25),
+        ]) {
+      test(
+        'uses Gregorian ordinals for $zone $year-$month-$day at $hour:$minute:$second',
+        () {
+          final date = EasyDateTime(
+            year,
+            month,
+            day,
+            hour,
+            minute,
+            second,
+            0,
+            0,
+            getLocation(zone),
+          );
+          expect((date.dayOfYear, date.weekOfYear), (ordinal, week));
+        },
+      );
+    }
+
+    test('returns Gregorian ordinals at year and timestamp boundaries', () {
+      final cases = [
+        (EasyDateTime.utc(0, 2, 29), 60, 9),
+        (EasyDateTime.utc(-1, 1, 1), 1, 53),
+        (
+          EasyDateTime.fromMillisecondsSinceEpoch(
+            -8640000000000000,
+            isUtc: true,
+          ),
+          110,
+          16,
+        ),
+        (
+          EasyDateTime.fromMillisecondsSinceEpoch(
+            8640000000000000,
+            isUtc: true,
+          ),
+          257,
+          37,
+        ),
+      ];
+      for (final (date, ordinal, week) in cases) {
+        expect(
+          (date.dayOfYear, date.weekOfYear),
+          (ordinal, week),
+          reason: date.toIso8601String(),
+        );
+      }
+    });
+
+    test('matches Gregorian day and ISO week over a 400-year cycle', () {
+      const oneDay = Duration(days: 1);
+      final end = DateTime.utc(2400);
+      for (
+        var date = DateTime.utc(2000);
+        date.isBefore(end);
+        date = date.add(oneDay)
+      ) {
+        final ordinal = date.difference(DateTime.utc(date.year)).inDays + 1;
+        final thursday = date.add(
+          Duration(days: DateTime.thursday - date.weekday),
+        );
+        final week =
+            thursday.difference(DateTime.utc(thursday.year)).inDays ~/ 7 + 1;
+
+        final actual = EasyDateTime.utc(date.year, date.month, date.day);
+        final result = (actual.dayOfYear, actual.weekOfYear);
+        if (result != (ordinal, week)) {
+          fail('$date: expected ($ordinal, $week), got $result');
+        }
+      }
+    });
+
     group('dayOfYear', () {
       test('returns 1 for January 1st', () {
         expect(EasyDateTime(2025, 1, 1).dayOfYear, 1);

@@ -21,7 +21,7 @@ part 'easy_date_time_utilities.dart';
 /// **Key characteristics:**
 /// - Implements [DateTime] and can be supplied to [DateTime]-typed parameters
 /// - Supports any IANA timezone (Asia/Tokyo, America/New_York, etc.)
-/// - Preserves original time values when parsing (no implicit UTC conversion)
+/// - Parses date and time fields with explicit timezone policies
 /// - Immutable and safe to pass between isolates
 ///
 /// ## Creating instances
@@ -404,56 +404,41 @@ class EasyDateTime implements DateTime {
     );
   }
 
-  /// Parses an ISO 8601 formatted string and creates an [EasyDateTime].
+  /// Parses an ISO 8601 string or a supported common date format.
   ///
-  /// ## Time Preservation Principle
+  /// Without [location], [options] controls how offsets in `±HH:MM` or
+  /// `±HHMM` form are resolved. Omitting [options] uses legacy region
+  /// resolution. A trailing `Z` or `z` means UTC.
   ///
-  /// This method **preserves the original time values** from the input string.
-  /// If you parse `"10:30:00+08:00"`, you get `hour=10`, not `hour=2` (UTC).
+  /// When neither the input nor the call specifies a timezone, the calendar
+  /// and clock fields are interpreted in [effectiveDefaultLocation]. Date-only
+  /// input starts at midnight. The location's rules resolve any gap or overlap.
   ///
-  /// - Strings with timezone offset (e.g., `+08:00`): A matching IANA timezone
-  ///   is found and the original time values are preserved.
-  /// - Strings ending with `Z`: Treated as UTC, time values preserved.
-  /// - Strings without timezone: Uses the global default timezone.
-  ///
-  /// ## Supported Formats
-  ///
-  /// - `2025-12-01T10:30:00+08:00` (with offset → hour=10)
-  /// - `2025-12-01T10:30:00Z` (UTC → hour=10)
-  /// - `2025-12-01T10:30:00` (uses default timezone)
-  /// - `2025-12-01` (date only, time=00:00:00)
+  /// If you pass [location], the result represents the instant returned by
+  /// [DateTime.parse] in that location. For input without a timezone, Dart
+  /// uses the host's local timezone to determine the instant.
   ///
   /// ## Examples
   ///
   /// ```dart
-  /// // Time values are preserved
   /// final dt = EasyDateTime.parse('2025-12-01T10:30:00+08:00');
-  /// print(dt.hour); // 10 (not 2!)
+  /// print(dt.hour); // 10
   ///
   /// final inNY = EasyDateTime.parse(
   ///   '2025-12-01T10:30:00Z',
-  ///   location: getLocation('America/New_York'),
+  ///   location: TimeZones.newYork,
   /// );
-  /// print(inNY.hour); // 5 (10:00 UTC → 05:00 NY)
+  /// print(inNY.hour); // 5
+  /// print(inNY.minute); // 30
   /// ```
   ///
   /// **Throws [TimeZoneNotInitializedException]** if [EasyDateTime.initializeTimeZone]
   /// has not been called at app startup.
   ///
-  /// ## Strict Mode
-  ///
-  /// By default (`strict: false`), invalid dates overflow (e.g., Feb 30 becomes Mar 2).
-  /// Pass `strict: true` to reject invalid dates with a [FormatException].
-  ///
-  /// ```dart
-  /// // Default (Overflow)
-  /// EasyDateTime.parse('2025-02-30'); // 2025-03-02
-  ///
-  /// // Strict (Throw)
-  /// EasyDateTime.parse('2025-02-30', strict: true); // Throws FormatException
-  /// ```
-  ///
-  /// **Time Complexity**: `O(n)` where `n` is the length of the string.
+  /// Use [EasyParseMode.isoStrict] in [options] to reject invalid calendar
+  /// dates with an [InvalidDateFormatException]. The legacy and compatible
+  /// modes allow supported overflow dates, such as February 30 normalizing to
+  /// March 2 in a common year.
   ///
   /// See also:
   /// - [tryParse] for safe parsing of user input.
@@ -517,7 +502,7 @@ class EasyDateTime implements DateTime {
   /// final slashFormat = EasyDateTime.tryParse('2025/12/01 10:30:00');
   /// ```
   ///
-  /// **Time Complexity**: `O(n)` where `n` is the length of the string.
+  /// See [parse] for timezone and parse-policy behavior.
   static EasyDateTime? tryParse(
     String dateTimeString, {
     Location? location,
@@ -938,7 +923,7 @@ class EasyDateTime implements DateTime {
     final targetDay = day ?? this.day;
 
     // Calculate the last day of the target month
-    final lastDayOfMonth = DateTime(targetYear, targetMonth + 1, 0).day;
+    final lastDayOfMonth = _gregorianMonthLength(targetYear, targetMonth);
 
     // Clamp the day to valid range
     final clampedDay = targetDay > lastDayOfMonth ? lastDayOfMonth : targetDay;

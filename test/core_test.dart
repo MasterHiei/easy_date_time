@@ -419,6 +419,40 @@ void main() {
       });
 
       group('copyWithClamped', () {
+        test('normalizes target months across years before clamping', () {
+          final date = EasyDateTime.utc(2023, 1, 31, 12, 34, 56, 789, 123);
+          for (final (month, year, targetMonth, day) in [
+            (0, 2022, 12, 31),
+            (14, 2024, 2, 29),
+          ]) {
+            final actual = date.copyWithClamped(month: month);
+            final expected = DateTime.utc(
+              year,
+              targetMonth,
+              day,
+              12,
+              34,
+              56,
+              789,
+              123,
+            );
+            expect(
+              actual.microsecondsSinceEpoch,
+              expected.microsecondsSinceEpoch,
+            );
+            expect(actual.isUtc, isTrue);
+          }
+        });
+
+        test('calculates month length at the maximum timestamp', () {
+          final date = EasyDateTime.fromMillisecondsSinceEpoch(
+            8640000000000000,
+            isUtc: true,
+          );
+          expect(date.daysInMonth, 30);
+          expect(date.copyWithClamped().isAtSameMomentAs(date), isTrue);
+        });
+
         test('copyWithClamped() clamps day to month end if necessary', () {
           final jan31 = EasyDateTime.utc(2025, 1, 31);
           final feb = jan31.copyWithClamped(month: 2);
@@ -441,6 +475,42 @@ void main() {
           final jan15 = EasyDateTime.utc(2025, 1, 15);
           final feb = jan15.copyWithClamped(month: 2);
           expect(feb.day, 15);
+        });
+
+        test('resolves DST when clamping to the target month end', () {
+          final cairo = getLocation('Africa/Cairo');
+          for (final (year, month, lastDay, hour) in [
+            (2010, 4, 30, 0),
+            (2024, 10, 31, 23),
+          ]) {
+            final source = EasyDateTime(year, 12, 31, hour, 30, 0, 0, 0, cairo);
+            final actual = source.copyWithClamped(month: month, day: 32);
+            final expected = TZDateTime(cairo, year, month, lastDay, hour, 30);
+
+            expect(
+              actual.isAtSameMomentAs(expected),
+              isTrue,
+              reason: '$expected',
+            );
+            expect(
+              (
+                actual.year,
+                actual.month,
+                actual.day,
+                actual.hour,
+                actual.minute,
+              ),
+              (
+                expected.year,
+                expected.month,
+                expected.day,
+                expected.hour,
+                expected.minute,
+              ),
+            );
+            expect(actual.timeZoneOffset, expected.timeZoneOffset);
+            expect(actual.location, cairo);
+          }
         });
 
         test('copyWithClamped() preserves time components and location', () {

@@ -2,33 +2,41 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
+
+permissions:
+  contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  PUB_CACHE: ${{ github.workspace }}/../dart-pub-cache
 
 jobs:
-  analyze:
-    name: Static & Package Validation
+  package_validation:
+    name: Package Validation
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: dart-lang/setup-dart@v1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+        id: dart
         with:
           sdk: stable
 
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ~/.pub-cache/hosted
-          key: ${{ runner.os }}-pub-root-${{ hashFiles('pubspec.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-root-
+          path: ${{ env.PUB_CACHE }}/hosted
+          key: pub-${{ runner.os }}-${{ runner.arch }}-${{ steps.dart.outputs.dart-version }}-example-${{ hashFiles('pubspec.yaml', 'example/pubspec.yaml', 'example/pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-${{ runner.arch }}-${{ steps.dart.outputs.dart-version }}-example-
 
       - name: Install dependencies
         run: dart pub get --no-example
@@ -45,144 +53,169 @@ jobs:
       - name: Publish dry run
         run: dart pub publish --dry-run
 
-  test_coverage:
-    name: Test (Stable & Coverage)
+      - name: Validate example
+        working-directory: example
+        run: |
+          dart pub get --enforce-lockfile
+          dart analyze --fatal-infos
+          dart run main.dart
+
+  vm_coverage:
+    name: VM & Coverage
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: dart-lang/setup-dart@v1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+        id: dart
         with:
           sdk: stable
 
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ~/.pub-cache/hosted
-          key: ${{ runner.os }}-pub-root-${{ hashFiles('pubspec.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-root-
+          path: ${{ env.PUB_CACHE }}/hosted
+          key: pub-${{ runner.os }}-${{ runner.arch }}-${{ steps.dart.outputs.dart-version }}-coverage-1.15.1-${{ hashFiles('pubspec.yaml') }}
+          restore-keys: pub-${{ runner.os }}-${{ runner.arch }}-${{ steps.dart.outputs.dart-version }}-coverage-1.15.1-
 
       - name: Install dependencies
         run: dart pub get --no-example
 
-      - name: Install coverage and test tools
+      - name: Run VM tests with coverage
+        env:
+          TZ: UTC
         run: |
           dart pub global activate coverage 1.15.1
-          dart pub global activate junitreport 2.0.2
+          dart pub global run coverage:test_with_coverage --branch-coverage --out=coverage
 
-      - name: Run tests with coverage
-        run: dart pub global run coverage:test_with_coverage --out=coverage -- --file-reporter=json:test-results.json
-
-      - name: Run web tests (Chrome)
-        run: dart test -p chrome
-
-      - name: Convert test results to JUnit
-        run: dart pub global run junitreport:tojunit --input test-results.json --output test-results.xml
-
-      - name: Enforce line coverage >=95%
+      - name: Check line coverage (95% minimum)
         run: dart run tool/check_coverage_threshold.dart coverage/lcov.info 95
 
+      - name: Run host timezone regressions
+        run: |
+          TZ=America/New_York dart test test/timezone/host_timezone_regression_test.dart
+          TZ=Pacific/Kiritimati dart test test/timezone/host_timezone_regression_test.dart
+
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        if: env.CODECOV_TOKEN != '' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+        continue-on-error: true
+        timeout-minutes: 1
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           files: coverage/lcov.info
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-          verbose: true
+          disable_search: true
+          fail_ci_if_error: true
 
-      - name: Upload test results to Codecov
-        if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: test-results.xml
-
-  test_compatibility:
-    name: Test Compatibility (${{ matrix.os }} / ${{ matrix.sdk }})
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
-    continue-on-error: ${{ matrix.experimental }}
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            sdk: "3.10.0"
-            resolution: minimum-runtime
-            experimental: false
-          - os: ubuntu-latest
-            sdk: beta
-            resolution: current
-            experimental: true
-          - os: macos-latest
-            sdk: stable
-            resolution: current
-            experimental: false
-          - os: windows-latest
-            sdk: stable
-            resolution: current
-            experimental: false
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: ${{ matrix.sdk }}
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.pub-cache/hosted
-          key: ${{ runner.os }}-pub-root-${{ hashFiles('pubspec.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-root-
-
-      - name: Resolve dependencies
-        if: matrix.resolution == 'current'
-        run: dart pub get --no-example
-
-      - name: Resolve oldest compatible runtime dependencies
-        if: matrix.resolution == 'minimum-runtime'
-        run: dart pub downgrade meta timezone --no-example
-
-      - name: Analyze oldest compatible runtime dependencies
-        if: matrix.resolution == 'minimum-runtime'
-        run: dart analyze --fatal-infos --fatal-warnings lib test tool
-
-      - name: Run tests
-        run: dart test
-
-  validate_example:
-    name: Validate Example (${{ matrix.sdk }})
+  chrome:
+    name: Chrome
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    strategy:
-      matrix:
-        sdk: ["3.10.0", "stable"]
     steps:
-      - uses: actions/checkout@v6
-
-      - uses: dart-lang/setup-dart@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          sdk: ${{ matrix.sdk }}
+          persist-credentials: false
+
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+        id: dart
+        with:
+          sdk: stable
 
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ~/.pub-cache/hosted
-          key: ${{ runner.os }}-pub-example-${{ hashFiles('example/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-example-
+          path: ${{ env.PUB_CACHE }}/hosted
+          key: pub-${{ runner.os }}-${{ runner.arch }}-${{ steps.dart.outputs.dart-version }}-root-${{ hashFiles('pubspec.yaml') }}
+          restore-keys: pub-${{ runner.os }}-${{ runner.arch }}-${{ steps.dart.outputs.dart-version }}-root-
 
       - name: Install dependencies
-        working-directory: example
-        run: dart pub get --enforce-lockfile
+        run: dart pub get --no-example
 
-      - name: Analyze example
-        working-directory: example
-        run: dart analyze --fatal-infos
+      - name: Run Chrome tests
+        run: dart test -p chrome
 
-      - name: Run default example
+  # Separate jobs let Required CI detect a canceled compatibility runner.
+  compatibility_minimum:
+    name: Compatibility (Ubuntu / Dart 3.10.0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DART_SDK: '3.10.0'
+      DEPENDENCY_RESOLUTION: minimum-runtime
+    steps: &compatibility_steps
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+        id: dart
+        with:
+          sdk: ${{ env.DART_SDK }}
+
+      - name: Cache dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.PUB_CACHE }}/hosted
+          key: pub-${{ runner.os }}-${{ runner.arch }}-${{ steps.dart.outputs.dart-version }}-${{ env.DEPENDENCY_RESOLUTION }}-${{ env.DEPENDENCY_RESOLUTION == 'minimum-runtime' && hashFiles('pubspec.yaml', 'example/pubspec.yaml', 'example/pubspec.lock') || hashFiles('pubspec.yaml') }}
+          restore-keys: pub-${{ runner.os }}-${{ runner.arch }}-${{ steps.dart.outputs.dart-version }}-${{ env.DEPENDENCY_RESOLUTION }}-
+
+      - name: Resolve current dependencies
+        if: env.DEPENDENCY_RESOLUTION == 'current'
+        run: dart pub get --no-example
+
+      - name: Resolve minimum runtime dependencies and analyze
+        if: env.DEPENDENCY_RESOLUTION == 'minimum-runtime'
+        run: |
+          dart pub downgrade meta timezone --no-example
+          dart analyze --fatal-infos --fatal-warnings lib test tool
+
+      - name: Run VM tests
+        run: dart test
+
+      - name: Validate example
+        if: env.DEPENDENCY_RESOLUTION == 'minimum-runtime'
         working-directory: example
-        run: dart run main.dart
+        run: |
+          dart pub get --enforce-lockfile
+          dart analyze --fatal-infos
+          dart run main.dart
+
+  compatibility_macos:
+    name: Compatibility (macOS / stable)
+    runs-on: macos-latest
+    timeout-minutes: 10
+    env: &current_dependencies
+      DART_SDK: stable
+      DEPENDENCY_RESOLUTION: current
+    steps: *compatibility_steps
+
+  compatibility_windows:
+    name: Compatibility (Windows / stable)
+    runs-on: windows-latest
+    timeout-minutes: 10
+    env: *current_dependencies
+    steps: *compatibility_steps
+
+  required_ci:
+    name: Required CI
+    needs:
+      - package_validation
+      - vm_coverage
+      - chrome
+      - compatibility_minimum
+      - compatibility_macos
+      - compatibility_windows
+    if: ${{ always() }}
+    runs-on: ubuntu-slim
+    timeout-minutes: 2
+    steps:
+      - name: Check required job results
+        env:
+          JOBS: ${{ toJSON(needs) }}
+        run: |
+          jq -r 'to_entries[] | "\(.key): \(.value.result)"' <<< "$JOBS"
+          jq -e 'length == 6 and all(.[]; .result == "success")' <<< "$JOBS" > /dev/null

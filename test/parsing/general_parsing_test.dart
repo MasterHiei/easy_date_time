@@ -5,6 +5,7 @@ library;
 import 'package:easy_date_time/easy_date_time.dart';
 import 'package:test/test.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as timezone;
 
 void main() {
   setUpAll(() {
@@ -12,6 +13,137 @@ void main() {
   });
 
   group('EasyDateTime Parsing', () {
+    group('Default-location parsing', () {
+      setUp(() {
+        final originalDefault = EasyDateTime.getDefaultLocation();
+        final originalLocal = timezone.local;
+        addTearDown(() {
+          EasyDateTime.setDefaultLocation(originalDefault);
+          timezone.setLocalLocation(originalLocal);
+        });
+        EasyDateTime.setDefaultLocation(TimeZones.utc);
+      });
+
+      test('prefers the global default over the configured local location', () {
+        final tokyo = TimeZones.tokyo;
+        timezone.setLocalLocation(tokyo);
+        const input = '2025-06-01T12:00';
+
+        final utc = EasyDateTime.parse(input);
+        expect(utc.location, TimeZones.utc);
+        expect(utc.isAtSameMomentAs(DateTime.utc(2025, 6, 1, 12)), isTrue);
+
+        EasyDateTime.clearDefaultLocation();
+        final local = EasyDateTime.parse(input);
+        expect(local.location, tokyo);
+        expect(local.hour, 12);
+        expect(local.isAtSameMomentAs(DateTime.utc(2025, 6, 1, 3)), isTrue);
+      });
+
+      test('uses the configured region to resolve gaps and overlaps', () {
+        final newYork = TimeZones.newYork;
+        EasyDateTime.setDefaultLocation(newYork);
+        for (final (input, month, day, hour) in [
+          ('2025-03-09T02:30:00', 3, 9, 2),
+          ('2025-11-02T01:30:00', 11, 2, 1),
+        ]) {
+          final expected = timezone.TZDateTime(
+            newYork,
+            2025,
+            month,
+            day,
+            hour,
+            30,
+          );
+          final actual = EasyDateTime.parse(input);
+          expect(actual.isAtSameMomentAs(expected), isTrue, reason: input);
+          expect(
+            actual.toIso8601String(),
+            expected.toIso8601String(),
+            reason: input,
+          );
+          expect(actual.timeZoneOffset, expected.timeZoneOffset, reason: input);
+          expect(actual.location, newYork, reason: input);
+        }
+      });
+
+      test('retains SDK field parsing for unoffset formats', () {
+        for (final (input, expected) in [
+          ('20250309 0230', DateTime.utc(2025, 3, 9, 2, 30)),
+          ('2025-03-09T02', DateTime.utc(2025, 3, 9, 2)),
+          (
+            '2025-03-09 02:30:00,123456',
+            DateTime.utc(2025, 3, 9, 2, 30, 0, 123, 456),
+          ),
+          ('-0010-02-14', DateTime.utc(-10, 2, 14)),
+          ('2025/03/09', DateTime.utc(2025, 3, 9)),
+          ('2025.03.09', DateTime.utc(2025, 3, 9)),
+          ('2020-01-42', DateTime.utc(2020, 2, 11)),
+        ]) {
+          final actual = EasyDateTime.parse(input);
+          expect(actual.isAtSameMomentAs(expected), isTrue, reason: input);
+          expect(actual.location, TimeZones.utc, reason: input);
+        }
+      });
+
+      test('preserves parsing for existing timezone markers', () {
+        for (final (suffix, hour, offsetMinutes) in [
+          ('Z', 12, 0),
+          ('z', 12, 0),
+          ('+08', 4, 0),
+          ('+0800', 12, 480),
+          ('+08:00', 12, 480),
+          ('-03:30', 12, -210),
+        ]) {
+          final input = '2025-06-01T12:00$suffix';
+          final actual = EasyDateTime.parse(
+            input,
+            options: const EasyParseOptions(),
+          );
+          expect(
+            actual.isAtSameMomentAs(DateTime.parse(input)),
+            isTrue,
+            reason: input,
+          );
+          expect(actual.hour, hour, reason: input);
+          expect(
+            actual.timeZoneOffset,
+            Duration(minutes: offsetMinutes),
+            reason: input,
+          );
+        }
+      });
+
+      test('keeps the legacy offset failure for a partially compact date', () {
+        expect(
+          () => EasyDateTime.parse('2025-0102'),
+          throwsA(
+            isA<InvalidTimeZoneException>().having(
+              (error) => error.diagnostics?.stage,
+              'stage',
+              ParseFailureStage.offsetResolution,
+            ),
+          ),
+        );
+      });
+
+      test('reports the original input when unoffset parsing fails', () {
+        const input = ' 2025-06-01T ';
+        expect(
+          () => EasyDateTime.parse(input),
+          throwsA(
+            isA<InvalidDateFormatException>()
+                .having((error) => error.source, 'source', input)
+                .having(
+                  (error) => error.diagnostics.stage,
+                  'stage',
+                  ParseFailureStage.parsing,
+                ),
+          ),
+        );
+      });
+    });
+
     group('tryParse', () {
       test('should return instance for valid ISO 8601 strings', () {
         expect(EasyDateTime.tryParse('2025-12-01T10:30:00Z'), isNotNull);

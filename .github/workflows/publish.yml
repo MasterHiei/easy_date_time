@@ -3,12 +3,96 @@ name: Publish to pub.dev
 on:
   push:
     tags:
-    - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  verify:
+    name: Verify Release
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
     permissions:
+      contents: read
+      actions: read
+    outputs:
+      sha: ${{ steps.verify.outputs.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify tag and main CI
+        id: verify
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          sha=$(git rev-parse HEAD)
+          if ! git merge-base --is-ancestor "$sha" origin/main; then
+            echo "::error::Tag $GITHUB_REF_NAME points to $sha, which is outside main history."
+            exit 1
+          fi
+
+          version=$(awk '$1 == "version:" {print $2}' pubspec.yaml)
+          if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ || $GITHUB_REF_NAME != "v$version" ]]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match the package version $version."
+            exit 1
+          fi
+
+          run=$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs" \
+            -f branch=main -f event=push -f head_sha="$sha" -F per_page=1 \
+            --jq '.workflow_runs[0] // {}')
+          if ! jq -e --arg sha "$sha" '
+            .head_sha == $sha and .head_branch == "main" and .event == "push"
+            and .status == "completed" and .conclusion == "success"
+          ' <<< "$run" > /dev/null; then
+            link=$(jq -r '.html_url // empty' <<< "$run")
+            echo "::error::Main CI must pass for $sha before publishing. See ${link:-https://github.com/$GITHUB_REPOSITORY/actions/workflows/ci.yml}"
+            exit 1
+          fi
+
+          run_id=$(jq -r '.id' <<< "$run")
+          attempt=$(jq -r '.run_attempt' <<< "$run")
+          link=$(jq -r '.html_url' <<< "$run")
+          jobs=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/attempts/$attempt/jobs?per_page=100")
+          if ! jq -e '
+            [.jobs[] | select(.name == "Required CI") | .conclusion] == ["success"]
+          ' <<< "$jobs" > /dev/null; then
+            echo "::error::Required CI did not pass for $sha. $link"
+            exit 1
+          fi
+
+          echo "Verified $GITHUB_REF_NAME at $sha with main CI. $link"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+  publish:
+    name: Publish
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: pub.dev
+    permissions:
+      contents: read
       id-token: write
-    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
-    with:
-      environment: pub.dev
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.verify.outputs.sha }}
+          persist-credentials: false
+
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+        with:
+          sdk: stable
+
+      - name: Install dependencies
+        run: dart pub get --no-example
+
+      - name: Publish dry run
+        run: dart pub publish --dry-run
+
+      - name: Publish to pub.dev
+        run: dart pub publish --force
