@@ -180,7 +180,7 @@ extension EasyDateTimeUtilities on EasyDateTime {
   // Date Properties
   // ============================================================
 
-  /// Returns the day of year (1-366) for this date.
+  /// Returns the Gregorian day of year (1-366) for the local date.
   ///
   /// January 1st is day 1, December 31st is day 365 (or 366 in leap years).
   ///
@@ -190,12 +190,26 @@ extension EasyDateTimeUtilities on EasyDateTime {
   /// EasyDateTime(2024, 12, 31).dayOfYear; // 366 (leap year)
   /// ```
   int get dayOfYear {
-    final firstDayOfYear = EasyDateTime(year, 1, 1, 0, 0, 0, 0, 0, location);
-
-    return dateOnly.difference(firstDayOfYear).inDays + 1;
+    const daysBeforeMonth = [
+      0,
+      31,
+      59,
+      90,
+      120,
+      151,
+      181,
+      212,
+      243,
+      273,
+      304,
+      334,
+    ];
+    return daysBeforeMonth[month - 1] +
+        day +
+        (month > DateTime.february && isLeapYear ? 1 : 0);
   }
 
-  /// Returns the ISO 8601 week number (1-53) for this date.
+  /// Returns the ISO 8601 week number (1-53) for the local date.
   ///
   /// Week 1 is the week containing the first Thursday of the year
   /// (equivalently, the week containing January 4th).
@@ -210,47 +224,25 @@ extension EasyDateTimeUtilities on EasyDateTime {
   /// EasyDateTime(2020, 12, 31).weekOfYear; // 53
   /// ```
   int get weekOfYear {
-    // ISO 8601: Week 1 contains the first Thursday of the year
-    // (equivalently, contains January 4th)
-    final jan4 = EasyDateTime(year, 1, 4, 0, 0, 0, 0, 0, location);
-    final jan4Weekday = jan4.weekday; // 1=Mon, 7=Sun
+    final ordinal = dayOfYear;
+    final week = (ordinal - weekday + 10) ~/ 7;
+    final januaryFirst = (weekday - ordinal) % DateTime.daysPerWeek + 1;
 
-    // Find Monday of week 1
-    final week1Monday = jan4.dateOnly.subtract(Duration(days: jan4Weekday - 1));
-
-    // Days from week 1 Monday to this date
-    final daysFromWeek1 = dateOnly.difference(week1Monday).inDays;
-
-    if (daysFromWeek1 < 0) {
-      // This date is before week 1 of current year
-      // It belongs to the last week of the previous year
-      return EasyDateTime(year - 1, 12, 31, 0, 0, 0, 0, 0, location).weekOfYear;
+    if (week == 0) {
+      final previousYearHas53Weeks =
+          januaryFirst == DateTime.friday ||
+          (januaryFirst == DateTime.saturday && _isGregorianLeapYear(year - 1));
+      return previousYearHas53Weeks ? 53 : 52;
     }
 
-    final weekNumber = (daysFromWeek1 ~/ 7) + 1;
-
-    if (weekNumber > 52) {
-      // Check if this belongs to week 1 of next year
-      final nextYearJan4 = EasyDateTime(
-        year + 1,
-        1,
-        4,
-        0,
-        0,
-        0,
-        0,
-        0,
-        location,
-      );
-      final nextYearWeek1Monday = nextYearJan4.dateOnly.subtract(
-        Duration(days: nextYearJan4.weekday - 1),
-      );
-      if (!dateOnly.isBefore(nextYearWeek1Monday)) {
-        return 1;
-      }
+    if (week == 53) {
+      final has53Weeks =
+          januaryFirst == DateTime.thursday ||
+          (januaryFirst == DateTime.wednesday && isLeapYear);
+      return has53Weeks ? 53 : 1;
     }
 
-    return weekNumber;
+    return week;
   }
 
   /// Returns the number of days in the current month.
