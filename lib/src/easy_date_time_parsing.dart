@@ -6,6 +6,8 @@ part of 'easy_date_time.dart';
 
 /// Pattern for timezone offset: +HH:MM, -HH:MM, +HHMM, -HHMM at end of string.
 final _timezoneOffsetPattern = RegExp(r'([+-])(\d{2}):?(\d{2})$');
+final _dateTimeSeparator = RegExp(r'[ T]');
+final _timeZoneMarker = RegExp(r'[zZ+-]');
 
 ParseDiagnostics _parseDiagnosticsForStage({
   required EasyParseMode mode,
@@ -171,13 +173,25 @@ EasyDateTime _parseDateTimeString(
   }
 
   try {
-    final dt = DateTime.parse(trimmed);
+    final offsetInfo = location == null
+        ? _extractTimezoneOffset(trimmed)
+        : null;
+    var parseInput = trimmed;
+    if (location == null && offsetInfo == null) {
+      // Parse as UTC so the host timezone can't shift the input fields.
+      final timeStart = trimmed.indexOf(_dateTimeSeparator);
+      if (timeStart < 0) {
+        parseInput = '${trimmed}T00:00:00Z';
+      } else if (trimmed.indexOf(_timeZoneMarker, timeStart + 1) < 0) {
+        parseInput = '${trimmed}Z';
+      }
+    }
+    final dt = DateTime.parse(parseInput);
 
     if (location != null) {
       return EasyDateTime.fromDateTime(dt.toUtc(), location: location);
     }
 
-    final offsetInfo = _extractTimezoneOffset(trimmed);
     if (offsetInfo != null) {
       final resolution = effectiveResolution;
       final matchingLocation = _resolveLocationForOffset(

@@ -23,7 +23,7 @@
 /// ## Features
 ///
 /// - **Timezone Support**: Any IANA timezone (Asia/Tokyo, America/New_York, etc.)
-/// - **Time Preservation**: `parse()` preserves original time values
+/// - **Parse Policies**: Resolve numeric offsets and validate calendar dates
 /// - **Operators**: `+`, `-`, `<`, `>`, `==` for intuitive operations
 /// - **JSON Serialization**: ISO 8601 format, works with json_serializable
 /// - **Immutable**: Suitable for value-oriented application state

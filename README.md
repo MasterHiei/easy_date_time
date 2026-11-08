@@ -63,7 +63,8 @@ print(source.locationName);  // UTC+08:00 in fixed mode
 print(ny.locationName);      // America/New_York
 ```
 
-If you omit `options`, `parse()` keeps the legacy region-inference path for migration compatibility.
+By default, `parse()` uses legacy region resolution for offsets with hours and
+minutes.
 
 ## Parse policy model
 
@@ -93,6 +94,13 @@ final dt = EasyDateTime.parse(
 ```
 
 ## Common tasks
+
+### Parse dates and times without a timezone
+
+Set a default with `EasyDateTime.setDefaultLocation()`, then call `parse()`
+without `location`. Inputs such as `2025-04-01` and `2025-04-01T09:30:00` are
+interpreted in that location. If you haven't set a default, parsing uses the
+configured local location.
 
 ### Create values with an explicit timezone
 
