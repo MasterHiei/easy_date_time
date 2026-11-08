@@ -140,6 +140,13 @@ test('should parse ISO 8601 date with timezone offset', () {
 Release maintainers update [CHANGELOG.md](CHANGELOG.md) when preparing a
 release with user-visible changes.
 
+## Publishing a Release
+
+1. Wait for `Required CI` to pass on the `main` commit you intend to release.
+2. Push a `v<version>` tag that matches the version in `pubspec.yaml` at that
+   commit. Treat release tags as immutable.
+3. Check the publish workflow, then verify the version on pub.dev.
+
 ## Testing Timezone Code
 
 Special considerations when testing timezone-dependent code:
