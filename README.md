@@ -29,11 +29,9 @@ that accept `DateTime`, while timezone behavior remains explicit.
 
 ## Installation
 
-Stable release on pub.dev:
-
 ```yaml
 dependencies:
-  easy_date_time: ^0.12.3
+  easy_date_time: ^0.12.4
 ```
 
 ## Requirements

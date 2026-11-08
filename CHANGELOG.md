@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.4]
+
+### Fixed
+
+- Corrected `dayOfYear` and `weekOfYear` across daylight saving transitions
+  and skipped calendar dates.
+- Fixed month lengths in `daysInMonth`, `copyWithClamped()`, and strict parsing
+  when the host timezone skips a date. `daysInMonth` also works at the maximum
+  supported timestamp.
+- Fixed host timezone shifts when parsing input without a timezone or an
+  explicit `location`.
+
 ## [0.12.3] - 2026-08-30
 
 ### Changed
