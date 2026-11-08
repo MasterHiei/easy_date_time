@@ -438,7 +438,7 @@ void _validateStrict(String input) {
     throw FormatException('Invalid month: $month', input);
   }
 
-  final maxDays = DateTime(year, month + 1, 0).day;
+  final maxDays = _gregorianMonthLength(year, month);
   if (day < 1 || day > maxDays) {
     throw FormatException('Invalid day for month: $day (Max: $maxDays)', input);
   }

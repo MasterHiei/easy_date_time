@@ -938,7 +938,7 @@ class EasyDateTime implements DateTime {
     final targetDay = day ?? this.day;
 
     // Calculate the last day of the target month
-    final lastDayOfMonth = DateTime(targetYear, targetMonth + 1, 0).day;
+    final lastDayOfMonth = _gregorianMonthLength(targetYear, targetMonth);
 
     // Clamp the day to valid range
     final clampedDay = targetDay > lastDayOfMonth ? lastDayOfMonth : targetDay;

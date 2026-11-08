@@ -263,7 +263,7 @@ extension EasyDateTimeUtilities on EasyDateTime {
   /// EasyDateTime(2024, 2, 15).daysInMonth;  // 29 (leap year)
   /// EasyDateTime(2025, 4, 15).daysInMonth;  // 30
   /// ```
-  int get daysInMonth => DateTime(year, month + 1, 0).day;
+  int get daysInMonth => _gregorianMonthLength(year, month);
 
   /// Returns `true` if the current year is a leap year.
   ///
@@ -277,7 +277,7 @@ extension EasyDateTimeUtilities on EasyDateTime {
   /// EasyDateTime(2000, 6, 15).isLeapYear;  // true  (divisible by 400)
   /// EasyDateTime(1900, 6, 15).isLeapYear;  // false (divisible by 100)
   /// ```
-  bool get isLeapYear => year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+  bool get isLeapYear => _isGregorianLeapYear(year);
 
   /// Returns `true` if this date is a weekend day (Saturday or Sunday).
   ///
@@ -426,4 +426,21 @@ extension EasyDateTimeUtilities on EasyDateTime {
 
     return '$h:$min:$s';
   }
+}
+
+bool _isGregorianLeapYear(int year) =>
+    year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+
+int _gregorianMonthLength(int year, int month) {
+  final normalizedMonth = (month - 1) % DateTime.monthsPerYear + 1;
+  final normalizedYear =
+      year + (month - normalizedMonth) ~/ DateTime.monthsPerYear;
+  return switch (normalizedMonth) {
+    DateTime.february => _isGregorianLeapYear(normalizedYear) ? 29 : 28,
+    DateTime.april ||
+    DateTime.june ||
+    DateTime.september ||
+    DateTime.november => 30,
+    _ => 31,
+  };
 }
